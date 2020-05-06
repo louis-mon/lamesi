@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import { ManipulableObject } from "../../helpers/phaser";
+import { ManipulableObject } from "helpers/phaser";
 import { gameZoneHelpers, debugObjectPos } from "../common";
 import {
   sceneDef,
@@ -8,12 +8,9 @@ import {
   LightSceneSourceDef
 } from "./lights-def";
 import { eventsHelpers } from "../global-events";
-// @ts-ignore
-import goal2 from "../../assets/lights/goal-2.png";
-// @ts-ignore
-import goal3 from "../../assets/lights/goal-3.png";
-// @ts-ignore
-import goal4 from "../../assets/lights/goal-4.png";
+import goal2 from "assets/lights/goal-2.png";
+import goal3 from "assets/lights/goal-3.png";
+import goal4 from "assets/lights/goal-4.png";
 
 const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
   new Phaser.Math.Vector2(x, y);
