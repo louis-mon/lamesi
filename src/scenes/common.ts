@@ -1,0 +1,26 @@
+import { ManipulableObject } from "../helpers/phaser";
+import { gameHeight } from "./hub/hub";
+import Scene = Phaser.Scene;
+
+const metaZoneSize = 30;
+
+export const gameZoneHelpers = {
+  createZone: (scene: Scene) => {
+    const menuButton = scene.add.star(15, 15, 5, 5, 10, 0xf5a742, 0.5);
+    menuButton.setInteractive();
+    menuButton.on("pointerdown", () => scene.scene.start("hub"));
+    scene.add.line(
+      metaZoneSize,
+      gameHeight / 2,
+      0,
+      0,
+      0,
+      gameHeight,
+      0xf5a742
+    );
+  },
+  ensureWithin: (go: ManipulableObject) => {
+    const diff = go.getLeftCenter().x - metaZoneSize;
+    if (diff < 0) go.x -= diff;
+  },
+};

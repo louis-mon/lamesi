@@ -11,7 +11,7 @@ export class FakeScene extends Phaser.Scene {
   }
   create() {
     const ball = this.physics.add
-      .image(0, 0, "ball")
+      .image(200, 0, "ball")
       .setCollideWorldBounds(true, undefined, 1);
     ball.setInteractive();
     ball.on("pointerdown", () => {
