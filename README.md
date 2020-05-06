@@ -1,2 +1,0 @@
-# lamesi
-Created with CodeSandbox

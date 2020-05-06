@@ -1,0 +1,5 @@
+- espace
+- forêt
+- créatures géométriques étrange avec physique étrange
+- le dongeon, d'autres possiblitées de le compléter au fur et à mesure
+- monde aerien des avec mécanisme
