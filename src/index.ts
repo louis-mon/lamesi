@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { LightScene } from "./scenes/lights/lights";
 import { HubScene } from "./scenes/hub/hub";
+import { FakeScene } from "./scenes/fake-scene";
 
 var config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -12,7 +13,7 @@ var config: Phaser.Types.Core.GameConfig = {
       gravity: { y: 200 }
     }
   },
-  scene: [new HubScene(), new LightScene()]
+  scene: [new HubScene(), new LightScene(), new FakeScene()]
 };
 
 new Phaser.Game(config);
