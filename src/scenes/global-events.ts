@@ -5,8 +5,9 @@ export type EventKey = string & {
 const declareEvent = (key: string) => key as EventKey;
 
 export const events = {
-  lights1: declareEvent("lights-1"),
-  lights2: declareEvent("lights-2")
+  lights1: declareEvent("lights1"),
+  lights2: declareEvent("lights2"),
+  lights3: declareEvent("lights3")
 };
 
 export type WithRequiredEvent = {
@@ -14,7 +15,7 @@ export type WithRequiredEvent = {
 };
 
 export const eventsHelpers = {
-  startupEvents: [],
+  startupEvents: [events.lights1, events.lights2],
   getEventFilter: (scene: Phaser.Scene) => (e: WithRequiredEvent): boolean =>
     e.eventRequired ? scene.registry.get(e.eventRequired) : true
 };

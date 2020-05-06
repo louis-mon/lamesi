@@ -21,3 +21,8 @@ Toutes les objectifs sont visibles dès le début.
 Réussir des fins dans les autres scènes débloque des nouveaux objets ou sources
 
 Univers possible: églises, vieilles ruines, égouts, fête avec des lampions et mur d'ombres chinoises, manoir
+
+Louis:
+
+- ficelle
+- rails

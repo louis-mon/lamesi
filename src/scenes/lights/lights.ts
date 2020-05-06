@@ -10,6 +10,10 @@ import {
 import { eventsHelpers } from "../global-events";
 // @ts-ignore
 import goal2 from "../../assets/lights/goal-2.png";
+// @ts-ignore
+import goal3 from "../../assets/lights/goal-3.png";
+// @ts-ignore
+import goal4 from "../../assets/lights/goal-4.png";
 
 const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
   new Phaser.Math.Vector2(x, y);
@@ -30,6 +34,8 @@ export class LightScene extends Phaser.Scene {
   }
   preload() {
     this.load.image("goal-2", goal2);
+    this.load.image("goal-3", goal3);
+    this.load.image("goal-4", goal4);
   }
   private shadows: Array<{
     source: ManipulableObject;
