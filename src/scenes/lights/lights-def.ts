@@ -38,10 +38,18 @@ export const sceneDef: LightSceneDef = {
   ],
   materials: [
     {
-      key: "m1",
+      key: "m-ball-1",
       depth: 0.5,
       create: scene => scene.add.circle(150, 700, 47, 0x4afc03),
       movable: true
+    },
+    {
+      key: "m-triangle-1",
+      depth: 0.5,
+      movable: true,
+      //eventRequired: events.lights1,
+      create: scene =>
+        scene.add.triangle(1537, 935, 0, 0, 41, 71, -41, 71, 0x4afc03)
     }
   ],
   goals: [
@@ -50,8 +58,22 @@ export const sceneDef: LightSceneDef = {
       create: scene => scene.add.circle(1340, 253, 47 * 2, 0x7b03fc),
       requires: [
         {
-          materialKey: "m1",
+          materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(1340, 253)
+        }
+      ]
+    },
+    {
+      key: "g2",
+      create: scene => scene.add.image(225, 200, "goal-2"),
+      requires: [
+        {
+          materialKey: "m-ball-1",
+          position: new Phaser.Math.Vector2(226, 233)
+        },
+        {
+          materialKey: "m-triangle-1",
+          position: new Phaser.Math.Vector2(307, 137)
         }
       ]
     }

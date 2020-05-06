@@ -1,13 +1,14 @@
 import * as Phaser from "phaser";
 import { ManipulableObject } from "../../helpers/phaser";
-import { gameZoneHelpers } from "../common";
+import { gameZoneHelpers, debugObjectPos } from "../common";
 import {
   sceneDef,
   LightSceneMaterialDef,
   ObjectCreationDef,
-  LightSceneSourceDef,
+  LightSceneSourceDef
 } from "./lights-def";
 import { eventsHelpers } from "../global-events";
+import goal2 from "../../assets/lights/goal-2.png";
 
 const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
   new Phaser.Math.Vector2(x, y);
@@ -23,11 +24,11 @@ const shadowName = (matKey: string, sourceDef: LightSceneSourceDef) =>
 export class LightScene extends Phaser.Scene {
   constructor() {
     super({
-      key: "lights",
+      key: "lights"
     });
   }
   preload() {
-    this.load.setBaseURL("src/assets");
+    this.load.image("goal-2", goal2);
   }
   private shadows: Array<{
     source: ManipulableObject;
@@ -42,7 +43,7 @@ export class LightScene extends Phaser.Scene {
     };
     sceneDef.lights
       .filter(eventsHelpers.getEventFilter(this))
-      .forEach((lightDef) => {
+      .forEach(lightDef => {
         const go = lightDef.create(this);
         go.depth = sourcesPlane;
         setCommonProps(go, lightDef);
@@ -56,7 +57,7 @@ export class LightScene extends Phaser.Scene {
       });
     sceneDef.materials
       .filter(eventsHelpers.getEventFilter(this))
-      .forEach((matDef) => {
+      .forEach(matDef => {
         const go = matDef.create(this);
         go.depth = materialsPlane;
         setCommonProps(go, matDef);
@@ -67,10 +68,11 @@ export class LightScene extends Phaser.Scene {
           go.y = y;
           gameZoneHelpers.ensureWithin(go);
         });
-        sceneDef.lights.forEach((lightDef) => {
+        sceneDef.lights.forEach(lightDef => {
           const lightObj = this.children.getByName(lightDef.key);
           if (!lightObj) return;
           const shadow = matDef.create(this);
+          debugObjectPos(this, shadow);
           shadow.name = shadowName(matDef.key, lightDef);
           shadow.depth = shadowPlane;
           shadow.alpha = 0.5;
@@ -78,11 +80,11 @@ export class LightScene extends Phaser.Scene {
             source: lightObj as ManipulableObject,
             material: go,
             shadow,
-            def: matDef,
+            def: matDef
           });
         });
       });
-    sceneDef.goals.forEach((goalDef) => {
+    sceneDef.goals.forEach(goalDef => {
       const go = goalDef.create(this);
       setCommonProps(go, goalDef);
       go.depth = goalPlane;
@@ -102,7 +104,7 @@ export class LightScene extends Phaser.Scene {
     const oneGoalReached = sceneDef.goals.reduce((found, goalDef) => {
       const go = this.children.getByName(goalDef.key)!;
       const reachGoal = goalDef.requires.every(({ materialKey, position }) =>
-        sceneDef.lights.some((lightDef) => {
+        sceneDef.lights.some(lightDef => {
           const shadow = this.children.getByName(
             shadowName(materialKey, lightDef)
           ) as ManipulableObject;
@@ -126,8 +128,8 @@ export class LightScene extends Phaser.Scene {
             onComplete: () =>
               this.tweens.add({
                 targets: go,
-                props: { alpha: 0.5 },
-              }),
+                props: { alpha: 0.5 }
+              })
           });
         });
       }
