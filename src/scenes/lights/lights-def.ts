@@ -49,7 +49,7 @@ export const sceneDef: LightSceneDef = {
       movable: true,
       //eventRequired: events.lights1,
       create: scene =>
-        scene.add.triangle(1537, 935, 0, 0, 41, 71, -41, 71, 0x4afc03)
+        scene.add.triangle(1537, 935, 0, 71, 41, 0, 82, 71, 0x4afc03)
     }
   ],
   goals: [
@@ -69,11 +69,11 @@ export const sceneDef: LightSceneDef = {
       requires: [
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(226, 233)
+          position: new Phaser.Math.Vector2(224, 244)
         },
         {
           materialKey: "m-triangle-1",
-          position: new Phaser.Math.Vector2(307, 137)
+          position: new Phaser.Math.Vector2(225, 134)
         }
       ]
     }
