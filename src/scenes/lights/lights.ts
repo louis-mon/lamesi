@@ -8,6 +8,7 @@ import {
   LightSceneSourceDef
 } from "./lights-def";
 import { eventsHelpers } from "../global-events";
+// @ts-ignore
 import goal2 from "../../assets/lights/goal-2.png";
 
 const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>

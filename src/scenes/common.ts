@@ -1,5 +1,5 @@
 import { ManipulableObject } from "../helpers/phaser";
-import { gameHeight, gameWidth } from "./hub/hub";
+import { gameHeight } from "./hub/hub";
 import Scene = Phaser.Scene;
 
 const metaZoneSize = 30;
@@ -24,5 +24,5 @@ export const gameZoneHelpers = {
   ensureWithin: (go: ManipulableObject) => {
     const diff = go.getLeftCenter().x - metaZoneSize;
     if (diff < 0) go.x -= diff;
-  }
+  },
 };
