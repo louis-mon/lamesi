@@ -1,12 +1,15 @@
 import * as Phaser from "phaser";
 import { LightScene } from "./scenes/lights/lights";
-import { HubScene } from "./scenes/hub/hub";
+import { HubScene, gameWidth, gameHeight } from "./scenes/hub/hub";
 import { FakeScene } from "./scenes/fake-scene";
 
 var config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: gameWidth,
+  height: gameHeight,
+  scale: {
+    mode: Phaser.Scale.FIT,
+  },
   physics: {
     default: "arcade",
     arcade: {

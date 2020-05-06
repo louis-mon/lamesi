@@ -5,6 +5,7 @@ import { events, WithRequiredEvent } from "../global-events";
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
   create: (scene: Phaser.Scene) => ManipulableObject;
+  movable?: boolean;
 };
 
 export type LightSceneSourceDef = ObjectCreationDef;
@@ -29,6 +30,35 @@ export type LightSceneDef = {
 const lightSourceSize = 7;
 
 export const sceneDef: LightSceneDef = {
+  lights: [
+    {
+      key: "l1",
+      create: scene => scene.add.circle(125, 975, lightSourceSize, 0xfcba03)
+    }
+  ],
+  materials: [
+    {
+      key: "m1",
+      depth: 0.5,
+      create: scene => scene.add.circle(150, 700, 47, 0x4afc03),
+      movable: true
+    }
+  ],
+  goals: [
+    {
+      key: "g1",
+      create: scene => scene.add.circle(1340, 253, 47 * 2, 0x7b03fc),
+      requires: [
+        {
+          materialKey: "m1",
+          position: new Phaser.Math.Vector2(1340, 253)
+        }
+      ]
+    }
+  ]
+};
+
+export const sceneDefTest: LightSceneDef = {
   lights: [
     {
       key: "l1",
