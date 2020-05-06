@@ -1,11 +1,13 @@
 import Phaser from "phaser";
+// @ts-ignore
+import ball from "../assets/ball.png";
 
 export class FakeScene extends Phaser.Scene {
   constructor() {
     super({ key: "fake" });
   }
   preload() {
-    this.load.image("ball", "src/assets/ball.png");
+    this.load.image("ball", ball);
   }
   create() {
     const ball = this.physics.add
