@@ -47,10 +47,10 @@ export const sceneDef: LightSceneDef = {
     {
       key: "m-ball-1",
       depth: 0.5,
-      create: scene => scene.add.circle(150, 700, 47, 0x4afc03),
+      create: scene => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true
     },
-    {
+    /*{
       // change to depth 0.3
       key: "m-triangle-1",
       depth: 0.5,
@@ -58,30 +58,32 @@ export const sceneDef: LightSceneDef = {
       eventRequired: events.lights1,
       create: scene =>
         scene.add.triangle(1537, 935, 0, 71, 41, 0, 82, 71, 0x4afc03)
-    },
+    },*/
     {
-      key: "m-triangle-2", // merge with triangle 1
-      depth: 0.5,
+      key: "m-triangle-1", // merge with triangle 1
+      depth: 0.3,
       movable: true,
-      eventRequired: events.lights2,
-      create: scene =>
-        scene.add.triangle(
+      eventRequired: events.lights1,
+      create: scene => {
+        const s = 0.2;
+        return scene.add.triangle(
           1237,
           435,
           0,
-          71 * 0.5,
-          41 * 0.5,
+          71 * s,
+          41 * s,
           0,
-          82 * 0.5,
-          71 * 0.5,
+          82 * s,
+          71 * s,
           0x4afc03
-        )
+        );
+      }
     }
   ],
   goals: [
     {
       key: "g1",
-      create: scene => scene.add.circle(1340, 253, 47 * 2, 0x7b03fc),
+      create: scene => scene.add.circle(1340, 253, 92, 0x4a4a4a),
       requires: [
         {
           materialKey: "m-ball-1",
@@ -99,7 +101,7 @@ export const sceneDef: LightSceneDef = {
         },
         {
           materialKey: "m-triangle-1",
-          position: new Phaser.Math.Vector2(676, 380)
+          position: new Phaser.Math.Vector2(676, 388)
         }
       ]
     },
@@ -112,7 +114,7 @@ export const sceneDef: LightSceneDef = {
           position: new Phaser.Math.Vector2(973, 129)
         },
         {
-          materialKey: "m-triangle-2",
+          materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(973, 294)
         }
       ]

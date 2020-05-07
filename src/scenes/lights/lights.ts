@@ -65,8 +65,9 @@ export class LightScene extends Phaser.Scene {
       .filter(eventsHelpers.getEventFilter(this))
       .forEach(matDef => {
         const go = matDef.create(this);
-        go.depth = materialsPlane;
         setCommonProps(go, matDef);
+        go.scale = 1 / matDef.depth;
+        go.depth = materialsPlane;
         sceneDef.lights.forEach(lightDef => {
           const lightObj = this.children.getByName(lightDef.key);
           if (!lightObj) return;
@@ -92,13 +93,14 @@ export class LightScene extends Phaser.Scene {
   update() {
     this.shadows.forEach(({ source, shadow, material, def }) => {
       const sourcePos = getObjectPosition(source);
+      const scale = material.scale;
       const { x, y } = getObjectPosition(material)
         .clone()
         .subtract(sourcePos)
-        .scale(1 / def.depth)
+        .scale(scale)
         .add(sourcePos);
       shadow.setPosition(x, y);
-      shadow.setScale(1 / def.depth);
+      shadow.setScale(scale * scale);
     });
     const oneGoalReached = sceneDef.goals.reduce((found, goalDef) => {
       const go = this.children.getByName(goalDef.key)!;
