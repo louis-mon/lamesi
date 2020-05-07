@@ -8,7 +8,7 @@ var config: Phaser.Types.Core.GameConfig = {
   width: gameWidth,
   height: gameHeight,
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.FIT
   },
   physics: {
     default: "arcade",

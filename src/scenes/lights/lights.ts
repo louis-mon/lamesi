@@ -9,7 +9,7 @@ import {
 } from "./lights-def";
 import { eventsHelpers } from "../global-events";
 import goal2 from "assets/lights/goal-2.png";
-import goal3 from "assets/lights/goal-2.png";
+import goal3 from "assets/lights/goal-3.png";
 import goal4 from "assets/lights/goal-4.png";
 import ropeAsset from "assets/lights/rope.png";
 import { gameWidth, gameHeight } from "scenes/hub/hub";
@@ -91,9 +91,7 @@ export class LightScene extends Phaser.Scene {
           const { minDepth, maxDepth } = matDef.rope;
           const ropeObj = this.add.image(gameWidth - 30 * i - 20, 0, "rope");
           ropeObj.setOrigin(0.5, 1);
-          ropeObj.setInteractive({
-            hitArea: new Phaser.Geom.Circle(0, 0, 15)
-          });
+          ropeObj.setInteractive();
           this.input.setDraggable(ropeObj);
           const yposMin = 50;
           const yAmpl = gameHeight - 50;
