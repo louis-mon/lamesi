@@ -5,6 +5,7 @@ declare module "phaser" {
   namespace Phaser {
     type EventGameObjectMapping = {
       drag: (pointer: Pointer, dragX: number, dragY: number) => void;
+      dragstart: (pointer: Pointer, dragX: number, dragY: number) => void;
       pointerdown: (
         pointer: Pointer,
         localX: number,

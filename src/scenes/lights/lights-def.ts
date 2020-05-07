@@ -12,6 +12,10 @@ export type LightSceneSourceDef = ObjectCreationDef;
 
 export type LightSceneMaterialDef = ObjectCreationDef & {
   depth: number;
+  rope?: {
+    minDepth: number;
+    maxDepth: number;
+  };
 };
 
 export type LightSceneGoalDef = ObjectCreationDef & {
@@ -50,20 +54,15 @@ export const sceneDef: LightSceneDef = {
       create: scene => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true
     },
-    /*{
-      // change to depth 0.3
-      key: "m-triangle-1",
-      depth: 0.5,
-      movable: true,
-      eventRequired: events.lights1,
-      create: scene =>
-        scene.add.triangle(1537, 935, 0, 71, 41, 0, 82, 71, 0x4afc03)
-    },*/
     {
-      key: "m-triangle-1", // merge with triangle 1
+      key: "m-triangle-1",
       depth: 0.3,
       movable: true,
       eventRequired: events.lights1,
+      rope: {
+        minDepth: 0.2,
+        maxDepth: 0.8
+      },
       create: scene => {
         const s = 0.2;
         return scene.add.triangle(
@@ -115,7 +114,7 @@ export const sceneDef: LightSceneDef = {
         },
         {
           materialKey: "m-triangle-1",
-          position: new Phaser.Math.Vector2(973, 294)
+          position: new Phaser.Math.Vector2(974, 292)
         }
       ]
     },
