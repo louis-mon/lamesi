@@ -15,7 +15,7 @@ export type WithRequiredEvent = {
 };
 
 export const eventsHelpers = {
-  startupEvents: [events.lights1, events.lights2],
+  startupEvents: [events.lights1, events.lights2, events.lights3],
   getEventFilter: (scene: Phaser.Scene) => (e: WithRequiredEvent): boolean =>
     e.eventRequired ? scene.registry.get(e.eventRequired) : true
 };

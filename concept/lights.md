@@ -26,3 +26,4 @@ Louis:
 
 - ficelle
 - rails
+- bonne taille pour la résolution

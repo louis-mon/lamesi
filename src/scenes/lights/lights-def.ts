@@ -52,11 +52,15 @@ export const sceneDef: LightSceneDef = {
       key: "m-ball-1",
       depth: 0.5,
       create: scene => scene.add.circle(150, 700, 23, 0x4afc03),
-      movable: true
+      movable: true,
+      rope: {
+        minDepth: 0.4,
+        maxDepth: 0.8
+      }
     },
     {
       key: "m-triangle-1",
-      depth: 0.3,
+      depth: 0.7,
       movable: true,
       eventRequired: events.lights1,
       rope: {
@@ -64,7 +68,7 @@ export const sceneDef: LightSceneDef = {
         maxDepth: 0.8
       },
       create: scene => {
-        const s = 0.2;
+        const s = 1;
         return scene.add.triangle(
           1237,
           435,
