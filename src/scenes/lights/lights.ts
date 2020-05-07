@@ -42,8 +42,17 @@ export class LightScene extends Phaser.Scene {
   }> = [];
   private goalFound?: Phaser.Time.TimerEvent;
   create() {
-    const setCommonProps = (o: ManipulableObject, def: ObjectCreationDef) => {
-      o.name = def.key;
+    const setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
+      go.name = def.key;
+      if (def.movable) {
+        go.setInteractive();
+        this.input.setDraggable(go);
+        go.on("drag", (p, x, y) => {
+          go.x = x;
+          go.y = y;
+          gameZoneHelpers.ensureWithin(go);
+        });
+      }
     };
     sceneDef.lights
       .filter(eventsHelpers.getEventFilter(this))
@@ -51,13 +60,6 @@ export class LightScene extends Phaser.Scene {
         const go = lightDef.create(this);
         go.depth = sourcesPlane;
         setCommonProps(go, lightDef);
-        go.setInteractive();
-        this.input.setDraggable(go);
-        go.on("drag", (p, x, y) => {
-          go.x = x;
-          go.y = y;
-          gameZoneHelpers.ensureWithin(go);
-        });
       });
     sceneDef.materials
       .filter(eventsHelpers.getEventFilter(this))
@@ -65,13 +67,6 @@ export class LightScene extends Phaser.Scene {
         const go = matDef.create(this);
         go.depth = materialsPlane;
         setCommonProps(go, matDef);
-        go.setInteractive();
-        this.input.setDraggable(go);
-        go.on("drag", (p, x, y) => {
-          go.x = x;
-          go.y = y;
-          gameZoneHelpers.ensureWithin(go);
-        });
         sceneDef.lights.forEach(lightDef => {
           const lightObj = this.children.getByName(lightDef.key);
           if (!lightObj) return;
