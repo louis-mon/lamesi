@@ -9,7 +9,7 @@ import {
 } from "./lights-def";
 import { eventsHelpers } from "../global-events";
 import goal2 from "assets/lights/goal-2.png";
-import goal3 from "assets/lights/goal-3.png";
+import goal3 from "assets/lights/goal-2.png";
 import goal4 from "assets/lights/goal-4.png";
 import ropeAsset from "assets/lights/rope.png";
 import { gameWidth, gameHeight } from "scenes/hub/hub";
@@ -130,17 +130,26 @@ export class LightScene extends Phaser.Scene {
     });
     const oneGoalReached = sceneDef.goals.reduce((found, goalDef) => {
       const go = this.children.getByName(goalDef.key)!;
-      const reachGoal = goalDef.requires.every(({ materialKey, position }) =>
-        sceneDef.lights.some(lightDef => {
-          const shadow = this.children.getByName(
-            shadowName(materialKey, lightDef)
-          ) as ManipulableObject;
-          if (!shadow) return false;
-          return new Phaser.Geom.Circle(position.x, position.y, 10).contains(
-            shadow.x,
-            shadow.y
-          );
-        })
+      const reachGoal = goalDef.requires.every(
+        ({ materialKey, position, width }) =>
+          sceneDef.lights.some(lightDef => {
+            const shadow = this.children.getByName(
+              shadowName(materialKey, lightDef)
+            ) as ManipulableObject;
+            if (!shadow) return false;
+            const sizeMatch = Phaser.Math.Within(
+              shadow.displayWidth,
+              width,
+              10
+            );
+            return (
+              sizeMatch &&
+              new Phaser.Geom.Circle(position.x, position.y, 10).contains(
+                shadow.x,
+                shadow.y
+              )
+            );
+          })
       );
       if (reachGoal && !this.goalFound) {
         this.goalFound = this.time.delayedCall(2000, () => {

@@ -11,8 +11,8 @@ export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
     const { x, y } = obj.getBottomCenter(undefined, true);
     text.setPosition(x, y);
     text.text = `${Math.round(obj.x)}, ${Math.round(obj.y)}, ${Math.round(
-      obj.width
-    )}, ${Math.round(obj.height)}`;
+      obj.displayWidth
+    )}, ${Math.round(obj.displayHeight)}`;
   });
 };
 

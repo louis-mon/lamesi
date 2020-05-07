@@ -22,6 +22,7 @@ export type LightSceneGoalDef = ObjectCreationDef & {
   requires: Array<{
     materialKey: string;
     position: Phaser.Math.Vector2;
+    width: number;
   }>;
 };
 
@@ -65,7 +66,7 @@ export const sceneDef: LightSceneDef = {
       eventRequired: events.lights1,
       rope: {
         minDepth: 0.2,
-        maxDepth: 0.8
+        maxDepth: 0.9
       },
       create: scene => {
         const s = 1;
@@ -90,7 +91,8 @@ export const sceneDef: LightSceneDef = {
       requires: [
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(1340, 253)
+          position: new Phaser.Math.Vector2(1340, 253),
+          width: 184
         }
       ]
     },
@@ -100,11 +102,13 @@ export const sceneDef: LightSceneDef = {
       requires: [
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(676, 488)
+          position: new Phaser.Math.Vector2(676, 488),
+          width: 184
         },
         {
           materialKey: "m-triangle-1",
-          position: new Phaser.Math.Vector2(676, 388)
+          position: new Phaser.Math.Vector2(676, 388),
+          width: 167
         }
       ]
     },
