@@ -134,15 +134,18 @@ export const sceneDef: LightSceneDef = {
       requires: [
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(224, 244)
+          position: new Phaser.Math.Vector2(315, 268),
+          width: 132
         },
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(224, 244)
+          position: new Phaser.Math.Vector2(435, 268),
+          width: 132
         },
         {
           materialKey: "m-triangle-1",
-          position: new Phaser.Math.Vector2(225, 134)
+          position: new Phaser.Math.Vector2(377, 146),
+          width: 134
         }
       ]
     }
