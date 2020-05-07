@@ -16,7 +16,7 @@ export class HubScene extends Phaser.Scene {
   }
 
   create() {
-    eventsHelpers.startupEvents.forEach(ev => this.registry.toggle(ev));
+    eventsHelpers.startupEvents.forEach(ev => this.registry.set(ev, true));
     const scenes = [
       {
         create: () => new LightScene(),
