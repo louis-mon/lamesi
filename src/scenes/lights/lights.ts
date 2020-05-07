@@ -11,6 +11,8 @@ import { eventsHelpers } from "../global-events";
 import goal2 from "assets/lights/goal-2.png";
 import goal3 from "assets/lights/goal-3.png";
 import goal4 from "assets/lights/goal-4.png";
+import ropeAsset from "assets/lights/rope.png";
+import { gameWidth, gameHeight } from "scenes/hub/hub";
 
 const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
   new Phaser.Math.Vector2(x, y);
@@ -33,6 +35,7 @@ export class LightScene extends Phaser.Scene {
     this.load.image("goal-2", goal2);
     this.load.image("goal-3", goal3);
     this.load.image("goal-4", goal4);
+    this.load.image("rope", ropeAsset);
   }
   private shadows: Array<{
     source: ManipulableObject;
@@ -63,10 +66,11 @@ export class LightScene extends Phaser.Scene {
       });
     sceneDef.materials
       .filter(eventsHelpers.getEventFilter(this))
-      .forEach(matDef => {
+      .forEach((matDef, i) => {
         const go = matDef.create(this);
         setCommonProps(go, matDef);
-        go.scale = 1 / matDef.depth;
+        let depth = matDef.depth;
+        go.scale = 1 / depth;
         go.depth = materialsPlane;
         sceneDef.lights.forEach(lightDef => {
           const lightObj = this.children.getByName(lightDef.key);
@@ -83,6 +87,28 @@ export class LightScene extends Phaser.Scene {
             def: matDef
           });
         });
+        if (matDef.rope) {
+          const { minDepth, maxDepth } = matDef.rope;
+          const ropeObj = this.add.image(gameWidth - 50, 0, "rope");
+          ropeObj.setOrigin(0.5, 1);
+          ropeObj.setInteractive({
+            hitArea: new Phaser.Geom.Circle(0, 0, 10)
+          });
+          this.input.setDraggable(ropeObj);
+          const yposMin = 50;
+          const yAmpl = gameHeight - 50;
+          this.events.on("update", () => {
+            go.scale = 1 / depth;
+            ropeObj.y = Phaser.Math.Linear(yposMin, yposMin + yAmpl, 1 - depth);
+          });
+          ropeObj.on("drag", (pointer, x, y) => {
+            depth = Phaser.Math.Clamp(
+              depth - (y - ropeObj.y) / yAmpl,
+              minDepth,
+              maxDepth
+            );
+          });
+        }
       });
     sceneDef.goals.forEach(goalDef => {
       const go = goalDef.create(this);
