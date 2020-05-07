@@ -24,5 +24,4 @@ Univers possible: églises, vieilles ruines, égouts, fête avec des lampions et
 
 Louis:
 
-- ficelle
-- rails
+- rails lumières

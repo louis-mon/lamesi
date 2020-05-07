@@ -90,6 +90,8 @@ export class LightScene extends Phaser.Scene {
         if (matDef.rope) {
           const { minDepth, maxDepth } = matDef.rope;
           const ropeObj = this.add.image(gameWidth - 30 * i - 20, 0, "rope");
+          const ropeIcon = matDef.create(this);
+          ropeIcon.scale = 25 / ropeIcon.width;
           ropeObj.setOrigin(0.5, 1);
           ropeObj.setInteractive();
           this.input.setDraggable(ropeObj);
@@ -98,6 +100,7 @@ export class LightScene extends Phaser.Scene {
           this.events.on("update", () => {
             go.scale = 1 / depth;
             ropeObj.y = Phaser.Math.Linear(yposMin, yposMin + yAmpl, 1 - depth);
+            ropeIcon.setPosition(ropeObj.x, ropeObj.y + 30);
           });
           ropeObj.on("drag", (pointer, x, y) => {
             depth = Phaser.Math.Clamp(
