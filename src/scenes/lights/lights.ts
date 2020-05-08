@@ -11,6 +11,7 @@ import { eventsHelpers } from "../global-events";
 import goal2 from "/src/assets/lights/goal-2.png";
 import goal3 from "/src/assets/lights/goal-3.png";
 import goal4 from "/src/assets/lights/goal-4.png";
+import goal5 from "/src/assets/lights/goal-5.png";
 import ropeAsset from "/src/assets/lights/rope.png";
 import { gameWidth, gameHeight } from "/src/scenes/hub/hub";
 
@@ -35,6 +36,7 @@ export class LightScene extends Phaser.Scene {
     this.load.image("goal-2", goal2);
     this.load.image("goal-3", goal3);
     this.load.image("goal-4", goal4);
+    this.load.image("goal-5", goal5);
     this.load.image("rope", ropeAsset);
   }
   private shadows: Array<{

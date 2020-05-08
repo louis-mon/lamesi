@@ -39,12 +39,12 @@ export const sceneDef: LightSceneDef = {
   lights: [
     {
       key: "l1",
-      create: scene => scene.add.circle(125, 975, lightSourceSize, 0xfcba03)
+      create: (scene) => scene.add.circle(125, 975, lightSourceSize, 0xfcba03),
     },
     {
       key: "l2",
       eventRequired: events.lights3,
-      create: scene => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
+      create: (scene) => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
       movablePath: {
         path: new Phaser.Curves.Path(1880, 975)
           .lineTo(240, 975)
@@ -52,20 +52,20 @@ export const sceneDef: LightSceneDef = {
           .ellipseTo(39, 39, 0, -90, true)
           .ellipseTo(39, 39, 0, 90, false, 90)
           .lineTo(125, 200),
-        pos: 500
-      }
-    }
+        pos: 500,
+      },
+    },
   ],
   materials: [
     {
       key: "m-ball-1",
       depth: 0.5,
-      create: scene => scene.add.circle(150, 700, 23, 0x4afc03),
+      create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true,
       rope: {
         minDepth: 0.4,
-        maxDepth: 0.8
-      }
+        maxDepth: 0.8,
+      },
     },
     {
       key: "m-triangle-1",
@@ -74,10 +74,10 @@ export const sceneDef: LightSceneDef = {
       eventRequired: events.lights1,
       rope: {
         minDepth: 0.2,
-        maxDepth: 0.9
+        maxDepth: 0.9,
       },
-      create: scene =>
-        scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03)
+      create: (scene) =>
+        scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03),
     },
     {
       key: "m-bar-1",
@@ -86,75 +86,80 @@ export const sceneDef: LightSceneDef = {
       eventRequired: events.lights4,
       rope: {
         minDepth: 0.4,
-        maxDepth: 0.8
+        maxDepth: 0.8,
       },
-      create: scene => scene.add.rectangle(500, 500, 46, 92, 0x4afc03)
-    }
+      create: (scene) => scene.add.rectangle(500, 500, 46, 92, 0x4afc03),
+    },
   ],
   goals: [
     {
       key: "g1",
-      create: scene => scene.add.circle(1340, 253, 92, 0x4a4a4a),
+      create: (scene) => scene.add.circle(1340, 253, 92, 0x4a4a4a),
       requires: [
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(1340, 253),
-          width: 184
-        }
-      ]
+          width: 184,
+        },
+      ],
     },
     {
       key: "g2",
-      create: scene => scene.add.image(676, 444, "goal-2"),
+      create: (scene) => scene.add.image(676, 444, "goal-2"),
       requires: [
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(676, 488),
-          width: 184
+          width: 184,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(676, 388),
-          width: 167
-        }
-      ]
+          width: 167,
+        },
+      ],
     },
     {
       key: "g3",
-      create: scene => scene.add.image(970, 175, "goal-3"),
+      create: (scene) => scene.add.image(970, 175, "goal-3"),
       requires: [
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(973, 135),
-          width: 271
+          width: 271,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(975, 278),
-          width: 138
-        }
-      ]
+          width: 138,
+        },
+      ],
     },
     {
       key: "g4",
-      create: scene => scene.add.image(370, 212, "goal-4"),
+      create: (scene) => scene.add.image(370, 212, "goal-4"),
       requires: [
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(315, 268),
-          width: 132
+          width: 132,
         },
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(435, 268),
-          width: 132
+          width: 132,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(377, 146),
-          width: 134
-        }
-      ]
-    }
-  ]
+          width: 134,
+        },
+      ],
+    },
+    {
+      key: "g5",
+      create: (scene) => scene.add.image(0, 0, "goal-5"),
+      requires: [],
+    },
+  ],
 };
