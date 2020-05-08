@@ -23,5 +23,3 @@ Réussir des fins dans les autres scènes débloque des nouveaux objets ou sourc
 Univers possible: églises, vieilles ruines, égouts, fête avec des lampions et mur d'ombres chinoises, manoir
 
 Louis:
-
-- rails lumières

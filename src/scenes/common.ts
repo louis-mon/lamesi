@@ -2,7 +2,7 @@ import { Scene } from "phaser";
 import { ManipulableObject } from "../helpers/phaser";
 import { gameHeight } from "./hub/hub";
 
-const metaZoneSize = 30;
+const metaZoneSize = 50;
 
 export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
   const text = scene.add.text(0, 0, "");
@@ -18,7 +18,7 @@ export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
 
 export const gameZoneHelpers = {
   createZone: (scene: Scene) => {
-    const menuButton = scene.add.star(15, 15, 5, 5, 10, 0xf5a742, 0.5);
+    const menuButton = scene.add.star(25, 25, 5, 8, 15, 0xf5a742, 0.5);
     menuButton.setInteractive();
     menuButton.on("pointerdown", () => scene.scene.start("hub"));
     scene.add.line(metaZoneSize, gameHeight / 2, 0, 0, 0, gameHeight, 0xf5a742);

@@ -6,6 +6,7 @@ export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
   create: (scene: Phaser.Scene) => ManipulableObject;
   movable?: boolean;
+  movablePath?: { path: Phaser.Curves.Path; pos: number };
 };
 
 export type LightSceneSourceDef = ObjectCreationDef;
@@ -43,9 +44,16 @@ export const sceneDef: LightSceneDef = {
     {
       key: "l2",
       eventRequired: events.lights3,
-      movable: true,
-      create: scene => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03)
-      // start: 500, end: 1860
+      create: scene => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
+      movablePath: {
+        path: new Phaser.Curves.Path(1880, 975)
+          .lineTo(240, 975)
+          .ellipseTo(50, 50, 0, 90, false, 90)
+          .lineTo(190, 900)
+          .cubicBezierTo(100, 800, 190, 800, 100, 900)
+          .lineTo(100, 200),
+        pos: 500
+      }
     }
   ],
   materials: [

@@ -47,14 +47,34 @@ export class LightScene extends Phaser.Scene {
   create() {
     const setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
       go.name = def.key;
-      if (def.movable) {
+      if (def.movable || def.movablePath) {
         go.setInteractive();
         this.input.setDraggable(go);
-        go.on("drag", (p, x, y) => {
-          go.x = x;
-          go.y = y;
-          gameZoneHelpers.ensureWithin(go);
-        });
+        if (def.movablePath) {
+          const path = def.movablePath.path;
+          path.draw(this.add.graphics());
+          let pos = def.movablePath.pos;
+          const length = path.getLength();
+          const setPathPos = () => {
+            const np = path.getPoint(pos / length);
+            go.setPosition(np.x, np.y);
+          };
+          setPathPos();
+          go.on("drag", (p, x, y) => {
+            const tangent = path.getTangent(pos / length);
+            const dir = new Phaser.Math.Vector2(x, y).subtract(
+              getObjectPosition(go)
+            );
+            pos = Phaser.Math.Clamp(pos + tangent.dot(dir), 0, length);
+            setPathPos();
+          });
+        } else {
+          go.on("drag", (p, x, y) => {
+            go.x = x;
+            go.y = y;
+            gameZoneHelpers.ensureWithin(go);
+          });
+        }
       }
     };
     sceneDef.lights
