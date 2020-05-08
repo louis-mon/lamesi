@@ -48,10 +48,10 @@ export const sceneDef: LightSceneDef = {
       movablePath: {
         path: new Phaser.Curves.Path(1880, 975)
           .lineTo(240, 975)
-          .ellipseTo(50, 50, 0, 90, false, 90)
-          .lineTo(190, 900)
-          .cubicBezierTo(100, 800, 190, 800, 100, 900)
-          .lineTo(100, 200),
+          .ellipseTo(39, 39, 0, 90, false, 90)
+          .ellipseTo(39, 39, 0, -90, true)
+          .ellipseTo(39, 39, 0, 90, false, 90)
+          .lineTo(125, 200),
         pos: 500
       }
     }
