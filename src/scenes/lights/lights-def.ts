@@ -76,20 +76,19 @@ export const sceneDef: LightSceneDef = {
         minDepth: 0.2,
         maxDepth: 0.9
       },
-      create: scene => {
-        const s = 1;
-        return scene.add.triangle(
-          1237,
-          435,
-          0,
-          71 * s,
-          41 * s,
-          0,
-          82 * s,
-          71 * s,
-          0x4afc03
-        );
-      }
+      create: scene =>
+        scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03)
+    },
+    {
+      key: "m-bar-1",
+      depth: 0.5,
+      movable: true,
+      eventRequired: events.lights4,
+      rope: {
+        minDepth: 0.4,
+        maxDepth: 0.8
+      },
+      create: scene => scene.add.rectangle(500, 500, 46, 92, 0x4afc03)
     }
   ],
   goals: [
