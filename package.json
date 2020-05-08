@@ -12,8 +12,10 @@
     "phaser": "3.23.0"
   },
   "devDependencies": {
+    "@types/lodash": "4.14.150",
     "parcel-bundler": "^1.6.1",
-    "@types/lodash": "4.14.150"
+    "prettier": "2.0.5",
+    "typescript": "^3.8.3"
   },
   "keywords": []
 }

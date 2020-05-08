@@ -1,6 +1,5 @@
 import Phaser from "phaser";
-// @ts-ignore
-import ball from "../assets/ball.png";
+import ball from "/src/assets/ball.png";
 
 export class FakeScene extends Phaser.Scene {
   constructor() {
@@ -20,7 +19,7 @@ export class FakeScene extends Phaser.Scene {
         props: { scale: 2 },
         duration: 200,
         loop: 5,
-        yoyo: true
+        yoyo: true,
       });
     });
   }
