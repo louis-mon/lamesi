@@ -86,7 +86,7 @@ export const sceneDef: LightSceneDef = {
       eventRequired: events.lights4,
       rope: {
         minDepth: 0.4,
-        maxDepth: 0.8,
+        maxDepth: 0.9,
       },
       create: (scene) => scene.add.rectangle(500, 500, 46, 92, 0x4afc03),
     },
@@ -158,8 +158,39 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g5",
-      create: (scene) => scene.add.image(0, 0, "goal-5"),
-      requires: [],
+      create: (scene) => scene.add.image(1695, 218, "goal-5"),
+      requires: [
+        {
+          materialKey: "m-bar-1",
+          position: new Phaser.Math.Vector2(1695, 246),
+          width: 64,
+        },
+        {
+          materialKey: "m-bar-1",
+          position: new Phaser.Math.Vector2(1695, 342),
+          width: 64,
+        },
+        {
+          materialKey: "m-triangle-1",
+          position: new Phaser.Math.Vector2(1695, 82),
+          width: 133,
+        },
+        {
+          materialKey: "m-triangle-1",
+          position: new Phaser.Math.Vector2(1695, 228),
+          width: 133,
+        },
+        {
+          materialKey: "m-ball-1",
+          position: new Phaser.Math.Vector2(1695, 131),
+          width: 94,
+        },
+        {
+          materialKey: "m-ball-1",
+          position: new Phaser.Math.Vector2(1695, 360),
+          width: 94,
+        },
+      ],
     },
   ],
 };
