@@ -1,8 +1,8 @@
 import * as Phaser from "phaser";
 import { gameZoneHelpers } from "../common";
-import { FakeScene } from "../fake-scene";
 import { eventsHelpers } from "../global-events";
 import { LightScene } from "../lights/lights";
+import { DungeonScene } from "../dungeon/dungeon";
 
 export const gameWidth = 1920;
 export const gameHeight = 1080;
@@ -11,25 +11,25 @@ export const gameRatio = gameHeight / gameWidth;
 export class HubScene extends Phaser.Scene {
   constructor() {
     super({
-      key: "hub"
+      key: "hub",
     });
   }
 
   create() {
-    eventsHelpers.startupEvents.forEach(ev => this.registry.set(ev, true));
+    eventsHelpers.startupEvents.forEach((ev) => this.registry.set(ev, true));
     const scenes = [
       {
         create: () => new LightScene(),
         key: "lights",
-        position: new Phaser.Math.Vector2(100, 100)
+        position: new Phaser.Math.Vector2(100, 100),
       },
       {
-        create: () => new FakeScene(),
-        key: "fake",
-        position: new Phaser.Math.Vector2(400, 100)
-      }
+        create: () => new DungeonScene(),
+        key: "dungeon",
+        position: new Phaser.Math.Vector2(400, 100),
+      },
     ];
-    scenes.forEach(sceneDef => {
+    scenes.forEach((sceneDef) => {
       const scene = this.scene.get(sceneDef.key);
       this.scene.launch(sceneDef.key);
       scene.events.on("ready", () => {
@@ -51,14 +51,15 @@ export class HubScene extends Phaser.Scene {
               y: 0,
               zoom: 1,
               scrollX: 0,
-              scrollY: 0
+              scrollY: 0,
             },
+            duration: 500,
             onComplete: () => {
               mainCam.inputEnabled = true;
               gameZoneHelpers.createZone(scene);
-            }
+            },
           });
-          scenes.forEach(otherScene => {
+          scenes.forEach((otherScene) => {
             if (otherScene === sceneDef) return;
             this.scene.stop(otherScene.key);
           });

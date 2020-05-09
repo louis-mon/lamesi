@@ -2,7 +2,8 @@ import { Scene } from "phaser";
 import { ManipulableObject } from "../helpers/phaser";
 import { gameHeight } from "./hub/hub";
 
-const metaZoneSize = 50;
+export const menuZoneSize = 75;
+const buttonSize = 60;
 
 export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
   const text = scene.add.text(0, 0, "");
@@ -11,20 +12,44 @@ export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
     const { x, y } = obj.getBottomCenter(undefined, true);
     text.setPosition(x, y);
     text.text = `${Math.round(obj.x)}, ${Math.round(obj.y)}, ${Math.round(
-      obj.displayWidth
+      obj.displayWidth,
     )}, ${Math.round(obj.displayHeight)}`;
   });
 };
 
 export const gameZoneHelpers = {
   createZone: (scene: Scene) => {
-    const menuButton = scene.add.star(25, 25, 5, 8, 15, 0xf5a742, 0.5);
+    scene.add
+      .rectangle(0, 0, menuZoneSize, gameHeight, 0x7f7f7f, 0.3)
+      .setOrigin(0, 0);
+    const menuButton = scene.add.star(
+      menuZoneSize / 2,
+      menuZoneSize,
+      5,
+      buttonSize / 4,
+      buttonSize / 2,
+      0xf5a742,
+      0.5,
+    );
     menuButton.setInteractive();
     menuButton.on("pointerdown", () => scene.scene.start("hub"));
-    scene.add.line(metaZoneSize, gameHeight / 2, 0, 0, 0, gameHeight, 0xf5a742);
+    scene.add
+      .rectangle(
+        menuZoneSize / 2,
+        menuZoneSize * 2.5,
+        buttonSize,
+        buttonSize,
+        0xffffff,
+        0.5,
+      )
+      .setStrokeStyle(2)
+      .setInteractive()
+      .on("pointerdown", () => {
+        scene.scale.toggleFullscreen();
+      });
   },
   ensureWithin: (go: ManipulableObject) => {
-    const diff = go.getLeftCenter().x - metaZoneSize;
+    const diff = go.getLeftCenter().x - menuZoneSize;
     if (diff < 0) go.x -= diff;
-  }
+  },
 };

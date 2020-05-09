@@ -54,7 +54,7 @@ export class LightScene extends Phaser.Scene {
         this.input.setDraggable(go);
         if (def.movablePath) {
           const path = def.movablePath.path;
-          path.draw(this.add.graphics());
+          path.draw(this.add.graphics().lineStyle(4, 0xffffff));
           let pos = def.movablePath.pos;
           const length = path.getLength();
           const setPathPos = () => {
@@ -65,7 +65,7 @@ export class LightScene extends Phaser.Scene {
           go.on("drag", (p, x, y) => {
             const tangent = path.getTangent(pos / length);
             const dir = new Phaser.Math.Vector2(x, y).subtract(
-              getObjectPosition(go)
+              getObjectPosition(go),
             );
             pos = Phaser.Math.Clamp(pos + tangent.dot(dir), 0, length);
             setPathPos();
@@ -128,7 +128,7 @@ export class LightScene extends Phaser.Scene {
             depth = Phaser.Math.Clamp(
               depth - (y - ropeObj.y) / yAmpl,
               minDepth,
-              maxDepth
+              maxDepth,
             );
           });
         }
@@ -157,22 +157,22 @@ export class LightScene extends Phaser.Scene {
         ({ materialKey, position, width }) =>
           sceneDef.lights.some((lightDef) => {
             const shadow = this.children.getByName(
-              shadowName(materialKey, lightDef)
+              shadowName(materialKey, lightDef),
             ) as ManipulableObject;
             if (!shadow) return false;
             const sizeMatch = Phaser.Math.Within(
               shadow.displayWidth,
               width,
-              10
+              10,
             );
             return (
               sizeMatch &&
               new Phaser.Geom.Circle(position.x, position.y, 10).contains(
                 shadow.x,
-                shadow.y
+                shadow.y,
               )
             );
-          })
+          }),
       );
       if (reachGoal && !this.goalFound) {
         this.goalFound = this.time.delayedCall(2000, () => {

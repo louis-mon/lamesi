@@ -33,7 +33,7 @@ export type LightSceneDef = {
   goals: LightSceneGoalDef[];
 };
 
-const lightSourceSize = 10;
+const lightSourceSize = 30;
 
 export const sceneDef: LightSceneDef = {
   lights: [
