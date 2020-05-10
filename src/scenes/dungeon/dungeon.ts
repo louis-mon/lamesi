@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import _ from "lodash";
-import { menuZoneSize } from "src/scenes/common";
+import { menuZoneSize } from "/src/scenes/common";
 
 import Vector2 = Phaser.Math.Vector2;
 
