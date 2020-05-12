@@ -1,6 +1,9 @@
 import { Scene } from "phaser";
 import { ManipulableObject } from "../helpers/phaser";
-import { gameHeight } from "./hub/hub";
+
+export const gameWidth = 1920;
+export const gameHeight = 1080;
+export const gameRatio = gameHeight / gameWidth;
 
 export const menuZoneSize = 75;
 const buttonSize = 60;

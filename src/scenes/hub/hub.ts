@@ -1,12 +1,8 @@
 import * as Phaser from "phaser";
-import { gameZoneHelpers } from "../common";
+import { gameZoneHelpers, gameRatio, gameWidth, gameHeight } from "../common";
 import { eventsHelpers } from "../global-events";
 import { LightScene } from "../lights/lights";
 import { DungeonScene } from "../dungeon/dungeon";
-
-export const gameWidth = 1920;
-export const gameHeight = 1080;
-export const gameRatio = gameHeight / gameWidth;
 
 export class HubScene extends Phaser.Scene {
   constructor() {

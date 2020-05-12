@@ -1,55 +1,64 @@
 import * as Phaser from "phaser";
 import _ from "lodash";
-import { menuZoneSize } from "/src/scenes/common";
+import * as Wp from "./wp";
+import * as Flow from "/src/helpers/phaser-flow";
 
 import Vector2 = Phaser.Math.Vector2;
+import { createSpriteAt, vecToXY } from "/src/helpers/phaser";
+import { makeDataHelper } from "/src/helpers/data";
+
+const createPlayer = (scene: Phaser.Scene) => {
+  const wpHelper = Wp.wpSceneHelper(scene);
+  const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
+  const player = createSpriteAt(
+    scene,
+    Wp.wpPos(initialWp),
+    "npc",
+    "player-still",
+  );
+  const currentPosition = makeDataHelper<Wp.WpDef>(player, "current-pos");
+  const setPlayerWp = (wp: Wp.WpDef) => {
+    currentPosition.setValue(wp);
+  };
+  const playerSpeed = 0.1;
+  return {
+    initPlayer: () => {
+      setPlayerWp(initialWp);
+      wpHelper.isActive.setValue(true);
+    },
+    moveAction: (wp: Wp.WpDef) =>
+      Flow.sequence(
+        Flow.tween(() => ({
+          targets: player,
+          props: vecToXY(Wp.wpPos(wp)),
+          duration:
+            Wp.wpPos(wp).distance(Wp.wpPos(currentPosition.value())) /
+            playerSpeed,
+        })),
+        Flow.call(() => setPlayerWp(wp)),
+      ),
+    currentPosition,
+  };
+};
 
 export class DungeonScene extends Phaser.Scene {
   constructor() {
     super({
       key: "dungeon",
+      loader: {
+        path: "assets/dungeon",
+      },
     });
   }
 
+  preload() {
+    this.load.atlas("npc");
+  }
+
   create() {
-    const roomSize = new Vector2(500, 400);
-    const roomMargin = new Vector2(100, 50);
-    const roomPadding = new Vector2(20, 15);
-    const roomsPos = new Vector2(menuZoneSize + 20, 150);
-    _.range(6).forEach((i) => {
-      const roomPos = Phaser.Math.ToXY(i, 3, 2);
-      _.range(25).forEach((posI) => {
-        const wpPos = Phaser.Math.ToXY(posI, 5, 5);
-        const { x, y } = roomsPos
-          .clone()
-          .add(roomPadding)
-          .add(
-            roomPos
-              .clone()
-              .multiply(roomSize.clone().add(roomMargin))
-              .add(
-                wpPos
-                  .clone()
-                  .multiply(roomSize)
-                  .scale(1 / 5),
-              ),
-          );
-        const wp = this.add.circle(x, y, 10, 0xffffff, 0.3);
-        wp.setInteractive();
-        wp.input.hitArea = new Phaser.Geom.Rectangle(-25, -25, 70, 70);
-        wp.on("pointerdown", () => {
-          wp.input.enabled = false;
-          this.add.tween({
-            targets: wp,
-            props: { scale: 2 },
-            duration: 100,
-            yoyo: true,
-            onComplete: () => {
-              wp.input.enabled = true;
-            },
-          });
-        });
-      });
-    });
+    const wpHelper = Wp.wpSceneHelper(this);
+    const playerSetup = createPlayer(this);
+    wpHelper.placeWps(playerSetup);
+    playerSetup.initPlayer();
   }
 }
