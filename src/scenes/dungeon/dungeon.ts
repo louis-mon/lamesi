@@ -16,11 +16,11 @@ const createPlayer = (scene: Phaser.Scene) => {
     "npc",
     "player-still",
   );
-  const currentPosition = makeDataHelper<Wp.WpDef>(player, "current-pos");
-  const setPlayerWp = (wp: Wp.WpDef) => {
+  const currentPosition = makeDataHelper<Wp.WpId>(player, "current-pos");
+  const setPlayerWp = (wp: Wp.WpId) => {
     currentPosition.setValue(wp);
   };
-  const playerSpeed = 0.1;
+  const playerSpeed = 0.3;
   scene.anims.create({
     key: "walk",
     repeat: -1,
@@ -34,27 +34,27 @@ const createPlayer = (scene: Phaser.Scene) => {
   });
   return {
     initPlayer: () => {
-      setPlayerWp(initialWp);
+      setPlayerWp(Wp.getWpId(initialWp));
       wpHelper.isActive.setValue(true);
     },
-    moveAction: (wp: Wp.WpDef) =>
-      Flow.sequence(
-        Flow.parallel(
-          Flow.call(() => player.anims.play("walk")),
-          Flow.tween(() => ({
-            targets: player,
-            props: vecToXY(Wp.wpPos(wp)),
-            duration:
-              Wp.wpPos(wp).distance(Wp.wpPos(currentPosition.value())) /
-              playerSpeed,
-          })),
-        ),
-        Flow.call(() => {
-          player.anims.stop();
-          player.setFrame("player-still");
-          setPlayerWp(wp);
-        }),
-      ),
+    moveAction: (wpId: Wp.WpId) => {
+      const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
+      return Flow.sequence(
+        Flow.tween(() => ({
+          targets: player,
+          props: vecToXY(wpPos),
+          duration:
+            wpPos.distance(Wp.wpPos(Wp.getWpDef(currentPosition.value()))) /
+            playerSpeed,
+        })),
+        Flow.call(() => setPlayerWp(wpId)),
+      );
+    },
+    startMoveAction: Flow.call(() => player.anims.play("walk")),
+    endMoveAction: Flow.call(() => {
+      player.anims.stop();
+      player.setFrame("player-still");
+    }),
     currentPosition,
   };
 };

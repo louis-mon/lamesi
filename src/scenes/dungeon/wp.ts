@@ -1,13 +1,18 @@
 import * as Phaser from "phaser";
 import { menuZoneSize } from "/src/scenes/common";
 import * as Flow from "/src/helpers/phaser-flow";
+import * as Graph from "/src/helpers/math/graph";
+import * as Geom from "/src/helpers/math/geom";
 
 import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
 import { DataHelper, makeDataHelper } from "/src/helpers/data";
 
 export type WpDef = { room: number; x: number; y: number };
-const wpName = ({ room, x, y }: WpDef) => `wp-${room}-${x}-${y}`;
+export type WpId = string & { __wpIdTag: null };
+export const declareWpId = (id: string) => id as WpId;
+export const getWpId = ({ room, x, y }: WpDef): WpId =>
+  declareWpId(`wp-${room}-${x}-${y}`);
 
 const roomSize = new Vector2(500, 400);
 const roomMargin = new Vector2(100, 50);
@@ -32,8 +37,10 @@ export const wpPos = (wp: WpDef) => {
 };
 
 export type PlaceWpParams = {
-  moveAction: (newWp: WpDef) => Flow.PhaserNode;
-  currentPosition: DataHelper<WpDef>;
+  moveAction: (newWp: WpId) => Flow.PhaserNode;
+  startMoveAction: Flow.PhaserNode;
+  endMoveAction: Flow.PhaserNode;
+  currentPosition: DataHelper<WpId>;
 };
 
 const areWpBaseLinked = (wp1: WpDef, wp2: WpDef) => {
@@ -42,16 +49,30 @@ const areWpBaseLinked = (wp1: WpDef, wp2: WpDef) => {
   );
 };
 
-export const wpSceneHelper = (scene: Phaser.Scene) => {
-  const allWp: WpDef[] = _.flatMap(_.range(6), (i) =>
-    _.range(25).map((posI) => ({ ...Phaser.Math.ToXY(posI, 5, 5), room: i })),
-  );
+const RoomRectangle = new Phaser.Geom.Rectangle(0, 0, 4, 4);
 
+const allWp: WpDef[] = _.flatMap(_.range(6), (i) =>
+  _.range(25).map((posI) => ({ ...Phaser.Math.ToXY(posI, 5, 5), room: i })),
+);
+const allWpById = _.keyBy(allWp, getWpId);
+
+export const getWpDef = (id: WpId): WpDef => allWpById[id];
+
+type WpGraph = { [key: string]: { links: WpId[] } };
+const initialWpGraph = (): WpGraph => {
+  return _.mapValues(allWpById, (wp, id) => ({
+    links: Geom.pointsAround(new Vector2(wp), 1)
+      .filter(({ x, y }) => RoomRectangle.contains(x, y))
+      .map(({ x, y }) => getWpId({ room: wp.room, x, y })),
+  }));
+};
+
+export const wpSceneHelper = (scene: Phaser.Scene) => {
   const isActive = makeDataHelper<boolean>(scene, "wp-is-active");
-  isActive.setValue(false);
+  const wpGraph = makeDataHelper<WpGraph>(scene, "wp-graph");
 
   const wpHelper = (wp: WpDef) => {
-    const getObj = () => scene.children.getByName(wpName(wp));
+    const getObj = () => scene.children.getByName(getWpId(wp));
     return {
       getObj,
       getActive: () => makeDataHelper(getObj()!, "is-active"),
@@ -60,7 +81,21 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
 
   const disabledScale = 0.2;
 
-  const placeWps = ({ moveAction, currentPosition }: PlaceWpParams) => {
+  const placeWps = ({
+    moveAction,
+    currentPosition,
+    startMoveAction,
+    endMoveAction,
+  }: PlaceWpParams) => {
+    isActive.setValue(false);
+    wpGraph.setValue(initialWpGraph());
+
+    const performBfs = () =>
+      Graph.bfs({
+        graph: { links: (v) => wpGraph.value()[v].links },
+        startPoint: currentPosition.value(),
+      });
+
     isActive.onChange(({ value }) => {
       const toggleWp = ({
         wpDef,
@@ -85,9 +120,13 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
         );
       };
       if (value) {
-        allWp.forEach((wpDef) => {
-          if (!areWpBaseLinked(wpDef, currentPosition.value())) return;
-          toggleWp({ wpDef, isActive: true, scale: 1 });
+        const allowedWp = performBfs();
+        _.keys(allowedWp.paths).forEach((wpId) => {
+          toggleWp({
+            wpDef: getWpDef(declareWpId(wpId)),
+            isActive: true,
+            scale: 1,
+          });
         });
       } else {
         allWp.forEach((wpDef) => {
@@ -96,19 +135,23 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
       }
     });
     allWp.forEach((wpDef) => {
+      const wpId = getWpId(wpDef);
       const { x, y } = wpPos(wpDef);
       const wp = scene.add.circle(x, y, 10, 0xffffff, 0.3);
       wp.scale = disabledScale;
-      wp.setName(wpName(wpDef));
+      wp.setName(wpId);
       wp.setInteractive();
       wp.input.hitArea = new Phaser.Geom.Rectangle(-25, -25, 70, 70);
       wp.on("pointerdown", () => {
         if (!(isActive.value() && wpHelper(wpDef).getActive().value())) return;
         isActive.setValue(false);
+        const wpsPath = Graph.extractPath(performBfs(), wpId);
         Flow.execute(
           scene,
           Flow.sequence(
-            moveAction(wpDef),
+            startMoveAction,
+            ...wpsPath.map(moveAction),
+            endMoveAction,
             Flow.call(() => {
               isActive.setValue(true);
             }),
