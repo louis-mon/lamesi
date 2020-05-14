@@ -25,3 +25,13 @@ export const tween = <Input>(
     abort: () => tween.stop(),
   };
 };
+
+export const waitForEvent = (
+  emitter: Phaser.Events.EventEmitter,
+  event: string,
+): PhaserNode => (scene) => (p) => {
+  emitter.once(event, p.onComplete);
+  return {
+    abort: () => emitter.off(event, p.onComplete),
+  };
+};

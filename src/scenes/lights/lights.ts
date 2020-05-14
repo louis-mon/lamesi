@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { ManipulableObject } from "/src/helpers/phaser";
-import { gameZoneHelpers, debugObjectPos } from "../common";
+import { debugObjectPos } from "../common";
 import {
   sceneDef,
   LightSceneMaterialDef,
@@ -9,6 +9,7 @@ import {
 } from "./lights-def";
 import { eventsHelpers } from "../global-events";
 import { gameWidth, gameHeight } from "/src/scenes/common";
+import { menuHelpers } from "../menu";
 
 const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
   new Phaser.Math.Vector2(x, y);
@@ -72,7 +73,7 @@ export class LightScene extends Phaser.Scene {
           go.on("drag", (p, x, y) => {
             go.x = x;
             go.y = y;
-            gameZoneHelpers.ensureWithin(go);
+            menuHelpers.ensureOutsideMenu(go);
           });
         }
       }

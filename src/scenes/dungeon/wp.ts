@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import { menuZoneSize } from "/src/scenes/common";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Graph from "/src/helpers/math/graph";
 import * as Geom from "/src/helpers/math/geom";
@@ -7,6 +6,7 @@ import * as Geom from "/src/helpers/math/geom";
 import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
 import { DataHelper, makeDataHelper } from "/src/helpers/data";
+import { menuZoneSize } from "../menu";
 
 export type WpDef = { room: number; x: number; y: number };
 export type WpId = string & { __wpIdTag: null };

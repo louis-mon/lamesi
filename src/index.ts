@@ -3,6 +3,7 @@ import { LightScene } from "./scenes/lights/lights";
 import { HubScene } from "./scenes/hub/hub";
 import { DungeonScene } from "./scenes/dungeon/dungeon";
 import { gameWidth, gameHeight } from "./scenes/common";
+import { MenuScene } from "./scenes/menu";
 
 var config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -17,7 +18,7 @@ var config: Phaser.Types.Core.GameConfig = {
       gravity: { y: 200 },
     },
   },
-  scene: [new HubScene(), new LightScene(), new DungeonScene()],
+  scene: new HubScene(),
 };
 
 new Phaser.Game(config);

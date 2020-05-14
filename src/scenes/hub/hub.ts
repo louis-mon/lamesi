@@ -1,8 +1,9 @@
 import * as Phaser from "phaser";
-import { gameZoneHelpers, gameRatio, gameWidth, gameHeight } from "../common";
+import { gameRatio, gameWidth, gameHeight } from "../common";
 import { eventsHelpers } from "../global-events";
 import { LightScene } from "../lights/lights";
 import { DungeonScene } from "../dungeon/dungeon";
+import { MenuScene } from "../menu";
 
 export class HubScene extends Phaser.Scene {
   constructor() {
@@ -26,7 +27,7 @@ export class HubScene extends Phaser.Scene {
       },
     ];
     scenes.forEach((sceneDef) => {
-      const scene = this.scene.get(sceneDef.key);
+      const scene = this.scene.add(sceneDef.key, sceneDef.create, false);
       this.scene.launch(sceneDef.key);
       scene.events.on("ready", () => {
         const width = 250;
@@ -34,6 +35,9 @@ export class HubScene extends Phaser.Scene {
         const height = width * gameRatio;
         const mainCam = scene.cameras.main;
         mainCam.setViewport(x, y, width, height);
+        mainCam.zoom = width / gameWidth;
+        mainCam.centerOn(gameWidth / 2, gameHeight / 2);
+        mainCam.inputEnabled = false;
         const rect = this.add.rectangle(x, y, width, height).setOrigin(0, 0);
         rect.setStrokeStyle(3, 0xff0000);
         rect.setInteractive();
@@ -52,19 +56,22 @@ export class HubScene extends Phaser.Scene {
             duration: 500,
             onComplete: () => {
               mainCam.inputEnabled = true;
-              gameZoneHelpers.createZone(scene);
+              this.scene.add("menu", new MenuScene(), true, {
+                currentScene: scene.scene.key,
+              });
             },
           });
           scenes.forEach((otherScene) => {
             if (otherScene === sceneDef) return;
-            this.scene.stop(otherScene.key);
+            this.scene.remove(otherScene.key);
           });
           this.scene.setVisible(false);
+          this.scene.remove("menu");
         });
-        mainCam.zoom = width / gameWidth;
-        mainCam.centerOn(gameWidth / 2, gameHeight / 2);
-        mainCam.inputEnabled = false;
       });
+    });
+    this.scene.add("menu", new MenuScene(), true, {
+      currentScene: this.scene.key,
     });
   }
 }
