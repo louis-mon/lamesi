@@ -2,10 +2,12 @@ import * as Phaser from "phaser";
 import _ from "lodash";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
+import * as def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt, vecToXY } from "/src/helpers/phaser";
-import { makeDataHelper } from "/src/helpers/data";
+import { switchCrystalFactory } from "./npc";
+import { makeMenu } from "./menu";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const wpHelper = Wp.wpSceneHelper(scene);
@@ -15,8 +17,8 @@ const createPlayer = (scene: Phaser.Scene) => {
     Wp.wpPos(initialWp),
     "npc",
     "player-still",
-  );
-  const currentPosition = makeDataHelper<Wp.WpId>(player, "current-pos");
+  ).setName(def.player.key);
+  const currentPosition = def.player.data.currentPos(scene);
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosition.setValue(wp);
   };
@@ -71,12 +73,22 @@ export class DungeonScene extends Phaser.Scene {
 
   preload() {
     this.load.atlas("npc");
+    this.load.atlas("menu");
   }
 
   create() {
     const wpHelper = Wp.wpSceneHelper(this);
     const playerSetup = createPlayer(this);
+    const switchFactory = switchCrystalFactory(this);
+    makeMenu(this);
+
     wpHelper.placeWps(playerSetup);
     playerSetup.initPlayer();
+
+    switchFactory({
+      wp: { room: 4, x: 4, y: 3 },
+      offset: new Vector2(20, 0),
+      action: Flow.call(() => console.log("bla")),
+    });
   }
 }

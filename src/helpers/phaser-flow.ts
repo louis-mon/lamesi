@@ -4,21 +4,17 @@ import * as flow from "./flow";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
-export type PhaserNode<Input = unknown, Output = unknown> = flow.ActionNode<
-  Context,
-  Input,
-  Output
->;
+export type PhaserNode = flow.ActionNode<Context>;
 
-export const tween = <Input>(
-  makeConfig: (input: Input) => Phaser.Types.Tweens.TweenBuilderConfig,
-): PhaserNode<Input, Input> => (scene) => (params) => {
-  const config = makeConfig(params.input);
+export const tween = (
+  makeConfig: () => Phaser.Types.Tweens.TweenBuilderConfig,
+): PhaserNode => (scene) => (params) => {
+  const config = makeConfig();
   const tween = scene.tweens.add({
     ...config,
     onComplete: (t, targets, param) => {
       if (config.onComplete) config.onComplete(t, targets, param);
-      params.onComplete(params.input);
+      params.onComplete();
     },
   });
   return {
@@ -26,12 +22,13 @@ export const tween = <Input>(
   };
 };
 
-export const waitForEvent = (
-  emitter: Phaser.Events.EventEmitter,
-  event: string,
-): PhaserNode => (scene) => (p) => {
-  emitter.once(event, p.onComplete);
+export const waitForEvent = (params: {
+  emitter: (scene: Phaser.Scene) => Phaser.Events.EventEmitter;
+  event: string;
+}): PhaserNode => (scene) => (p) => {
+  const emitter = params.emitter(scene);
+  emitter.once(params.event, p.onComplete);
   return {
-    abort: () => emitter.off(event, p.onComplete),
+    abort: () => emitter.off(params.event, p.onComplete),
   };
 };

@@ -2,6 +2,8 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Graph from "/src/helpers/math/graph";
 import * as Geom from "/src/helpers/math/geom";
+import { WpId } from "./definitions";
+export { WpId } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
@@ -9,7 +11,6 @@ import { DataHelper, makeDataHelper } from "/src/helpers/data";
 import { menuZoneSize } from "../menu";
 
 export type WpDef = { room: number; x: number; y: number };
-export type WpId = string & { __wpIdTag: null };
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
   declareWpId(`wp-${room}-${x}-${y}`);
@@ -68,7 +69,7 @@ const initialWpGraph = (): WpGraph => {
 };
 
 export const wpSceneHelper = (scene: Phaser.Scene) => {
-  const isActive = makeDataHelper<boolean>(scene, "wp-is-active");
+  const isActiveData = makeDataHelper<boolean>(scene, "wp-is-active");
   const wpGraph = makeDataHelper<WpGraph>(scene, "wp-graph");
 
   const wpHelper = (wp: WpDef) => {
@@ -87,7 +88,7 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
     startMoveAction,
     endMoveAction,
   }: PlaceWpParams) => {
-    isActive.setValue(false);
+    isActiveData.setValue(false);
     wpGraph.setValue(initialWpGraph());
 
     const performBfs = () =>
@@ -96,16 +97,8 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
         startPoint: currentPosition.value(),
       });
 
-    isActive.onChange(({ value }) => {
-      const toggleWp = ({
-        wpDef,
-        scale,
-        isActive,
-      }: {
-        scale: number;
-        isActive: boolean;
-        wpDef: WpDef;
-      }) => {
+    isActiveData.onChange((p, isActive) => {
+      const toggleWp = ({ wpDef, scale }: { scale: number; wpDef: WpDef }) => {
         const helper = wpHelper(wpDef);
         Flow.execute(
           scene,
@@ -119,18 +112,17 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
           ),
         );
       };
-      if (value) {
+      if (isActive) {
         const allowedWp = performBfs();
         _.keys(allowedWp.paths).forEach((wpId) => {
           toggleWp({
             wpDef: getWpDef(declareWpId(wpId)),
-            isActive: true,
             scale: 1,
           });
         });
       } else {
         allWp.forEach((wpDef) => {
-          toggleWp({ wpDef, isActive: false, scale: disabledScale });
+          toggleWp({ wpDef, scale: disabledScale });
         });
       }
     });
@@ -143,8 +135,9 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
       wp.setInteractive();
       wp.input.hitArea = new Phaser.Geom.Rectangle(-25, -25, 70, 70);
       wp.on("pointerdown", () => {
-        if (!(isActive.value() && wpHelper(wpDef).getActive().value())) return;
-        isActive.setValue(false);
+        if (!(isActiveData.value() && wpHelper(wpDef).getActive().value()))
+          return;
+        isActiveData.setValue(false);
         const wpsPath = Graph.extractPath(performBfs(), wpId);
         Flow.execute(
           scene,
@@ -153,7 +146,7 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
             ...wpsPath.map(moveAction),
             endMoveAction,
             Flow.call(() => {
-              isActive.setValue(true);
+              isActiveData.setValue(true);
             }),
           ),
         );
@@ -163,6 +156,6 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
 
   return {
     placeWps,
-    isActive,
+    isActive: isActiveData,
   };
 };

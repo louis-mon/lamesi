@@ -1,58 +1,51 @@
 import { Maybe } from "purify-ts";
+import { Observable } from "rxjs";
 
-export type ActionRunParams<Input, Output> = {
-  input: Input;
+export type ActionRunParams = {
   onAbort: () => void;
-  onComplete: (o: Output) => void;
+  onComplete: () => void;
 };
-export type ActionNode<C, Input, Output> = (
-  context: C,
-) => (
-  params: ActionRunParams<Input, Output>,
-) => {
+type ActionExecution = {
   abort?: () => void;
 };
+export type ActionNode<C> = (
+  context: C,
+) => (params: ActionRunParams) => ActionExecution;
 
-export function sequence<C, I1, I2, I3>(
-  a1: ActionNode<C, I1, I2>,
-  a2: ActionNode<C, I2, I3>,
-): ActionNode<C, I1, I3>;
-
-export function sequence<C>(
-  ...actions: ActionNode<C, unknown, unknown>[]
-): ActionNode<C, unknown, unknown>;
+const tryToAbortAction = (action: ActionExecution) =>
+  Maybe.fromNullable(action.abort).map((f) => f());
 
 export function sequence<C>(
-  ...actions: ActionNode<C, unknown, unknown>[]
-): ActionNode<C, unknown, unknown> {
-  if (actions.length === 2) sequence2(actions[0], actions[1]);
+  a1: ActionNode<C>,
+  a2: ActionNode<C>,
+): ActionNode<C>;
+
+export function sequence<C>(...actions: ActionNode<C>[]): ActionNode<C>;
+
+export function sequence<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   return actions.reduce(sequence2);
 }
 
-const sequence2 = <C, I1, I2, I3>(
-  a1: ActionNode<C, I1, I2>,
-  a2: ActionNode<C, I2, I3>,
-): ActionNode<C, I1, I3> => (c) => (iParams) => {
+const sequence2 = <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> => (
+  c,
+) => (iParams) => {
   let aborted = false;
-  const combined = a1(c)({
+  let currentAction = a1(c)({
     ...iParams,
-    onComplete: (output) => {
+    onComplete: () => {
       if (aborted) return;
-      currentAction = a2(c)({ ...iParams, input: output });
+      currentAction = a2(c)({ ...iParams });
     },
   });
-  let currentAction = combined;
   return {
     abort: () => {
       aborted = true;
-      return Maybe.fromNullable(currentAction.abort).map((f) => f());
+      return tryToAbortAction(currentAction);
     },
   };
 };
 
-export function parallel<C>(
-  ...actions: ActionNode<C, unknown, unknown>[]
-): ActionNode<C, unknown, unknown> {
+export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   return (c) => (p) => {
     let nbDone = 0;
     actions.forEach((action, i) => {
@@ -61,7 +54,7 @@ export function parallel<C>(
         onComplete: () => {
           ++nbDone;
           if (nbDone === actions.length) {
-            p.onComplete(undefined);
+            p.onComplete();
           }
         },
       });
@@ -70,16 +63,85 @@ export function parallel<C>(
   };
 }
 
-export const call = <C, Input, Output>(
-  f: (p: { context: C; input: Input }) => Output,
-): ActionNode<C, Input, Output> => (context) => (p) => {
-  p.onComplete(f({ context, ...p }));
+/**
+ * Ensapsulate a simple function call
+ */
+export const call = <C>(f: (context: C) => void): ActionNode<C> => (
+  context,
+) => (p) => {
+  f(context);
+  p.onComplete();
   return {};
 };
 
-export const execute = <C>(context: C, node: ActionNode<C, unknown, unknown>) =>
+/**
+ * Execute a cleanup when the given action is aborted
+ */
+export const withCleanup = <C>(params: {
+  action: ActionNode<C>;
+  cleanup: (context: C) => void;
+}): ActionNode<C> => (context) => (p) => {
+  const action = params.action(context)(p);
+  return {
+    abort: () => {
+      tryToAbortAction(action);
+      params.cleanup(context);
+    },
+  };
+};
+
+/**
+ * Run the action whenever some condition is true
+ * Abort when the condition switches from true to false
+ */
+export const withSentinel = <C>(params: {
+  sentinel: (context: C) => Observable<boolean>;
+  action: ActionNode<C>;
+}): ActionNode<C> => (context) => (p) => {
+  let action: ActionExecution | null = null;
+  const subscription = params.sentinel(context).subscribe((value) => {
+    if (value && !action) {
+      action = params.action(context)({
+        ...p,
+        onAbort: () => {
+          subscription.unsubscribe();
+          p.onAbort();
+        },
+        onComplete: () => {
+          action = null;
+        },
+      });
+    } else if (!value && action) {
+      tryToAbortAction(action);
+      action = null;
+    }
+  });
+  return {
+    abort: () => {
+      subscription.unsubscribe();
+      action && tryToAbortAction(action);
+    },
+  };
+};
+
+export const loop = <C>(action: ActionNode<C>): ActionNode<C> => (context) => (
+  p,
+) => {
+  const rec = () =>
+    action(context)({
+      onAbort: p.onAbort,
+      onComplete: () => {
+        currentAction = rec();
+      },
+    });
+  let currentAction = rec();
+  return {
+    abort: () => tryToAbortAction(currentAction),
+  };
+};
+
+export const execute = <C>(context: C, node: ActionNode<C>) =>
   node(context)({
-    input: undefined,
     onAbort: () => {},
     onComplete: () => {},
   });

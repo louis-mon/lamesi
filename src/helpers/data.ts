@@ -1,14 +1,12 @@
 import * as Phaser from "phaser";
+import { Observable, fromEventPattern } from "rxjs";
 
 export type DataHelper<T, P = unknown> = {
   setValue(value: T): void;
   value(): T;
-  onChange(
-    f: (params: { parent: P; value: T; previousValue: T }) => void,
-  ): void;
-  onChangeOnce(
-    f: (params: { parent: P; value: T; previousValue: T }) => void,
-  ): void;
+  onChange(f: (parent: P, value: T, previousValue: T) => void): void;
+  onChangeOnce(f: (parent: P, value: T, previousValue: T) => void): void;
+  observe(): Observable<T>;
 };
 
 const genericDataHelper = <T, P>(
@@ -20,11 +18,17 @@ const genericDataHelper = <T, P>(
   value: () => dataManager.get(key),
   onChange: (f) =>
     emitter.on(`changedata-${key}`, (parent: P, value: T, previousValue: T) =>
-      f({ parent, value, previousValue }),
+      f(parent, value, previousValue),
     ),
   onChangeOnce: (f) =>
     emitter.once(`changedata-${key}`, (parent: P, value: T, previousValue: T) =>
-      f({ parent, value, previousValue }),
+      f(parent, value, previousValue),
+    ),
+  observe: () =>
+    fromEventPattern(
+      (handler) => emitter.on(`changedata-${key}`, handler),
+      (handler) => emitter.off(`changedata-${key}`, handler),
+      (p, value) => value,
     ),
 });
 
