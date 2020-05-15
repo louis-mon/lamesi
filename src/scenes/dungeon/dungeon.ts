@@ -8,6 +8,7 @@ import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt, vecToXY } from "/src/helpers/phaser";
 import { switchCrystalFactory } from "./npc";
 import { makeMenu } from "./menu";
+import { subWordGameBeginEvent } from "../common";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const wpHelper = Wp.wpSceneHelper(scene);
@@ -80,7 +81,6 @@ export class DungeonScene extends Phaser.Scene {
     const wpHelper = Wp.wpSceneHelper(this);
     const playerSetup = createPlayer(this);
     const switchFactory = switchCrystalFactory(this);
-    makeMenu(this);
 
     wpHelper.placeWps(playerSetup);
     playerSetup.initPlayer();
@@ -89,6 +89,10 @@ export class DungeonScene extends Phaser.Scene {
       wp: { room: 4, x: 4, y: 3 },
       offset: new Vector2(20, 0),
       action: Flow.call(() => console.log("bla")),
+    });
+
+    this.events.once(subWordGameBeginEvent, () => {
+      makeMenu(this);
     });
   }
 }

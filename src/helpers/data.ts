@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import { Observable, fromEventPattern } from "rxjs";
+import _ from "lodash";
 
 export type DataHelper<T, P = unknown> = {
   setValue(value: T): void;
@@ -50,3 +51,15 @@ export function makeDataHelper<T>(o: any, key: string) {
     return genericDataHelper(o.events, o.data, key);
   }
 }
+
+/**
+ * Defined keys and associated helpers to shared typed declarations
+ */
+export const defineGoKeys = (key: string) => <Data extends object>(
+  data: Data,
+) => ({
+  key,
+  data: _.mapValues(data, (value, dataKey) => (scene: Phaser.Scene) =>
+    makeDataHelper(scene.children.getByName(key)!, dataKey),
+  ) as { [key in keyof Data]: (scene: Phaser.Scene) => DataHelper<Data[key]> },
+});

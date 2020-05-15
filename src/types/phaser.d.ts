@@ -10,18 +10,20 @@ declare module "phaser" {
         pointer: Pointer,
         localX: number,
         localY: number,
-        event: P.Types.Input.EventData
+        event: P.Types.Input.EventData,
       ) => void;
     };
+
     namespace GameObjects {
       export interface GameObject {
         on<E extends keyof EventGameObjectMapping, T extends GameObject>(
           this: T,
           e: E,
-          f: EventGameObjectMapping[E]
+          f: EventGameObjectMapping[E],
         ): T;
       }
     }
   }
+  // @ts-ignore
   export = Phaser;
 }

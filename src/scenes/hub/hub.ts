@@ -56,8 +56,9 @@ export class HubScene extends Phaser.Scene {
             duration: 500,
             onComplete: () => {
               mainCam.inputEnabled = true;
-              this.scene.add("menu", new MenuScene(), true, {
-                currentScene: scene.scene.key,
+              const menuScene = this.scene.add("menu", MenuScene, true, {
+                currentScene: scene,
+                parentScene: this,
               });
             },
           });
@@ -71,7 +72,7 @@ export class HubScene extends Phaser.Scene {
       });
     });
     this.scene.add("menu", new MenuScene(), true, {
-      currentScene: this.scene.key,
+      currentScene: this,
     });
   }
 }

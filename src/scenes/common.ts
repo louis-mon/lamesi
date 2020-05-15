@@ -16,3 +16,5 @@ export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
     )}, ${Math.round(obj.displayHeight)}`;
   });
 };
+
+export const subWordGameBeginEvent = "subWordGameBeginEvent";

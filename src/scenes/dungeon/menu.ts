@@ -10,12 +10,12 @@ const actionButtonName = "action-button";
 export const makeMenu = (scene: Phaser.Scene) => {
   const menuScene = menuHelpers.getMenuScene(scene);
   const skillButton = menuScene
-    .addButton(({ x, y, size }) =>
+    .addRightButton(({ x, y }) =>
       scene.add.sprite(x, y, "menu", actionEmptyFrame),
     )
     .setName(skillButtonName);
   const actionButton = menuScene
-    .addButton(({ x, y, size }) =>
+    .addRightButton(({ x, y }) =>
       scene.add.sprite(x, y, "menu", actionEmptyFrame),
     )
     .setName(actionButtonName);
