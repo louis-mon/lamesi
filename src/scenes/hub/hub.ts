@@ -18,21 +18,27 @@ export class HubScene extends Phaser.Scene {
       {
         create: () => new LightScene(),
         key: "lights",
-        position: new Phaser.Math.Vector2(100, 100),
+        position: new Phaser.Math.Vector2(300, 200),
       },
       {
         create: () => new DungeonScene(),
         key: "dungeon",
-        position: new Phaser.Math.Vector2(400, 100),
+        position: new Phaser.Math.Vector2(1200, 200),
       },
     ];
-    scenes.forEach((sceneDef) => {
+    scenes.forEach((sceneDef, i) => {
       const scene = this.scene.add(sceneDef.key, sceneDef.create, false);
       this.scene.launch(sceneDef.key);
+      const bigRect = new Phaser.Geom.Rectangle(0, 0, gameWidth, gameHeight);
       scene.events.on("ready", () => {
-        const width = 250;
-        const { x, y } = sceneDef.position;
+        const width = 700;
         const height = width * gameRatio;
+        const { x, y } = new Phaser.Math.Vector2(
+          Phaser.Geom.Point.GetCentroid([
+            bigRect.getPoint(i / scenes.length),
+            new Phaser.Math.Vector2(gameWidth / 2, gameHeight / 2),
+          ]),
+        ).subtract(new Phaser.Math.Vector2(width, height).scale(0.5));
         const mainCam = scene.cameras.main;
         mainCam.setViewport(x, y, width, height);
         mainCam.zoom = width / gameWidth;
@@ -56,7 +62,7 @@ export class HubScene extends Phaser.Scene {
             duration: 500,
             onComplete: () => {
               mainCam.inputEnabled = true;
-              const menuScene = this.scene.add("menu", MenuScene, true, {
+              this.scene.add("menu", MenuScene, true, {
                 currentScene: scene,
                 parentScene: this,
               });
