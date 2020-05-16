@@ -9,6 +9,7 @@ import { createSpriteAt, vecToXY } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent } from "../common";
+import { first, map } from "rxjs/operators";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const wpHelper = Wp.wpSceneHelper(scene);
@@ -42,15 +43,17 @@ const createPlayer = (scene: Phaser.Scene) => {
     },
     moveAction: (wpId: Wp.WpId) => {
       const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
-      return Flow.sequence(
-        Flow.tween({
-          targets: player,
-          props: vecToXY(wpPos),
-          duration:
-            wpPos.distance(Wp.wpPos(Wp.getWpDef(currentPosition.value()))) /
-            playerSpeed,
-        }),
-        Flow.call(() => setPlayerWp(wpId)),
+      return Flow.lazy(() =>
+        Flow.sequence(
+          Flow.tween({
+            targets: player,
+            props: vecToXY(wpPos),
+            duration:
+              wpPos.distance(Wp.wpPos(Wp.getWpDef(currentPosition.value()))) /
+              playerSpeed,
+          }),
+          Flow.call(() => setPlayerWp(wpId)),
+        ),
       );
     },
     startMoveAction: Flow.call(() => player.anims.play("walk")),
@@ -58,7 +61,6 @@ const createPlayer = (scene: Phaser.Scene) => {
       player.anims.stop();
       player.setFrame("player-still");
     }),
-    currentPosition,
   };
 };
 
@@ -81,6 +83,7 @@ export class DungeonScene extends Phaser.Scene {
     const wpHelper = Wp.wpSceneHelper(this);
     const playerSetup = createPlayer(this);
     const switchFactory = Npc.switchCrystalFactory(this);
+    const doorFactory = Npc.doorFactory(this);
 
     Npc.createNpcAnimations(this);
     wpHelper.placeWps(playerSetup);
@@ -91,7 +94,22 @@ export class DungeonScene extends Phaser.Scene {
       offset: new Vector2(20, 0),
       ref: def.switchRoom4DoorRight,
     });
+    doorFactory();
 
+    Flow.run(
+      this,
+      Flow.parallel(
+        Flow.fromObservable(
+          def.switchRoom4DoorRight.data
+            .state(this)
+            .observe()
+            .pipe(
+              first((x) => x),
+              map(() => Npc.openDoor()),
+            ),
+        ),
+      ),
+    );
     this.events.once(subWordGameBeginEvent, () => {
       makeMenu(this);
     });

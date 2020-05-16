@@ -17,18 +17,18 @@ export const tween = (
       params.onComplete();
     },
   });
-  return {
+  params.onStart({
     abort: () => tween.stop(),
-  };
+  });
 };
 
 export const waitForEvent = (params: {
   emitter: Phaser.Events.EventEmitter;
   event: string;
-}): PhaserNode => (scene) => (p) => {
+}): PhaserNode => () => (p) => {
   const emitter = params.emitter;
   emitter.once(params.event, p.onComplete);
-  return {
+  p.onStart({
     abort: () => emitter.off(params.event, p.onComplete),
-  };
+  });
 };

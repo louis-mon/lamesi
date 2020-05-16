@@ -37,7 +37,7 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
     ).setName(ref.key);
     const stateData = ref.data.state(scene);
     stateData.setValue(false);
-    Flow.execute(
+    Flow.run(
       scene,
       Flow.withSentinel({
         sentinel: combineLatest([
@@ -65,5 +65,45 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
         }),
       }),
     );
+  };
+};
+
+const doorDef = {
+  wp1: { room: 4, x: 4, y: 2 },
+  wp2: { room: 5, x: 0, y: 2 },
+  key: "door-4-5",
+};
+
+export const openDoor = (): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    const door = scene.children.getByName(
+      doorDef.key,
+    ) as Phaser.GameObjects.Sprite;
+    return Flow.sequence(
+      Flow.tween({
+        targets: door,
+        props: { y: door.y - 100 },
+      }),
+      Flow.call(() =>
+        Wp.openGraphLink(
+          scene,
+          Wp.getWpId(doorDef.wp1),
+          Wp.getWpId(doorDef.wp2),
+        ),
+      ),
+    );
+  });
+
+export const doorFactory = (scene: Phaser.Scene) => {
+  return () => {
+    const wp1 = Wp.wpPos(doorDef.wp1);
+    const wp2 = Wp.wpPos(doorDef.wp2);
+    const middlePos = wp1.clone().add(wp2).scale(0.5);
+    const door1 = createSpriteAt(
+      scene,
+      middlePos,
+      "npc",
+      "door-vertical",
+    ).setName(doorDef.key);
   };
 };

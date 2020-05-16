@@ -33,7 +33,7 @@ export const bindActionButton = (p: {
       Flow.call((scene) => getActionButton(scene).setFrame(p.frameKey)),
       Flow.loop(
         Flow.sequence(
-          Flow.withContext((scene) =>
+          Flow.lazy((scene) =>
             Flow.waitForEvent({
               emitter: getActionButton(scene),
               event: "pointerdown",
