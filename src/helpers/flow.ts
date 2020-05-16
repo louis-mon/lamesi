@@ -32,13 +32,12 @@ const sequence2 = <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> => (
 ) => (iParams) => {
   let aborted = false;
   let secondAction: ActionExecution | null = null;
-  const onComplete = () => {
-    if (aborted) return;
-    secondAction = a2(c)({ ...iParams });
-  };
   const firstAction = a1(c)({
     ...iParams,
-    onComplete,
+    onComplete: () => {
+      if (aborted) return;
+      secondAction = a2(c)({ ...iParams });
+    },
   });
   return {
     abort: () => {
