@@ -2,17 +2,16 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Graph from "/src/helpers/math/graph";
 import * as Geom from "/src/helpers/math/geom";
-import { WpId, player } from "./definitions";
-export { WpId } from "./definitions";
+import { WpId, WpDef, player } from "./definitions";
+export { WpId, WpDef } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
-import { DataHelper, makeDataHelper } from "/src/helpers/data";
+import { makeDataHelper } from "/src/helpers/data";
 import { menuZoneSize } from "../menu";
 import { combineLatest } from "rxjs";
 import { auditTime, map } from "rxjs/operators";
 
-export type WpDef = { room: number; x: number; y: number };
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
   declareWpId(`wp-${room}-${x}-${y}`);
@@ -122,12 +121,12 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
       scene,
       Flow.fromObservable(
         combineLatest([
+          isActiveData.observe(),
           wpGraphData.observe(),
           currentPosData.observe(),
-          isActiveData.observe(),
         ]).pipe(
           auditTime(50),
-          map(([, , isActive]) => {
+          map(([isActive]) => {
             const toggleWp = ({
               wpDef,
               scale,

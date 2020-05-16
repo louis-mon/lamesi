@@ -1,10 +1,10 @@
 import * as Phaser from "phaser";
 
-import * as flow from "./flow";
+import * as Flow from "./flow";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
-export type PhaserNode = flow.ActionNode<Context>;
+export type PhaserNode = Flow.ActionNode<Context>;
 
 export const tween = (
   makeConfig: Phaser.Types.Tweens.TweenBuilderConfig,
@@ -30,5 +30,14 @@ export const waitForEvent = (params: {
   emitter.once(params.event, p.onComplete);
   p.onStart({
     abort: () => emitter.off(params.event, p.onComplete),
+  });
+};
+
+export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
+  const timer = scene.time.delayedCall(ms, p.onComplete);
+  p.onStart({
+    abort: () => {
+      timer.remove();
+    },
   });
 };

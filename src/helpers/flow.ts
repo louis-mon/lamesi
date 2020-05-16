@@ -1,7 +1,7 @@
 import { Maybe } from "purify-ts";
 import { Observable, of, empty } from "rxjs";
 import _ from "lodash";
-import { startWith, pairwise, map, flatMap } from "rxjs/operators";
+import { startWith, pairwise, map, flatMap, first } from "rxjs/operators";
 
 type ActionExecution = {
   abort?: () => void;
@@ -142,11 +142,13 @@ export const fromObservable = <C>(
 
 /**
  * Run the action whenever some condition is true
- * Abort when the condition switches from true to false
+ * Abort when the condition switches from true to false and run whenFalse
+ * Continue to run as long as the observable emits
  */
 export const withSentinel = <C>(params: {
   sentinel: Observable<boolean>;
   action: ActionNode<C>;
+  whenFalse?: ActionNode<C>;
 }): ActionNode<C> =>
   fromObservable(
     params.sentinel.pipe(
@@ -154,11 +156,30 @@ export const withSentinel = <C>(params: {
       pairwise(),
       flatMap(([previous, value]) => {
         if (value && !previous) return of(params.action);
-        if (!value && previous) return of(noop);
+        if (!value && previous) return of(params.whenFalse || noop);
         return empty();
       }),
     ),
   );
+
+/**
+ * Run the action when the condition is true and complete after
+ */
+export const when = <C>(params: {
+  condition: Observable<boolean>;
+  action: ActionNode<C>;
+}): ActionNode<C> =>
+  fromObservable(
+    params.condition.pipe(
+      first((x) => x),
+      map(() => params.action),
+    ),
+  );
+
+export const whenLoop = <C>(params: {
+  condition: Observable<boolean>;
+  action: ActionNode<C>;
+}): ActionNode<C> => loop(when(params));
 
 /**
  * Execute sequentially the same flow again and again

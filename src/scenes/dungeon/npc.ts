@@ -1,9 +1,8 @@
 import * as Phaser from "phaser";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import { map, tap } from "rxjs/operators";
-
-import * as def from "./definitions";
+import { map } from "rxjs/operators";
+import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt } from "/src/helpers/phaser";
@@ -22,48 +21,47 @@ export const createNpcAnimations = (scene: Phaser.Scene) => {
   });
 };
 
-type SwitchCrystalFactoryParams = {
-  wp: Wp.WpDef;
-  offset: Vector2;
-  ref: def.SwitchCrystalDef;
-};
 export const switchCrystalFactory = (scene: Phaser.Scene) => {
-  return ({ wp, offset, ref }: SwitchCrystalFactoryParams) => {
+  return (def: Def.SwitchCrystalDef) => {
     const obj = createSpriteAt(
       scene,
-      Wp.wpPos(wp).add(offset),
+      Wp.wpPos(def.wp).add(def.offset),
       "npc",
       "switch-0",
-    ).setName(ref.key);
-    const stateData = ref.data.state(scene);
+    ).setName(def.key);
+    const stateData = def.data.state(scene);
     stateData.setValue(false);
     Flow.run(
       scene,
-      Flow.withSentinel({
-        sentinel: combineLatest([
-          def.player.data
-            .currentPos(scene)
-            .observe()
-            .pipe(map((pos) => pos === Wp.getWpId(wp))),
-          stateData.observe(),
-        ]).pipe(
-          map(
-            ([isPlayerAtPos, isSwitchActive]) =>
-              isPlayerAtPos && !isSwitchActive,
+      Flow.parallel(
+        Flow.withSentinel({
+          sentinel: combineLatest([
+            Def.player.data.currentPos(scene).observe(),
+            stateData.observe(),
+          ]).pipe(
+            map(
+              ([pos, isSwitchActive]) =>
+                pos === Wp.getWpId(def.wp) && !isSwitchActive,
+            ),
           ),
-        ),
-        action: bindActionButton({
-          action: Flow.sequence(
-            Flow.call(() => obj.anims.play("switch")),
-            Flow.waitForEvent({
-              emitter: obj,
-              event: "animationcomplete",
-            }),
-            Flow.call(() => stateData.updateValue((v) => !v)),
-          ),
-          frameKey: "action-attack",
+          action: bindActionButton({
+            action: Flow.sequence(
+              Flow.call(() => obj.anims.play("switch")),
+              Flow.waitForEvent({
+                emitter: obj,
+                event: "animationcomplete",
+              }),
+              Flow.call(() => stateData.setValue(true)),
+            ),
+            frameKey: "action-attack",
+          }),
         }),
-      }),
+        Flow.withSentinel({
+          sentinel: stateData.observe(),
+          whenFalse: Flow.call(() => obj.anims.playReverse("switch")),
+          action: Flow.noop,
+        }),
+      ),
     );
   };
 };

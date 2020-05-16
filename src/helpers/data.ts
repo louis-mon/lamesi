@@ -58,10 +58,11 @@ export function makeDataHelper<T>(o: any, key: string) {
 /**
  * Defined keys and associated helpers to shared typed declarations
  */
-export const defineGoKeys = (key: string) => <Data extends object>(
-  data: Data,
-) => ({
+export const defineGoKeys = <O extends Phaser.GameObjects.GameObject>(
+  key: string,
+) => <Data extends object>(data: Data) => ({
   key,
+  getObj: (scene: Phaser.Scene) => scene.children.getByName(key)! as O,
   data: _.mapValues(data, (value, dataKey) => (scene: Phaser.Scene) =>
     makeDataHelper(scene.children.getByName(key)!, dataKey),
   ) as { [key in keyof Data]: (scene: Phaser.Scene) => DataHelper<Data[key]> },

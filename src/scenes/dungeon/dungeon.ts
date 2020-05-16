@@ -5,15 +5,18 @@ import * as Flow from "/src/helpers/phaser-flow";
 import * as def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import { createSpriteAt, vecToXY } from "/src/helpers/phaser";
+import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent } from "../common";
-import { first, map } from "rxjs/operators";
+import { first, map, startWith } from "rxjs/operators";
+import { defineGoKeys } from "/src/helpers/data";
+import { annotate } from "/src/helpers/typing";
+import { number } from "purify-ts";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const wpHelper = Wp.wpSceneHelper(scene);
-  const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
+  const initialWp: Wp.WpDef = { room: 5, x: 0, y: 3 };
   const player = createSpriteAt(
     scene,
     Wp.wpPos(initialWp),
@@ -24,7 +27,7 @@ const createPlayer = (scene: Phaser.Scene) => {
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosition.setValue(wp);
   };
-  const playerSpeed = 0.3;
+  const playerSpeed = 0.5;
   scene.anims.create({
     key: "walk",
     repeat: -1,
@@ -64,6 +67,88 @@ const createPlayer = (scene: Phaser.Scene) => {
   };
 };
 
+const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
+  const mechanisms = [
+    {
+      switchDef: def.switches.room5Rotate1,
+    },
+    {
+      switchDef: def.switches.room5Rotate2,
+    },
+    {
+      switchDef: def.switches.room5Rotate3,
+    },
+  ];
+  const getRotateMechDef = (switchKey: string) =>
+    defineGoKeys<Phaser.GameObjects.Image>(`${switchKey}-rotate-mech`)({
+      turn: annotate<number>(),
+    });
+  const totalTurns = 6;
+  const turnAngle = 360 / totalTurns;
+  const getRotateMechAngle = (i: number) =>
+    Phaser.Math.Angle.WrapDegrees(turnAngle * i);
+  const switchFlows = mechanisms.map(({ switchDef }, i) => {
+    Npc.switchCrystalFactory(scene)(switchDef);
+    const rotateDef = getRotateMechDef(switchDef.key);
+    const rotateObj = createImageAt(
+      scene,
+      Wp.wpPos({ room: 5, x: 2, y: 2 }),
+      "npc",
+      `symbol-circle-${i + 1}`,
+    ).setName(rotateDef.key);
+    const turnData = rotateDef.data.turn(scene);
+    turnData.setValue(0);
+    const state = switchDef.data.state(scene);
+
+    const rotateTweens = (i: number) => {
+      const targetAngle = getRotateMechAngle(i);
+      const startAngle = rotateObj.angle;
+
+      const duration = 400;
+      if (startAngle <= targetAngle)
+        return Flow.tween({
+          targets: rotateObj,
+          props: {
+            angle: targetAngle,
+          },
+          duration,
+        });
+      return Flow.sequence(
+        Flow.tween({
+          targets: rotateObj,
+          props: {
+            angle: 180,
+          },
+          duration: Phaser.Math.Linear(0, 400, (180 - startAngle) / turnAngle),
+        }),
+        Flow.tween({
+          targets: rotateObj,
+          props: { angle: { getStart: () => -180, getEnd: () => targetAngle } },
+          duration: Phaser.Math.Linear(0, 400, (targetAngle + 180) / turnAngle),
+        }),
+      );
+    };
+
+    return Flow.parallel(
+      Flow.fromObservable(
+        turnData.observe().pipe(
+          map((turn) =>
+            Flow.sequence(
+              rotateTweens(turn),
+              Flow.call(() => state.setValue(false)),
+            ),
+          ),
+        ),
+      ),
+      Flow.whenLoop({
+        condition: state.observe(),
+        action: Flow.call(() => turnData.updateValue((v) => v + 1)),
+      }),
+    );
+  });
+  return Flow.parallel(...switchFlows);
+};
+
 export class DungeonScene extends Phaser.Scene {
   constructor() {
     super({
@@ -89,25 +174,17 @@ export class DungeonScene extends Phaser.Scene {
     wpHelper.placeWps(playerSetup);
     playerSetup.initPlayer();
 
-    switchFactory({
-      wp: { room: 4, x: 2, y: 3 },
-      offset: new Vector2(20, 0),
-      ref: def.switchRoom4DoorRight,
-    });
+    switchFactory(def.switches.room4ForRoom5Door);
     doorFactory();
 
     Flow.run(
       this,
       Flow.parallel(
-        Flow.fromObservable(
-          def.switchRoom4DoorRight.data
-            .state(this)
-            .observe()
-            .pipe(
-              first((x) => x),
-              map(() => Npc.openDoor()),
-            ),
-        ),
+        Flow.when({
+          condition: def.switches.room4ForRoom5Door.data.state(this).observe(),
+          action: Npc.openDoor(),
+        }),
+        linkSwitchWithCircleSymbol(this),
       ),
     );
     this.events.once(subWordGameBeginEvent, () => {
