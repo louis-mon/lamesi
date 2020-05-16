@@ -7,9 +7,9 @@ export type Context = Phaser.Scene;
 export type PhaserNode = flow.ActionNode<Context>;
 
 export const tween = (
-  makeConfig: () => Phaser.Types.Tweens.TweenBuilderConfig,
+  makeConfig: Phaser.Types.Tweens.TweenBuilderConfig,
 ): PhaserNode => (scene) => (params) => {
-  const config = makeConfig();
+  const config = makeConfig;
   const tween = scene.tweens.add({
     ...config,
     onComplete: (t, targets, param) => {
@@ -23,10 +23,10 @@ export const tween = (
 };
 
 export const waitForEvent = (params: {
-  emitter: (scene: Phaser.Scene) => Phaser.Events.EventEmitter;
+  emitter: Phaser.Events.EventEmitter;
   event: string;
 }): PhaserNode => (scene) => (p) => {
-  const emitter = params.emitter(scene);
+  const emitter = params.emitter;
   emitter.once(params.event, p.onComplete);
   return {
     abort: () => emitter.off(params.event, p.onComplete),

@@ -6,7 +6,7 @@ import * as def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt, vecToXY } from "/src/helpers/phaser";
-import { switchCrystalFactory } from "./npc";
+import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent } from "../common";
 
@@ -43,13 +43,13 @@ const createPlayer = (scene: Phaser.Scene) => {
     moveAction: (wpId: Wp.WpId) => {
       const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
       return Flow.sequence(
-        Flow.tween(() => ({
+        Flow.tween({
           targets: player,
           props: vecToXY(wpPos),
           duration:
             wpPos.distance(Wp.wpPos(Wp.getWpDef(currentPosition.value()))) /
             playerSpeed,
-        })),
+        }),
         Flow.call(() => setPlayerWp(wpId)),
       );
     },
@@ -80,15 +80,16 @@ export class DungeonScene extends Phaser.Scene {
   create() {
     const wpHelper = Wp.wpSceneHelper(this);
     const playerSetup = createPlayer(this);
-    const switchFactory = switchCrystalFactory(this);
+    const switchFactory = Npc.switchCrystalFactory(this);
 
+    Npc.createNpcAnimations(this);
     wpHelper.placeWps(playerSetup);
     playerSetup.initPlayer();
 
     switchFactory({
-      wp: { room: 4, x: 4, y: 3 },
+      wp: { room: 4, x: 2, y: 3 },
       offset: new Vector2(20, 0),
-      action: Flow.call(() => console.log("bla")),
+      ref: def.switchRoom4DoorRight,
     });
 
     this.events.once(subWordGameBeginEvent, () => {

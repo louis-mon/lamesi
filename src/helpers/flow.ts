@@ -1,5 +1,6 @@
 import { Maybe } from "purify-ts";
 import { Observable } from "rxjs";
+import _ from "lodash";
 
 export type ActionRunParams = {
   onAbort: () => void;
@@ -30,17 +31,19 @@ const sequence2 = <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> => (
   c,
 ) => (iParams) => {
   let aborted = false;
-  let currentAction = a1(c)({
+  let secondAction: ActionExecution | null = null;
+  const onComplete = () => {
+    if (aborted) return;
+    secondAction = a2(c)({ ...iParams });
+  };
+  const firstAction = a1(c)({
     ...iParams,
-    onComplete: () => {
-      if (aborted) return;
-      currentAction = a2(c)({ ...iParams });
-    },
+    onComplete,
   });
   return {
     abort: () => {
       aborted = true;
-      return tryToAbortAction(currentAction);
+      return tryToAbortAction(secondAction || firstAction);
     },
   };
 };
@@ -48,7 +51,7 @@ const sequence2 = <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> => (
 export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   return (c) => (p) => {
     let nbDone = 0;
-    actions.forEach((action, i) => {
+    actions.forEach((action) => {
       action(c)({
         ...p,
         onComplete: () => {
@@ -95,11 +98,11 @@ export const withCleanup = <C>(params: {
  * Abort when the condition switches from true to false
  */
 export const withSentinel = <C>(params: {
-  sentinel: (context: C) => Observable<boolean>;
+  sentinel: Observable<boolean>;
   action: ActionNode<C>;
 }): ActionNode<C> => (context) => (p) => {
   let action: ActionExecution | null = null;
-  const subscription = params.sentinel(context).subscribe((value) => {
+  const subscription = params.sentinel.subscribe((value) => {
     if (value && !action) {
       action = params.action(context)({
         ...p,
@@ -127,18 +130,27 @@ export const withSentinel = <C>(params: {
 export const loop = <C>(action: ActionNode<C>): ActionNode<C> => (context) => (
   p,
 ) => {
+  let aborted = false;
   const rec = () =>
     action(context)({
       onAbort: p.onAbort,
       onComplete: () => {
+        if (aborted) return;
         currentAction = rec();
       },
     });
   let currentAction = rec();
   return {
-    abort: () => tryToAbortAction(currentAction),
+    abort: () => {
+      aborted = true;
+      return tryToAbortAction(currentAction);
+    },
   };
 };
+
+export const withContext = <C>(
+  action: (c: C) => ActionNode<C>,
+): ActionNode<C> => (c) => (p) => action(c)(c)(p);
 
 export const execute = <C>(context: C, node: ActionNode<C>) =>
   node(context)({

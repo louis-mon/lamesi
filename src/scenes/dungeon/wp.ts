@@ -103,11 +103,11 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
         Flow.execute(
           scene,
           Flow.sequence(
-            Flow.tween(() => ({
+            Flow.tween({
               targets: helper.getObj(),
               props: { scale },
               duration: 200,
-            })),
+            }),
             Flow.call(() => helper.getActive().setValue(isActive)),
           ),
         );
