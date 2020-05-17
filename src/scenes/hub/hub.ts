@@ -66,6 +66,7 @@ export class HubScene extends Phaser.Scene {
                 currentScene: scene,
                 parentScene: this,
               });
+              this.scene.setActive(false);
             },
           });
           scenes.forEach((otherScene) => {
