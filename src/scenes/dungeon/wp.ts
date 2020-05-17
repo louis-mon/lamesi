@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Graph from "/src/helpers/math/graph";
 import * as Geom from "/src/helpers/math/geom";
-import { WpId, WpDef, player } from "./definitions";
+import { WpId, WpDef, player, depths } from "./definitions";
 export { WpId, WpDef } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
@@ -168,7 +168,7 @@ export const wpSceneHelper = (scene: Phaser.Scene) => {
     allWp.forEach((wpDef) => {
       const wpId = getWpId(wpDef);
       const { x, y } = wpPos(wpDef);
-      const wp = scene.add.circle(x, y, 10, 0xffffff, 0.3);
+      const wp = scene.add.circle(x, y, 10, 0xffffff, 0.3).setDepth(depths.wp);
       wp.scale = disabledScale;
       wp.setName(wpId);
       wp.setInteractive();

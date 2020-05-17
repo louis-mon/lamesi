@@ -10,6 +10,7 @@ export type WpDef = { room: number; x: number; y: number };
 
 export const player = defineGoKeys("player")({
   currentPos: annotate<WpId>(),
+  isMoving: annotate<boolean>(),
 });
 
 const switchCrystalDef = (id: string) =>
@@ -37,3 +38,9 @@ export const switches = switchesFromObject({
   },
 });
 export type SwitchCrystalDef = ValueOf<typeof switches>;
+
+export const depths = {
+  carpet: 1,
+  wp: 5,
+  npc: 10,
+};

@@ -28,7 +28,9 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
       Wp.wpPos(def.wp).add(def.offset),
       "npc",
       "switch-0",
-    ).setName(def.key);
+    )
+      .setName(def.key)
+      .setDepth(Def.depths.npc);
     const stateData = def.data.state(scene);
     stateData.setValue(false);
     Flow.run(
@@ -37,11 +39,12 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
         Flow.withSentinel({
           sentinel: combineLatest([
             Def.player.data.currentPos(scene).observe(),
+            Def.player.data.isMoving(scene).observe(),
             stateData.observe(),
           ]).pipe(
             map(
-              ([pos, isSwitchActive]) =>
-                pos === Wp.getWpId(def.wp) && !isSwitchActive,
+              ([pos, isMoving, isSwitchActive]) =>
+                !isMoving && pos === Wp.getWpId(def.wp) && !isSwitchActive,
             ),
           ),
           action: bindActionButton({
@@ -97,11 +100,8 @@ export const doorFactory = (scene: Phaser.Scene) => {
     const wp1 = Wp.wpPos(doorDef.wp1);
     const wp2 = Wp.wpPos(doorDef.wp2);
     const middlePos = wp1.clone().add(wp2).scale(0.5);
-    const door1 = createSpriteAt(
-      scene,
-      middlePos,
-      "npc",
-      "door-vertical",
-    ).setName(doorDef.key);
+    createSpriteAt(scene, middlePos, "npc", "door-vertical")
+      .setName(doorDef.key)
+      .setDepth(Def.depths.npc);
   };
 };
