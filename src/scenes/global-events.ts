@@ -1,12 +1,6 @@
 import _ from "lodash";
-import { defineEvents } from "../helpers/events";
+import { defineEvents, WithRequiredEvent } from "../helpers/events";
 import { annotate } from "../helpers/typing";
-
-export type EventKey = string & {
-  __eventKey: null;
-};
-
-const declareEvent = (key: string) => key as EventKey;
 
 export const events = defineEvents({
   lights1: annotate<() => void>(),
@@ -14,10 +8,6 @@ export const events = defineEvents({
   lights3: annotate<() => void>(),
   lights4: annotate<() => void>(),
 });
-
-export type WithRequiredEvent = {
-  eventRequired?: EventKey;
-};
 
 export const eventsHelpers = {
   startupEvents: [

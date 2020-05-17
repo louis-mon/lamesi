@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 
 import * as Flow from "./flow";
+import _ from "lodash";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
@@ -42,43 +43,40 @@ export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
   });
 };
 
-export const rotateTweens = ({
-  endAngle,
-  target,
-  duration,
-}: {
-  endAngle: number;
-  target: Phaser.GameObjects.Components.Transform;
-  duration: number;
-}): PhaserNode => {
-  const targetAngle = Phaser.Math.Angle.WrapDegrees(endAngle);
-  const startAngle = target.angle;
+/**
+ * Standard tween does not work with angles, use this one instead
+ */
+export const rotateTween = (
+  config: Phaser.Types.Tweens.TweenBuilderConfig & {
+    props: { [key: string]: number };
+  },
+): PhaserNode => {
+  const ease = Phaser.Tweens.Builders.GetEaseFunction(config.ease || "");
+  return tween({
+    ...config,
+    props: _.mapValues(config.props, (value, prop) => {
+      const targetAngle = Phaser.Math.Angle.WrapDegrees(value);
+      const startAngle = config.targets[prop];
 
-  if (startAngle <= targetAngle)
-    return tween({
-      targets: target,
-      props: {
-        angle: targetAngle,
-      },
-      duration,
-    });
-  const turnAngle = 360 - startAngle + targetAngle;
-  return Flow.sequence(
-    tween({
-      targets: target,
-      props: {
-        angle: 180,
-      },
-      duration: Phaser.Math.Linear(0, duration, (180 - startAngle) / turnAngle),
+      const turnAngle = 360 - startAngle + targetAngle;
+      return {
+        value: targetAngle,
+        ease:
+          startAngle <= targetAngle
+            ? ease
+            : (t: number) => {
+                const eased = t;
+                const angle = Phaser.Math.Linear(
+                  startAngle,
+                  startAngle + turnAngle,
+                  eased,
+                );
+                if (angle < 180) {
+                  return (eased * turnAngle) / (targetAngle - startAngle);
+                }
+                return (eased * turnAngle - 360) / (targetAngle - startAngle);
+              },
+      };
     }),
-    tween({
-      targets: target,
-      props: { angle: { getStart: () => -180, getEnd: () => targetAngle } },
-      duration: Phaser.Math.Linear(
-        0,
-        duration,
-        (targetAngle + 180) / turnAngle,
-      ),
-    }),
-  );
+  });
 };

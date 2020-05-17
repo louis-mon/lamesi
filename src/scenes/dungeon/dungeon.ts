@@ -104,10 +104,10 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
         turnData.observe().pipe(
           map((turn) =>
             Flow.sequence(
-              Flow.rotateTweens({
-                target: rotateObj,
+              Flow.rotateTween({
+                targets: rotateObj,
                 duration: 400,
-                endAngle: getRotateMechAngle(turn),
+                props: { angle: getRotateMechAngle(turn) },
               }),
               Flow.call(() => state.setValue(false)),
             ),

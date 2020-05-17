@@ -1,7 +1,15 @@
 import _ from "lodash";
 
+export type EventKey = string & {
+  __eventKey: null;
+};
+
+export type WithRequiredEvent = {
+  eventRequired?: EventKey;
+};
+
 type EventDef<F> = {
-  key: string;
+  key: EventKey;
   f: F;
 };
 export const defineEvents = <O extends object>(data: O) =>
