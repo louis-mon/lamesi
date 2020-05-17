@@ -85,8 +85,7 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
     });
   const totalTurns = 6;
   const turnAngle = 360 / totalTurns;
-  const getRotateMechAngle = (i: number) =>
-    Phaser.Math.Angle.WrapDegrees(turnAngle * i);
+  const getRotateMechAngle = (i: number) => turnAngle * i;
   const switchFlows = mechanisms.map(({ switchDef }, i) => {
     Npc.switchCrystalFactory(scene)(switchDef);
     const rotateDef = getRotateMechDef(switchDef.key);
@@ -100,41 +99,16 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
     turnData.setValue(0);
     const state = switchDef.data.state(scene);
 
-    const rotateTweens = (i: number) => {
-      const targetAngle = getRotateMechAngle(i);
-      const startAngle = rotateObj.angle;
-
-      const duration = 400;
-      if (startAngle <= targetAngle)
-        return Flow.tween({
-          targets: rotateObj,
-          props: {
-            angle: targetAngle,
-          },
-          duration,
-        });
-      return Flow.sequence(
-        Flow.tween({
-          targets: rotateObj,
-          props: {
-            angle: 180,
-          },
-          duration: Phaser.Math.Linear(0, 400, (180 - startAngle) / turnAngle),
-        }),
-        Flow.tween({
-          targets: rotateObj,
-          props: { angle: { getStart: () => -180, getEnd: () => targetAngle } },
-          duration: Phaser.Math.Linear(0, 400, (targetAngle + 180) / turnAngle),
-        }),
-      );
-    };
-
     return Flow.parallel(
       Flow.fromObservable(
         turnData.observe().pipe(
           map((turn) =>
             Flow.sequence(
-              rotateTweens(turn),
+              Flow.rotateTweens({
+                target: rotateObj,
+                duration: 400,
+                endAngle: getRotateMechAngle(turn),
+              }),
               Flow.call(() => state.setValue(false)),
             ),
           ),

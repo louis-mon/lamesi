@@ -41,3 +41,44 @@ export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
     },
   });
 };
+
+export const rotateTweens = ({
+  endAngle,
+  target,
+  duration,
+}: {
+  endAngle: number;
+  target: Phaser.GameObjects.Components.Transform;
+  duration: number;
+}): PhaserNode => {
+  const targetAngle = Phaser.Math.Angle.WrapDegrees(endAngle);
+  const startAngle = target.angle;
+
+  if (startAngle <= targetAngle)
+    return tween({
+      targets: target,
+      props: {
+        angle: targetAngle,
+      },
+      duration,
+    });
+  const turnAngle = 360 - startAngle + targetAngle;
+  return Flow.sequence(
+    tween({
+      targets: target,
+      props: {
+        angle: 180,
+      },
+      duration: Phaser.Math.Linear(0, duration, (180 - startAngle) / turnAngle),
+    }),
+    tween({
+      targets: target,
+      props: { angle: { getStart: () => -180, getEnd: () => targetAngle } },
+      duration: Phaser.Math.Linear(
+        0,
+        duration,
+        (targetAngle + 180) / turnAngle,
+      ),
+    }),
+  );
+};
