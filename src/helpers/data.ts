@@ -1,15 +1,20 @@
 import * as Phaser from "phaser";
-import { Observable, fromEventPattern } from "rxjs";
+import { Observable, fromEvent } from "rxjs";
 import _ from "lodash";
 import { startWith } from "rxjs/operators";
+import {
+  ToObservable,
+  EventMappingDef,
+  EventDefHelper,
+  EventDef,
+} from "./events";
 
-export type DataHelper<T, P = unknown> = {
+export type DataHelper<T, P = unknown> = ToObservable<T> & {
   setValue(value: T): void;
   value(): T;
   updateValue(f: (old: T) => T): void;
   onChange(f: (parent: P, value: T, previousValue: T) => void): void;
   onChangeOnce(f: (parent: P, value: T, previousValue: T) => void): void;
-  observe(): Observable<T>;
 };
 
 const genericDataHelper = <T, P>(
@@ -29,11 +34,9 @@ const genericDataHelper = <T, P>(
       f(parent, value, previousValue),
     ),
   observe: () =>
-    fromEventPattern(
-      (handler) => emitter.on(`changedata-${key}`, handler),
-      (handler) => emitter.off(`changedata-${key}`, handler),
-      (p, value) => value,
-    ).pipe(startWith(dataManager.get(key))),
+    fromEvent(emitter, `changedata-${key}`, (p, value) => value).pipe(
+      startWith(dataManager.get(key)),
+    ),
 });
 
 export function makeDataHelper<T>(
@@ -56,14 +59,28 @@ export function makeDataHelper<T>(o: any, key: string) {
 }
 
 /**
- * Defined keys and associated helpers to shared typed declarations
+ * Defined keys and associated helpers to share typed declarations
  */
 export const defineGoKeys = <O extends Phaser.GameObjects.GameObject>(
   key: string,
-) => <Data extends object>(data: Data) => ({
+) => <Data extends object, Events extends EventMappingDef>({
+  data,
+  events,
+}: {
+  data?: Data;
+  events?: Events;
+}) => ({
   key,
   getObj: (scene: Phaser.Scene) => scene.children.getByName(key)! as O,
   data: _.mapValues(data, (value, dataKey) => (scene: Phaser.Scene) =>
     makeDataHelper(scene.children.getByName(key)!, dataKey),
   ) as { [key in keyof Data]: (scene: Phaser.Scene) => DataHelper<Data[key]> },
+  events: _.mapValues(events, (value) => (scene: Phaser.Scene) =>
+    ({
+      ...value,
+      observe: () => value.observe(scene.children.getByName(key)!),
+    } as EventDefHelper<EventDef<unknown>>),
+  ) as {
+    [key in keyof Events]: (scene: Phaser.Scene) => EventDefHelper<Events[key]>;
+  },
 });

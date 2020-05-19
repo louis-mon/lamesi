@@ -91,7 +91,9 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
   ];
   const getRotateMechDef = (switchKey: string) =>
     defineGoKeys<Phaser.GameObjects.Image>(`${switchKey}-rotate-mech`)({
-      turn: annotate<number>(),
+      data: {
+        turn: annotate<number>(),
+      },
     });
   const totalTurns = 6;
   const turnAngle = 360 / totalTurns;

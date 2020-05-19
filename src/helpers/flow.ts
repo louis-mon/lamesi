@@ -8,7 +8,6 @@ type ActionExecution = {
 };
 export type ActionRunParams = {
   onStart: (execution: ActionExecution) => void;
-  onAbort: () => void;
   onComplete: () => void;
 };
 export type ActionNode<C> = (context: C) => (params: ActionRunParams) => void;
@@ -123,10 +122,6 @@ export const fromObservable = <C>(
             },
           });
         },
-        onAbort: () => {
-          subscription.unsubscribe();
-          p.onAbort();
-        },
         onComplete: () => {
           exec = null;
           if (exhausted) p.onComplete();
@@ -197,7 +192,6 @@ export const loop = <C>(action: ActionNode<C>): ActionNode<C> => (context) => (
             tryToAbortAction(e);
           },
         }),
-      onAbort: p.onAbort,
       onComplete: () => {
         if (aborted) return;
         rec();
@@ -219,6 +213,5 @@ export const lazy = <C>(action: (c: C) => ActionNode<C>): ActionNode<C> => (
 export const run = <C>(context: C, node: ActionNode<C>): void =>
   node(context)({
     onStart: () => {},
-    onAbort: () => {},
     onComplete: () => {},
   });

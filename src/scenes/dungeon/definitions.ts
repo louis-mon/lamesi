@@ -8,24 +8,26 @@ import Vector2 = Phaser.Math.Vector2;
 export type WpId = string & { __wpIdTag: null };
 export type WpDef = { room: number; x: number; y: number };
 
-export const player = defineGoKeys("player")({
-  currentPos: annotate<WpId>(),
-  isMoving: annotate<boolean>(),
+export const player = defineGoKeys<Phaser.GameObjects.Sprite>("player")({
+  data: {
+    currentPos: annotate<WpId>(),
+    isMoving: annotate<boolean>(),
+  },
 });
 
 const switchCrystalDef = (id: string) =>
-  defineGoKeys(`switch-${id}`)({ state: annotate<boolean>() });
+  defineGoKeys<Phaser.GameObjects.Sprite>(`switch-${id}`)({
+    data: { state: annotate<boolean>() },
+  });
 
 type ObjectNextWp = {
   wp: WpDef;
   offset: Vector2;
 };
-const switchesFromObject = <O extends { [k: string]: ObjectNextWp }>(
-  o: O,
-): { [k in keyof O]: ReturnType<typeof switchCrystalDef> & ObjectNextWp } =>
+const switchesFromObject = <O extends { [k: string]: ObjectNextWp }>(o: O) =>
   _.mapValues(o, (val, key) => ({
     ...val,
-    ...defineGoKeys(`switch-${key}`)({ state: annotate<boolean>() }),
+    ...defineGoKeys(`switch-${key}`)({ data: { state: annotate<boolean>() } }),
   }));
 
 export const switches = switchesFromObject({
