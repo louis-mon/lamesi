@@ -45,9 +45,9 @@ export const switchClass = defineGoClass({
 });
 
 export const switches = declareGoInstances(switchClass, "switch", {
-  room5Rotate1: { wp: { room: 5, x: 0, y: 4 }, offset: new Vector2(0, 20) },
-  room5Rotate2: { wp: { room: 5, x: 1, y: 4 }, offset: new Vector2(0, 20) },
-  room5Rotate3: { wp: { room: 5, x: 2, y: 4 }, offset: new Vector2(0, 20) },
+  room5Rotate1: { wp: { room: 5, x: 0, y: 4 }, offset: new Vector2(-20, 5) },
+  room5Rotate2: { wp: { room: 5, x: 1, y: 4 }, offset: new Vector2(-20, 5) },
+  room5Rotate3: { wp: { room: 5, x: 2, y: 4 }, offset: new Vector2(-20, 5) },
   room4ForRoom5Door: {
     wp: { room: 4, x: 4, y: 3 },
     offset: new Vector2(25, 0),
@@ -56,6 +56,7 @@ export const switches = declareGoInstances(switchClass, "switch", {
 export type SwitchCrystalDef = ValueOf<typeof switches>;
 
 export const depths = {
+  backgound: -10,
   carpet: 1,
   wp: 5,
   npc: 10,

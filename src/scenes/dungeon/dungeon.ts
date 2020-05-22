@@ -13,7 +13,7 @@ import { annotate } from "/src/helpers/typing";
 import { defineGoClass, declareGoInstance } from "/src/helpers/component";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const initialWp: Wp.WpDef = { room: 5, x: 0, y: 3 };
+  const initialWp: Wp.WpDef = { room: 4, x: 0, y: 3 };
   const player = Def.player.create(
     createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
       Def.depths.npc,
@@ -147,6 +147,7 @@ export class DungeonScene extends Phaser.Scene {
   preload() {
     this.load.atlas("npc");
     this.load.atlas("menu");
+    this.load.image("rooms");
   }
 
   create() {

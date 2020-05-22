@@ -23,10 +23,10 @@ export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
   declareWpId(`wp-${room}-${x}-${y}`);
 
-const roomSize = new Vector2(500, 400);
-const roomMargin = new Vector2(100, 50);
-const roomPadding = new Vector2(20, 15);
-const scenePos = new Vector2(menuZoneSize + 20, 150);
+const roomSize = new Vector2(530, 400);
+const roomMargin = new Vector2(60, 55);
+const roomPadding = new Vector2(45, 30);
+const scenePos = new Vector2(menuZoneSize + 20, 100);
 export const wpPos = (wp: WpDef) => {
   const roomPos = Phaser.Math.ToXY(wp.room, 3, 2);
   return scenePos
@@ -39,8 +39,8 @@ export const wpPos = (wp: WpDef) => {
         .add(
           new Vector2(wp)
             .clone()
-            .multiply(roomSize)
-            .scale(1 / 5),
+            .multiply(roomSize.clone().subtract(roomPadding.clone().scale(2)))
+            .scale(1 / 4),
         ),
     );
 };
@@ -108,6 +108,7 @@ const wpClass = defineGoClass({
 const declareWp = (wp: WpDef) => declareGoInstance(wpClass, getWpId(wp));
 
 export const placeWps = (scene: Phaser.Scene) => {
+  scene.add.image(0, 0, "rooms").setDepth(Def.depths.backgound).setOrigin(0, 0);
   allWp.forEach((wpDef) => {
     const wpId = getWpId(wpDef);
     const { x, y } = wpPos(wpDef);

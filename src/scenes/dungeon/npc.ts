@@ -75,22 +75,29 @@ const doorDef = {
   key: "door-4-5",
 };
 
+const doorObjectKey = (doorKey: string, pos: number) => `${doorKey}-${pos}`;
+
 export const openDoor = (): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    const door = scene.children.getByName(
-      doorDef.key,
-    ) as Phaser.GameObjects.Sprite;
     return Flow.sequence(
-      Flow.tween({
-        targets: door,
-        props: { y: door.y - 100 },
-      }),
-      Flow.call(() =>
+      Flow.parallel(
+        ...[0, 1].map((i) => {
+          const door = scene.children.getByName(
+            doorObjectKey(doorDef.key, i),
+          ) as Phaser.GameObjects.Sprite;
+          return Flow.tween({
+            targets: door,
+            props: { y: door.y - 40 * (i * 2 - 1) },
+            duration: 750,
+          });
+        }),
+      ),
+      Flow.call(
         Wp.setGraphLinkData({
           wp1: Wp.getWpId(doorDef.wp1),
           wp2: Wp.getWpId(doorDef.wp2),
           open: true,
-        })(scene),
+        }),
       ),
     );
   });
@@ -100,8 +107,15 @@ export const doorFactory = (scene: Phaser.Scene) => {
     const wp1 = Wp.wpPos(doorDef.wp1);
     const wp2 = Wp.wpPos(doorDef.wp2);
     const middlePos = wp1.clone().add(wp2).scale(0.5);
-    createSpriteAt(scene, middlePos, "npc", "door-vertical")
-      .setName(doorDef.key)
-      .setDepth(Def.depths.npc);
+    const doorSep = new Vector2(0, 33);
+    const points = [
+      middlePos.clone().add(doorSep),
+      middlePos.clone().subtract(doorSep),
+    ];
+    points.forEach((point, i) =>
+      createSpriteAt(scene, point, "npc", "door-vertical")
+        .setName(doorObjectKey(doorDef.key, i))
+        .setDepth(Def.depths.npc),
+    );
   };
 };
