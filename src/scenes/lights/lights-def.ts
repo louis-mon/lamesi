@@ -1,7 +1,6 @@
 import * as Phaser from "phaser";
 import { ManipulableObject } from "../../helpers/phaser";
-import { events } from "../global-events";
-import { WithRequiredEvent } from "/src/helpers/events";
+import { events, WithRequiredEvent } from "../global-events";
 
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
@@ -44,7 +43,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "l2",
-      eventRequired: events.lights3.key,
+      eventRequired: 'lights3',
       create: (scene) => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
       movablePath: {
         path: new Phaser.Curves.Path(1880, 975)
@@ -72,7 +71,7 @@ export const sceneDef: LightSceneDef = {
       key: "m-triangle-1",
       depth: 0.7,
       movable: true,
-      eventRequired: events.lights1.key,
+      eventRequired: 'lights1',
       rope: {
         minDepth: 0.2,
         maxDepth: 0.9,
@@ -84,7 +83,7 @@ export const sceneDef: LightSceneDef = {
       key: "m-bar-1",
       depth: 0.5,
       movable: true,
-      eventRequired: events.lights4.key,
+      eventRequired: 'lights4',
       rope: {
         minDepth: 0.4,
         maxDepth: 0.9,

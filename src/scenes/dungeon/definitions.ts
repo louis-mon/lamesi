@@ -1,36 +1,50 @@
 import _ from "lodash";
 import * as Phaser from "phaser";
-import { defineGoKeys } from "/src/helpers/data";
 import { annotate, ValueOf } from "/src/helpers/typing";
 
 import Vector2 = Phaser.Math.Vector2;
+import {
+  defineSceneClass,
+  defineGoClass,
+  declareGoInstance,
+  declareGoInstances,
+  customEvent,
+} from "/src/helpers/component";
 
 export type WpId = string & { __wpIdTag: null };
 export type WpDef = { room: number; x: number; y: number };
+export type WpGraph = { [key: string]: { links: WpId[] } };
 
-export const player = defineGoKeys<Phaser.GameObjects.Sprite>("player")({
+export const scene = defineSceneClass({
+  data: { isWpActive: annotate<boolean>(), wpGraph: annotate<WpGraph>() },
+  events: {
+    movePlayer: customEvent<{ path: WpId[] }>(),
+  },
+});
+
+export const playerClass = defineGoClass({
   data: {
     currentPos: annotate<WpId>(),
     isMoving: annotate<boolean>(),
   },
+  events: {},
+  kind: annotate<Phaser.GameObjects.Sprite>(),
 });
 
-const switchCrystalDef = (id: string) =>
-  defineGoKeys<Phaser.GameObjects.Sprite>(`switch-${id}`)({
-    data: { state: annotate<boolean>() },
-  });
+export const player = declareGoInstance(playerClass, "player");
 
 type ObjectNextWp = {
   wp: WpDef;
   offset: Vector2;
 };
-const switchesFromObject = <O extends { [k: string]: ObjectNextWp }>(o: O) =>
-  _.mapValues(o, (val, key) => ({
-    ...val,
-    ...defineGoKeys(`switch-${key}`)({ data: { state: annotate<boolean>() } }),
-  }));
+export const switchClass = defineGoClass({
+  data: { state: annotate<boolean>() },
+  events: {},
+  kind: annotate<Phaser.GameObjects.Sprite>(),
+  config: annotate<ObjectNextWp>(),
+});
 
-export const switches = switchesFromObject({
+export const switches = declareGoInstances(switchClass, "switch", {
   room5Rotate1: { wp: { room: 5, x: 0, y: 4 }, offset: new Vector2(0, 20) },
   room5Rotate2: { wp: { room: 5, x: 1, y: 4 }, offset: new Vector2(0, 20) },
   room5Rotate3: { wp: { room: 5, x: 2, y: 4 }, offset: new Vector2(0, 20) },

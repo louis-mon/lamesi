@@ -1,13 +1,14 @@
 import * as Phaser from "phaser";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import { map } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
 import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt } from "/src/helpers/phaser";
-import { bindActionButton } from "./menu";
+import { bindActionButton, buttons } from "./menu";
 import { combineLatest } from "rxjs";
+import { commonGoEvents } from "/src/helpers/component";
 
 export const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
@@ -23,47 +24,46 @@ export const createNpcAnimations = (scene: Phaser.Scene) => {
 
 export const switchCrystalFactory = (scene: Phaser.Scene) => {
   return (def: Def.SwitchCrystalDef) => {
-    const obj = createSpriteAt(
-      scene,
-      Wp.wpPos(def.wp).add(def.offset),
-      "npc",
-      "switch-0",
-    )
-      .setName(def.key)
+    const obj = def
+      .create(
+        createSpriteAt(
+          scene,
+          Wp.wpPos(def.config.wp).add(def.config.offset),
+          "npc",
+          "switch-0",
+        ),
+      )
       .setDepth(Def.depths.npc);
-    const stateData = def.data.state(scene);
-    stateData.setValue(false);
+    const stateData = def.data.state;
+    stateData.setValue(false)(scene);
     Flow.run(
       scene,
       Flow.parallel(
-        Flow.withSentinel({
-          sentinel: combineLatest([
-            Def.player.data.currentPos(scene).observe(),
-            Def.player.data.isMoving(scene).observe(),
-            stateData.observe(),
+        bindActionButton(
+          combineLatest([
+            Def.player.data.currentPos.subject(scene),
+            Def.player.data.isMoving.subject(scene),
+            stateData.dataSubject(scene),
           ]).pipe(
             map(
               ([pos, isMoving, isSwitchActive]) =>
-                !isMoving && pos === Wp.getWpId(def.wp) && !isSwitchActive,
+                !isMoving &&
+                pos === Wp.getWpId(def.config.wp) &&
+                !isSwitchActive,
             ),
           ),
-          action: bindActionButton({
+          {
             action: Flow.sequence(
               Flow.call(() => obj.anims.play("switch")),
-              Flow.waitForEvent({
-                emitter: obj,
-                event: "animationcomplete",
-              }),
-              Flow.call(() => stateData.setValue(true)),
+              Flow.wait(commonGoEvents.animationcomplete(obj.name).subject),
+              Flow.call(stateData.setValue(true)),
             ),
             frameKey: "action-attack",
-          }),
-        }),
-        Flow.withSentinel({
-          sentinel: stateData.observe(),
-          whenFalse: Flow.call(() => obj.anims.playReverse("switch")),
-          action: Flow.noop,
-        }),
+          },
+        ),
+        Flow.observe(stateData.subject, (value) =>
+          value ? Flow.noop : Flow.call(() => obj.anims.playReverse("switch")),
+        ),
       ),
     );
   };
@@ -86,11 +86,11 @@ export const openDoor = (): Flow.PhaserNode =>
         props: { y: door.y - 100 },
       }),
       Flow.call(() =>
-        Wp.openGraphLink(
-          scene,
-          Wp.getWpId(doorDef.wp1),
-          Wp.getWpId(doorDef.wp2),
-        ),
+        Wp.setGraphLinkData({
+          wp1: Wp.getWpId(doorDef.wp1),
+          wp2: Wp.getWpId(doorDef.wp2),
+          open: true,
+        })(scene),
       ),
     );
   });

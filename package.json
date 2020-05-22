@@ -10,7 +10,8 @@
   "scripts": {
     "start": "parcel index.html --open",
     "build": "parcel build index.html",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "jest"
   },
   "dependencies": {
     "lodash": "4.17.15",
@@ -19,10 +20,13 @@
     "rxjs": "^6.5.5"
   },
   "devDependencies": {
+    "@types/jest": "^25.2.3",
     "@types/lodash": "4.14.150",
+    "jest": "^26.0.1",
     "parcel-bundler": "^1.6.1",
     "parcel-plugin-static-files-copy": "^2.3.1",
     "prettier": "2.0.5",
+    "ts-jest": "^26.0.0",
     "typescript": "^3.8.3"
   },
   "keywords": []

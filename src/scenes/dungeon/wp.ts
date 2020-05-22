@@ -2,15 +2,22 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Graph from "/src/helpers/math/graph";
 import * as Geom from "/src/helpers/math/geom";
-import { WpId, WpDef, player, depths } from "./definitions";
+import * as Def from "./definitions";
+import { WpId, WpDef, WpGraph } from "./definitions";
 export { WpId, WpDef } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
-import { makeDataHelper } from "/src/helpers/data";
 import { menuZoneSize } from "../menu";
 import { combineLatest } from "rxjs";
-import { auditTime, map } from "rxjs/operators";
+import { auditTime, map, tap } from "rxjs/operators";
+import { annotate } from "/src/helpers/typing";
+import {
+  defineGoClass,
+  declareGoInstance,
+  commonGoEvents,
+} from "/src/helpers/component";
+import { combineContext } from "/src/helpers/functional";
 
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
@@ -38,16 +45,10 @@ export const wpPos = (wp: WpDef) => {
     );
 };
 
-export type PlaceWpParams = {
+export type WpsActionParams = {
   moveAction: (newWp: WpId) => Flow.PhaserNode;
   startMoveAction: Flow.PhaserNode;
   endMoveAction: Flow.PhaserNode;
-};
-
-const areWpBaseLinked = (wp1: WpDef, wp2: WpDef) => {
-  return (
-    wp1.room === wp2.room && new Vector2(wp1).distanceSq(new Vector2(wp2)) <= 1
-  );
 };
 
 const RoomRectangle = new Phaser.Geom.Rectangle(0, 0, 4, 4);
@@ -59,7 +60,6 @@ const allWpById = _.keyBy(allWp, getWpId);
 
 export const getWpDef = (id: WpId): WpDef => allWpById[id];
 
-type WpGraph = { [key: string]: { links: WpId[] } };
 const initialWpGraph = (): WpGraph => {
   return _.mapValues(allWpById, (wp, id) => ({
     links: Geom.pointsAround(new Vector2(wp), 1)
@@ -68,133 +68,126 @@ const initialWpGraph = (): WpGraph => {
   }));
 };
 
-const dataDef = {
-  isActive: (scene: Phaser.Scene) =>
-    makeDataHelper<boolean>(scene, "wp-is-active"),
-  wpGraph: (scene: Phaser.Scene) => makeDataHelper<WpGraph>(scene, "wp-graph"),
-};
-
-const openGraphLinkDir = (graph: WpGraph, wp1: WpId, wp2: WpId): WpGraph => ({
+const setGraphLink = (
+  graph: WpGraph,
+  wp1: WpId,
+  wp2: WpId,
+  open: boolean,
+): WpGraph => ({
   ...graph,
-  [wp1]: { ...graph[wp1], links: _.union(graph[wp1].links, [wp2]) },
+  [wp1]: {
+    ...graph[wp1],
+    links: (open === true ? _.union : _.difference)(graph[wp1].links, [wp2]),
+  },
+  [wp2]: {
+    ...graph[wp1],
+    links: (open === true ? _.union : _.difference)(graph[wp2].links, [wp1]),
+  },
 });
 
-export const openGraphLink = (scene: Phaser.Scene, wp1: WpId, wp2: WpId) => {
-  dataDef
-    .wpGraph(scene)
-    .updateValue((graph) =>
-      openGraphLinkDir(openGraphLinkDir(graph, wp1, wp2), wp2, wp1),
-    );
+export const setGraphLinkData = ({
+  wp1,
+  wp2,
+  open,
+}: {
+  wp1: WpId;
+  wp2: WpId;
+  open: boolean;
+}) => (scene: Phaser.Scene) => {
+  Def.scene.data.wpGraph.updateValue((graph) =>
+    setGraphLink(graph, wp1, wp2, open),
+  )(scene);
 };
 
-export const wpSceneHelper = (scene: Phaser.Scene) => {
-  const isActiveData = dataDef.isActive(scene);
-  const wpGraphData = dataDef.wpGraph(scene);
+const disabledScale = 0.2;
 
-  const wpHelper = (wp: WpDef) => {
-    const getObj = () => scene.children.getByName(getWpId(wp));
-    return {
-      getObj,
-      getActive: () => makeDataHelper(getObj()!, "is-active"),
-    };
-  };
+const wpClass = defineGoClass({
+  events: {},
+  data: { isActive: annotate<boolean>() },
+});
+const declareWp = (wp: WpDef) => declareGoInstance(wpClass, getWpId(wp));
 
-  const disabledScale = 0.2;
+export const placeWps = (scene: Phaser.Scene) => {
+  allWp.forEach((wpDef) => {
+    const wpId = getWpId(wpDef);
+    const { x, y } = wpPos(wpDef);
+    const wp = scene.add
+      .circle(x, y, 10, 0xffffff, 0.3)
+      .setDepth(Def.depths.wp)
+      .setDataEnabled()
+      .setScale(disabledScale)
+      .setName(wpId)
+      .setInteractive();
+    wp.input.hitArea = new Phaser.Geom.Rectangle(-25, -25, 70, 70);
+  });
+};
 
-  const placeWps = ({
-    moveAction,
-    startMoveAction,
-    endMoveAction,
-  }: PlaceWpParams) => {
-    isActiveData.setValue(false);
-    wpGraphData.setValue(initialWpGraph());
+export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
+  const isActiveData = Def.scene.data.isWpActive;
+  const wpGraphData = Def.scene.data.wpGraph;
+  const currentPosData = Def.player.data.currentPos;
 
-    const currentPosData = player.data.currentPos(scene);
-
-    const performBfs = () =>
-      Graph.bfs({
-        graph: { links: (v) => wpGraphData.value()[v].links },
-        startPoint: currentPosData.value(),
-      });
-
-    Flow.run(
-      scene,
-      Flow.fromObservable(
-        combineLatest([
-          isActiveData.observe(),
-          wpGraphData.observe(),
-          currentPosData.observe(),
-        ]).pipe(
-          auditTime(50),
-          map(([isActive]) => {
-            const toggleWp = ({
-              wpDef,
-              scale,
-            }: {
-              scale: number;
-              wpDef: WpDef;
-            }) => {
-              const helper = wpHelper(wpDef);
-              return Flow.sequence(
-                Flow.tween({
-                  targets: helper.getObj(),
-                  props: { scale },
-                  duration: 200,
-                }),
-                Flow.call(() => helper.getActive().setValue(isActive)),
-              );
-            };
-            if (isActive) {
-              const allowedWp = performBfs();
-              return Flow.parallel(
-                ..._.keys(allowedWp.paths).map((wpId) =>
-                  toggleWp({
-                    wpDef: getWpDef(declareWpId(wpId)),
-                    scale: 1,
-                  }),
-                ),
-              );
-            } else {
-              return Flow.parallel(
-                ...allWp.map((wpDef) =>
-                  toggleWp({ wpDef, scale: disabledScale }),
-                ),
-              );
-            }
-          }),
-        ),
-      ),
-    );
-    allWp.forEach((wpDef) => {
-      const wpId = getWpId(wpDef);
-      const { x, y } = wpPos(wpDef);
-      const wp = scene.add.circle(x, y, 10, 0xffffff, 0.3).setDepth(depths.wp);
-      wp.scale = disabledScale;
-      wp.setName(wpId);
-      wp.setInteractive();
-      wp.input.hitArea = new Phaser.Geom.Rectangle(-25, -25, 70, 70);
-      wp.on("pointerdown", () => {
-        if (!(isActiveData.value() && wpHelper(wpDef).getActive().value()))
-          return;
-        isActiveData.setValue(false);
-        const wpsPath = Graph.extractPath(performBfs(), wpId);
-        Flow.run(
-          scene,
-          Flow.sequence(
-            startMoveAction,
-            ...wpsPath.map(moveAction),
-            endMoveAction,
-            Flow.call(() => {
-              isActiveData.setValue(true);
-            }),
-          ),
-        );
-      });
+  const performBfs = () =>
+    Graph.bfs({
+      graph: { links: (v) => wpGraphData.value(scene)[v].links },
+      startPoint: currentPosData.value(scene),
     });
-  };
 
-  return {
-    placeWps,
-    isActive: isActiveData,
-  };
-};
+  isActiveData.setValue(true)(scene);
+  wpGraphData.setValue(initialWpGraph())(scene);
+
+  const computeWps = Flow.observe(
+    combineLatest([
+      isActiveData.dataSubject(scene),
+      wpGraphData.dataSubject(scene),
+      currentPosData.dataSubject(scene),
+    ]).pipe(
+      auditTime(50),
+      map(([isActive]) => {
+        const toggleWp = ({
+          wpDef,
+          scale,
+        }: {
+          scale: number;
+          wpDef: WpDef;
+        }) => {
+          const wpObjDef = declareWp(wpDef);
+          return Flow.sequence(
+            Flow.tween({
+              targets: wpObjDef.getObj(scene),
+              props: { scale },
+              duration: 200,
+            }),
+            Flow.call(wpObjDef.data.isActive.setValue(isActive)),
+          );
+        };
+        if (isActive) {
+          const allowedWp = performBfs();
+          return Flow.parallel(
+            ..._.keys(allowedWp.paths).map((wpId) =>
+              toggleWp({
+                wpDef: getWpDef(declareWpId(wpId)),
+                scale: 1,
+              }),
+            ),
+          );
+        } else {
+          return Flow.parallel(
+            ...allWp.map((wpDef) => toggleWp({ wpDef, scale: disabledScale })),
+          );
+        }
+      }),
+    ),
+  );
+
+  const wpsFlow = allWp.map((wpDef) => {
+    const wpId = getWpId(wpDef);
+    return Flow.observe(commonGoEvents.pointerdown(wpId).subject, () => {
+      if (!wpClass.data.isActive(wpId).value(scene)) return Flow.noop;
+      const wpsPath = Graph.extractPath(performBfs(), wpId);
+      return Flow.call(Def.scene.events.movePlayer.emit({ path: wpsPath }));
+    });
+  });
+
+  return Flow.parallel(computeWps, ...wpsFlow);
+});

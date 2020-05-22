@@ -1,21 +1,27 @@
 import _ from "lodash";
-import { defineEvents, WithRequiredEvent } from "../helpers/events";
 import { annotate } from "../helpers/typing";
+import { defineData } from "../helpers/component";
 
-export const events = defineEvents({
-  lights1: annotate<() => void>(),
-  lights2: annotate<() => void>(),
-  lights3: annotate<() => void>(),
-  lights4: annotate<() => void>(),
-});
+export type EventKey = string & {
+  __eventKey: null;
+};
+
+export const events = defineData(
+  {
+    lights1: annotate<boolean>(),
+    lights2: annotate<boolean>(),
+    lights3: annotate<boolean>(),
+    lights4: annotate<boolean>(),
+  },
+  "game",
+);
+
+export type WithRequiredEvent = {
+  eventRequired?: keyof typeof events;
+};
 
 export const eventsHelpers = {
-  startupEvents: [
-    events.lights1.key,
-    events.lights2.key,
-    events.lights3.key,
-    events.lights4.key,
-  ],
+  startupEvents: Object.keys(events),
   getEventFilter: (scene: Phaser.Scene) => (e: WithRequiredEvent): boolean =>
-    e.eventRequired ? scene.registry.get(e.eventRequired) : true,
+    e.eventRequired ? events[e.eventRequired].value(scene) : true,
 };

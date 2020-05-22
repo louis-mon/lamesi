@@ -9,26 +9,20 @@ import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent } from "../common";
-import { map } from "rxjs/operators";
-import { defineGoKeys } from "/src/helpers/data";
 import { annotate } from "/src/helpers/typing";
-import { number } from "purify-ts";
+import { defineGoClass, declareGoInstance } from "/src/helpers/component";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const wpHelper = Wp.wpSceneHelper(scene);
-  const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
-  const player = createSpriteAt(
-    scene,
-    Wp.wpPos(initialWp),
-    "npc",
-    "player-still",
-  )
-    .setName(Def.player.key)
-    .setDepth(Def.depths.npc);
-  const currentPosition = Def.player.data.currentPos(scene);
-  const isMoving = Def.player.data.isMoving(scene);
+  const initialWp: Wp.WpDef = { room: 5, x: 0, y: 3 };
+  const player = Def.player.create(
+    createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
+      Def.depths.npc,
+    ),
+  );
+  const currentPosData = Def.player.data.currentPos;
+  const isMovingData = Def.player.data.isMoving;
   const setPlayerWp = (wp: Wp.WpId) => {
-    currentPosition.setValue(wp);
+    currentPosData.setValue(wp)(scene);
   };
   const playerSpeed = 0.5;
   scene.anims.create({
@@ -42,36 +36,38 @@ const createPlayer = (scene: Phaser.Scene) => {
       zeroPad: 2,
     }),
   });
-  return {
-    initPlayer: () => {
-      setPlayerWp(Wp.getWpId(initialWp));
-      wpHelper.isActive.setValue(true);
-    },
-    moveAction: (wpId: Wp.WpId) => {
-      const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
-      return Flow.lazy(() =>
-        Flow.sequence(
-          Flow.tween({
-            targets: player,
-            props: vecToXY(wpPos),
-            duration:
-              wpPos.distance(Wp.wpPos(Wp.getWpDef(currentPosition.value()))) /
-              playerSpeed,
-          }),
-          Flow.call(() => setPlayerWp(wpId)),
-        ),
-      );
-    },
-    startMoveAction: Flow.call(() => {
-      isMoving.setValue(true);
+  setPlayerWp(Wp.getWpId(initialWp));
+  isMovingData.setValue(false)(scene);
+  return Flow.parallel(
+    Flow.observe(Def.scene.events.movePlayer.subject, ({ path }) => {
+      if (isMovingData.value(scene)) return Flow.noop;
+      isMovingData.setValue(true)(scene);
       player.anims.play("walk");
+      return Flow.sequence(
+        ...path.map((wpId) => {
+          const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
+          return Flow.lazy(() =>
+            Flow.sequence(
+              Flow.tween({
+                targets: player,
+                props: vecToXY(wpPos),
+                duration:
+                  wpPos.distance(
+                    Wp.wpPos(Wp.getWpDef(currentPosData.value(scene))),
+                  ) / playerSpeed,
+              }),
+              Flow.call(() => setPlayerWp(wpId)),
+            ),
+          );
+        }),
+        Flow.call(() => {
+          player.anims.stop();
+          player.setFrame("player-still");
+          isMovingData.setValue(false)(scene);
+        }),
+      );
     }),
-    endMoveAction: Flow.call(() => {
-      player.anims.stop();
-      player.setFrame("player-still");
-      isMoving.setValue(false);
-    }),
-  };
+  );
 };
 
 const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
@@ -89,49 +85,49 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
       startTurn: 3,
     },
   ];
+  const rotateMechClass = defineGoClass({
+    events: {},
+    data: {
+      turn: annotate<number>(),
+    },
+    kind: annotate<Phaser.GameObjects.Image>(),
+  });
   const getRotateMechDef = (switchKey: string) =>
-    defineGoKeys<Phaser.GameObjects.Image>(`${switchKey}-rotate-mech`)({
-      data: {
-        turn: annotate<number>(),
-      },
-    });
+    declareGoInstance(rotateMechClass, `${switchKey}-rotate-mech`);
   const totalTurns = 6;
   const turnAngle = 360 / totalTurns;
   const getRotateMechAngle = (i: number) => turnAngle * i;
   const switchFlows = mechanisms.map(({ switchDef, startTurn }, i) => {
     Npc.switchCrystalFactory(scene)(switchDef);
     const rotateDef = getRotateMechDef(switchDef.key);
-    const rotateObj = createImageAt(
-      scene,
-      Wp.wpPos({ room: 5, x: 2, y: 2 }),
-      "npc",
-      `symbol-circle-${i + 1}`,
-    )
-      .setName(rotateDef.key)
-      .setDepth(Def.depths.carpet)
-      .setAngle(getRotateMechAngle(startTurn));
-    const turnData = rotateDef.data.turn(scene);
-    turnData.setValue(startTurn);
-    const state = switchDef.data.state(scene);
+    const rotateObj = rotateDef.create(
+      createImageAt(
+        scene,
+        Wp.wpPos({ room: 5, x: 2, y: 2 }),
+        "npc",
+        `symbol-circle-${i + 1}`,
+      )
+        .setDepth(Def.depths.carpet)
+        .setAngle(getRotateMechAngle(startTurn)),
+    );
+    const turnData = rotateDef.data.turn;
+    turnData.setValue(startTurn)(scene);
+    const state = switchDef.data.state;
 
     return Flow.parallel(
-      Flow.fromObservable(
-        turnData.observe().pipe(
-          map((turn) =>
-            Flow.sequence(
-              Flow.rotateTween({
-                targets: rotateObj,
-                duration: 400,
-                props: { angle: getRotateMechAngle(turn) },
-              }),
-              Flow.call(() => state.setValue(false)),
-            ),
-          ),
+      Flow.observe(turnData.subject, (turn) =>
+        Flow.sequence(
+          Flow.rotateTween({
+            targets: rotateObj,
+            duration: 400,
+            props: { angle: getRotateMechAngle(turn) },
+          }),
+          Flow.call(state.setValue(false)),
         ),
       ),
-      Flow.whenLoop({
-        condition: state.observe(),
-        action: Flow.call(() => turnData.updateValue((v) => v + 1)),
+      Flow.repeatWhen({
+        condition: state.subject,
+        action: Flow.call(turnData.updateValue((v) => v + 1)),
       }),
     );
   });
@@ -154,14 +150,12 @@ export class DungeonScene extends Phaser.Scene {
   }
 
   create() {
-    const wpHelper = Wp.wpSceneHelper(this);
-    const playerSetup = createPlayer(this);
+    const playerFlow = createPlayer(this);
     const switchFactory = Npc.switchCrystalFactory(this);
     const doorFactory = Npc.doorFactory(this);
 
     Npc.createNpcAnimations(this);
-    wpHelper.placeWps(playerSetup);
-    playerSetup.initPlayer();
+    Wp.placeWps(this);
 
     switchFactory(Def.switches.room4ForRoom5Door);
     doorFactory();
@@ -169,8 +163,10 @@ export class DungeonScene extends Phaser.Scene {
     Flow.run(
       this,
       Flow.parallel(
+        playerFlow,
+        Wp.wpsAction,
         Flow.when({
-          condition: Def.switches.room4ForRoom5Door.data.state(this).observe(),
+          condition: Def.switches.room4ForRoom5Door.data.state.subject,
           action: Npc.openDoor(),
         }),
         linkSwitchWithCircleSymbol(this),

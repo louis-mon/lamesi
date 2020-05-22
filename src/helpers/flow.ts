@@ -2,20 +2,12 @@ import { Maybe } from "purify-ts";
 import { Observable, of, empty } from "rxjs";
 import _ from "lodash";
 import { startWith, pairwise, map, flatMap, first } from "rxjs/operators";
+import { FuncOrConst, funcOrConstValue } from "./functional";
 
-type ActionExecution = {
-  abort?: () => void;
-};
 export type ActionRunParams = {
-  onStart: (execution: ActionExecution) => void;
   onComplete: () => void;
 };
 export type ActionNode<C> = (context: C) => (params: ActionRunParams) => void;
-
-const tryToAbortAction = (action: ActionExecution | null) =>
-  Maybe.fromNullable(action)
-    .chainNullable((a) => a.abort)
-    .map((f) => f());
 
 export function sequence<C>(
   a1: ActionNode<C>,
@@ -30,25 +22,13 @@ export function sequence<C>(...actions: ActionNode<C>[]): ActionNode<C> {
 
 const sequence2 = <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> => (
   c,
-) => (p) => {
-  let aborted = false;
-  const onStart = (e: ActionExecution) => {
-    p.onStart({
-      abort: () => {
-        aborted = true;
-        tryToAbortAction(e);
-      },
-    });
-  };
+) => (p) =>
   a1(c)({
     ...p,
-    onStart,
     onComplete: () => {
-      if (aborted) return;
-      a2(c)({ ...p, onStart });
+      a2(c)({ ...p });
     },
   });
-};
 
 export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   return (c) => (p) => {
@@ -73,129 +53,96 @@ export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
 export const call = <C>(f: (context: C) => void): ActionNode<C> => (
   context,
 ) => (p) => {
-  p.onStart({});
   f(context);
   p.onComplete();
 };
 
 export const noop = call(() => {});
 
-/**
- * Execute a cleanup when the given action is aborted
- */
-export const withCleanup = <C>(params: {
-  action: ActionNode<C>;
-  cleanup: (context: C) => void;
-}): ActionNode<C> => (context) => (p) => {
-  params.action(context)({
-    ...p,
-    onStart: (e) => {
-      p.onStart({
-        abort: () => {
-          tryToAbortAction(e);
-          params.cleanup(context);
-        },
-      });
-    },
-  });
-};
+type ObservableFactory<C, T> = FuncOrConst<C, Observable<T>>;
+const composeObservable = <C, T, U>(
+  factory: ObservableFactory<C, T>,
+  f: (t: Observable<T>) => Observable<U>,
+): ObservableFactory<C, U> => (c) => f(funcOrConstValue(factory, c));
 
-/**
- * Run observed actions sequentially.
- * Abort current action when a new action is given
- */
-export const fromObservable = <C>(
-  observable: Observable<ActionNode<C>>,
-): ActionNode<C> => (c) => (p) => {
-  let exec: ActionExecution | null = null;
-  let exhausted = false;
-  const subscription = observable.subscribe({
-    next: (action) => {
-      tryToAbortAction(exec);
-      action(c)({
-        onStart: (e) => {
-          exec = e;
-          return p.onStart({
-            abort: () => {
-              subscription.unsubscribe();
-              tryToAbortAction(e);
-            },
-          });
-        },
-        onComplete: () => {
-          exec = null;
-          if (exhausted) p.onComplete();
-        },
-      });
-    },
-    complete: () => {
-      exhausted = true;
-      if (!exec) p.onComplete();
-    },
-  });
-};
+export function observe<C>(
+  observable: ObservableFactory<C, ActionNode<C>>,
+): ActionNode<C>;
+export function observe<C, T>(
+  observable: ObservableFactory<C, T>,
+  action: (t: T) => ActionNode<C>,
+): ActionNode<C>;
 
-/**
- * Run the action whenever some condition is true
- * Abort when the condition switches from true to false and run whenFalse
- * Continue to run as long as the observable emits
- */
-export const withSentinel = <C>(params: {
-  sentinel: Observable<boolean>;
-  action: ActionNode<C>;
-  whenFalse?: ActionNode<C>;
-}): ActionNode<C> =>
-  fromObservable(
-    params.sentinel.pipe(
-      startWith(false),
-      pairwise(),
-      flatMap(([previous, value]) => {
-        if (value && !previous) return of(params.action);
-        if (!value && previous) return of(params.whenFalse || noop);
-        return empty();
-      }),
-    ),
-  );
+export function observe<C, T>(
+  factory: ObservableFactory<C, T | ActionNode<C>>,
+  actionMapper?: (t: T) => ActionNode<C>,
+): ActionNode<C> {
+  return (context) => (p) => {
+    const source = funcOrConstValue(factory, context);
+    const observable = actionMapper
+      ? (source as Observable<T>).pipe(map(actionMapper))
+      : (source as Observable<ActionNode<C>>);
+    let nbRunning = 0;
+    let completed = false;
+    observable.subscribe({
+      next: (action) => {
+        ++nbRunning;
+        action(context)({
+          onComplete: () => {
+            --nbRunning;
+            if (completed) {
+              p.onComplete();
+            }
+          },
+        });
+      },
+      complete: () => {
+        completed = true;
+        if (nbRunning === 0) {
+          p.onComplete();
+        }
+      },
+    });
+  };
+}
 
 /**
  * Run the action when the condition is true and complete after
  */
 export const when = <C>(params: {
-  condition: Observable<boolean>;
+  condition: ObservableFactory<C, boolean>;
   action: ActionNode<C>;
-}): ActionNode<C> =>
-  fromObservable(
-    params.condition.pipe(
+}): ActionNode<C> => (c) =>
+  observe(
+    funcOrConstValue(params.condition, c).pipe(
       first((x) => x),
       map(() => params.action),
     ),
-  );
+  )(c);
 
-export const whenLoop = <C>(params: {
-  condition: Observable<boolean>;
+/**
+ * Run the action when the condition is true and repeat, sequentially
+ */
+export const repeatWhen = <C>(params: {
+  condition: ObservableFactory<C, boolean>;
   action: ActionNode<C>;
-}): ActionNode<C> => loop(when(params));
+}): ActionNode<C> => repeat(when(params));
+
+export const wait = <C>(observable: ObservableFactory<C, unknown>) =>
+  when({
+    condition: composeObservable(observable, (o) => o.pipe(map(_.stubTrue))),
+    action: noop,
+  });
 
 /**
  * Execute sequentially the same flow again and again
  */
-export const loop = <C>(action: ActionNode<C>): ActionNode<C> => (context) => (
-  p,
-) => {
-  let aborted = false;
+export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
+  context,
+) => (p) => {
   const rec = () =>
     action(context)({
-      onStart: (e) =>
-        p.onStart({
-          abort: () => {
-            aborted = true;
-            tryToAbortAction(e);
-          },
-        }),
-      onComplete: () => {
-        if (aborted) return;
-        rec();
-      },
+      onComplete: rec,
     });
   rec();
 };
@@ -212,6 +159,5 @@ export const lazy = <C>(action: (c: C) => ActionNode<C>): ActionNode<C> => (
  */
 export const run = <C>(context: C, node: ActionNode<C>): void =>
   node(context)({
-    onStart: () => {},
     onComplete: () => {},
   });
