@@ -2,8 +2,9 @@ import _ from "lodash";
 import * as Phaser from "phaser";
 
 import { UnknownFunction, annotate } from "./typing";
-import { Observable, fromEvent } from "rxjs";
+import { Observable, fromEvent, empty } from "rxjs";
 import { startWith } from "rxjs/operators";
+import { Maybe } from "purify-ts";
 
 type WithSelector = { selector: UnknownFunction };
 
@@ -52,13 +53,20 @@ export const defineEvents = <
 ) =>
   _.mapValues(data, (value, key) => {
     const impl = (
-      emitter: SceneContext<Phaser.Events.EventEmitter>,
+      emitterFactory: SceneContext<Phaser.Events.EventEmitter | null>,
     ): EventHelper<unknown> => ({
-      subject: (scene) => fromEvent(emitter(scene), key, value.selector),
-      emit: (value) => (scene) => emitter(scene).emit(key, value),
+      subject: (scene) =>
+        Maybe.fromNullable(emitterFactory(scene)).mapOrDefault(
+          (emitter) => fromEvent(emitter, key, value.selector),
+          empty(),
+        ),
+      emit: (value) => (scene) =>
+        Maybe.fromNullable(emitterFactory(scene)).ifJust((emitter) =>
+          emitter.emit(key, value),
+        ),
     });
     if (kind === "go") {
-      return (id) => impl((scene) => scene.children.getByName(id)!);
+      return (id) => impl((scene) => scene.children.getByName(id));
     } else if (kind === "game") impl((scene) => scene.game.events);
     return impl((scene) => scene.events);
   }) as EventMappingDef<O, Kind>;
@@ -80,19 +88,26 @@ export const defineData = <
   _.mapValues(data, (v, key) => {
     const eventKey = `changedata-${key}`;
     const impl = (
-      emitter: SceneContext<Phaser.Events.EventEmitter>,
-      managerFactory: SceneContext<Phaser.Data.DataManager>,
+      emitterFactory: SceneContext<Maybe<Phaser.Events.EventEmitter>>,
+      managerFactory: SceneContext<Maybe<Phaser.Data.DataManager>>,
     ): DataHelper<unknown> => {
       const updateValue: DataHelper<unknown>["updateValue"] = (f) => (
         scene,
       ) => {
-        const manager = managerFactory(scene);
-        return manager.set(key, f(manager.get(key)));
+        return managerFactory(scene).ifJust((manager) =>
+          manager.set(key, f(manager.get(key))),
+        );
       };
       const value: DataHelper<unknown>["value"] = (scene) =>
-        managerFactory(scene).get(key);
+        managerFactory(scene).mapOrDefault(
+          (manager) => manager.get(key),
+          undefined,
+        );
       const subject: DataHelper<unknown>["subject"] = (scene) =>
-        fromEvent(emitter(scene), eventKey, (p, value) => value);
+        emitterFactory(scene).mapOrDefault(
+          (emitter) => fromEvent(emitter, eventKey, (p, value) => value),
+          empty(),
+        );
       return {
         subject,
         dataSubject: (scene) => subject(scene).pipe(startWith(value(scene))),
@@ -104,17 +119,18 @@ export const defineData = <
     if (kind === "go") {
       return (id) =>
         impl(
-          (scene) => scene.children.getByName(id)!,
-          (scene) => scene.children.getByName(id)!.data,
+          (scene) => Maybe.fromNullable(scene.children.getByName(id)),
+          (scene) =>
+            Maybe.fromNullable(scene.children.getByName(id)).map((d) => d.data),
         );
     } else if (kind === "game")
       return impl(
-        (scene) => scene.game.events,
-        (scene) => scene.registry,
+        (scene) => Maybe.of(scene.game.events),
+        (scene) => Maybe.of(scene.registry),
       );
     return impl(
-      (scene) => scene.events,
-      (scene) => scene.data,
+      (scene) => Maybe.of(scene.events),
+      (scene) => Maybe.of(scene.data),
     );
   }) as DataMappingDef<O, Kind>;
 
