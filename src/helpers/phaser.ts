@@ -13,6 +13,9 @@ export const placeAt = (
   pos: Vector2Like,
 ) => obj.setPosition(pos.x, pos.y);
 
+export const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
+  new Phaser.Math.Vector2(x, y);
+
 export const createSpriteAt = (
   scene: Phaser.Scene,
   pos: Vector2,

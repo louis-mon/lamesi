@@ -6,7 +6,7 @@ import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt } from "/src/helpers/phaser";
-import { bindActionButton, buttons } from "./menu";
+import { bindActionButton } from "./menu";
 import { combineLatest } from "rxjs";
 import { commonGoEvents } from "/src/helpers/component";
 
@@ -58,7 +58,9 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
               Flow.wait(commonGoEvents.animationcomplete(obj.name).subject),
               Flow.call(stateData.setValue(true)),
             ),
-            frameKey: "action-attack",
+            key: "activate-switch",
+            create: (pos) => (scene) =>
+              createSpriteAt(scene, pos, "menu", "action-attack"),
           },
         ),
         Flow.observe(stateData.subject, (value) =>

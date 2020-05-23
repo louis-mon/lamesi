@@ -1,5 +1,5 @@
 import * as Phaser from "phaser";
-import { ManipulableObject } from "/src/helpers/phaser";
+import { ManipulableObject, getObjectPosition } from "/src/helpers/phaser";
 import { debugObjectPos } from "../common";
 import {
   sceneDef,
@@ -10,9 +10,6 @@ import {
 import { eventsHelpers } from "../global-events";
 import { gameWidth, gameHeight } from "/src/scenes/common";
 import { menuHelpers } from "../menu";
-
-const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
-  new Phaser.Math.Vector2(x, y);
 
 const goalPlane = 0;
 const shadowPlane = goalPlane + 1;

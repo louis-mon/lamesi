@@ -7,71 +7,81 @@ import {
   customEvent,
   declareGoInstances,
   commonGoEvents,
-  SceneContext,
 } from "/src/helpers/component";
-import { annotate } from "/src/helpers/typing";
+import { annotate, ValueOf } from "/src/helpers/typing";
 import { combineContext, FuncOrConst } from "/src/helpers/functional";
 import { Observable } from "rxjs";
 import { startWith, pairwise } from "rxjs/operators";
+import { getObjectPosition } from "/src/helpers/phaser";
+import _ from "lodash";
 
 const actionEmptyFrame = "action-empty";
 
-type BindActionParams = { action: Flow.PhaserNode; frameKey: string };
-export const menuButtonClass = defineGoClass({
+type BindActionParams = {
+  action: Flow.PhaserNode;
+  key: string;
+  create: (
+    p: Phaser.Math.Vector2,
+  ) => (scene: Phaser.Scene) => Phaser.GameObjects.GameObject;
+};
+
+const buttonKey = (key: string) => `menu-button-${key}`;
+
+const menuButtonClass = defineGoClass({
   events: {
     bindAction: customEvent<BindActionParams>(),
-    unbindAction: customEvent(),
+    unbindAction: customEvent<BindActionParams>(),
   },
   data: { action: annotate<Flow.PhaserNode>() },
   kind: annotate<Phaser.GameObjects.Sprite>(),
 });
 
-export const buttons = declareGoInstances(menuButtonClass, "buttons", {
+const buttons = declareGoInstances(menuButtonClass, "buttons", {
   skill: {},
   action: {},
 });
 
 export const makeMenu = (scene: Phaser.Scene) => {
   const menuScene = menuHelpers.getMenuScene(scene);
-  buttons.skill.create(
-    menuScene.addRightButton(({ x, y }) =>
-      scene.add.sprite(x, y, "menu", actionEmptyFrame),
-    ),
-  );
-  buttons.action.create(
-    menuScene.addRightButton(({ x, y }) =>
-      scene.add.sprite(x, y, "menu", actionEmptyFrame),
-    ),
-  );
 
-  buttons.action.data.action.setValue(Flow.noop)(scene);
-  const actionButtonFlow = Flow.parallel(
-    Flow.observe(
-      buttons.action.events.bindAction.subject,
-      ({ action, frameKey }) =>
+  const buttonsFlow = [buttons.skill, buttons.action].map((button) => {
+    button.create(
+      menuScene.addRightButton(({ x, y }) =>
+        scene.add.sprite(x, y, "menu", actionEmptyFrame),
+      ),
+    );
+    button.data.action.setValue(Flow.noop)(scene);
+    return Flow.parallel(
+      Flow.observe(
+        button.events.bindAction.subject,
+        ({ action, create, key }) =>
+          Flow.call(
+            combineContext(
+              (scene) =>
+                create(getObjectPosition(button.getObj(scene)))(scene).setName(
+                  buttonKey(key),
+                ),
+              button.data.action.setValue(action),
+            ),
+          ),
+      ),
+      Flow.observe(button.events.unbindAction.subject, ({ key }) =>
         Flow.call(
           combineContext(
-            () => buttons.action.getObj(scene).setFrame(frameKey),
-            buttons.action.data.action.setValue(action),
+            () => scene.children.getByName(buttonKey(key))!.destroy(),
+            button.data.action.setValue(Flow.noop),
           ),
         ),
-    ),
-    Flow.observe(buttons.action.events.unbindAction.subject, () =>
-      Flow.call(
-        combineContext(
-          () => buttons.action.getObj(scene).setFrame(actionEmptyFrame),
-          buttons.action.data.action.setValue(Flow.noop),
-        ),
       ),
-    ),
-    Flow.observe(commonGoEvents.pointerdown(buttons.action.key).subject, () =>
-      buttons.action.data.action.value(scene),
-    ),
-  );
-  Flow.run(scene, actionButtonFlow);
+      Flow.observe(commonGoEvents.pointerdown(button.key).subject, () =>
+        button.data.action.value(scene),
+      ),
+    );
+  });
+  Flow.run(scene, Flow.parallel(...buttonsFlow));
 };
 
-export const bindActionButton = (
+const bindMenuButton = (button: ValueOf<typeof buttons>) => (
   condition: Observable<boolean>,
   params: BindActionParams,
 ) =>
@@ -81,8 +91,11 @@ export const bindActionButton = (
       if (previous === value) return Flow.noop;
       return Flow.call(
         value
-          ? buttons.action.events.bindAction.emit(params)
-          : buttons.action.events.unbindAction.emit({}),
+          ? button.events.bindAction.emit(params)
+          : button.events.unbindAction.emit(params),
       );
     },
   );
+
+export const bindActionButton = bindMenuButton(buttons.action);
+export const bindSkillButton = bindMenuButton(buttons.skill);
