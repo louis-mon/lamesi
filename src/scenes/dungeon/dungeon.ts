@@ -153,13 +153,12 @@ export class DungeonScene extends Phaser.Scene {
   create() {
     const playerFlow = createPlayer(this);
     const switchFactory = Npc.switchCrystalFactory(this);
-    const doorFactory = Npc.doorFactory(this);
 
     Npc.createNpcAnimations(this);
     Wp.placeWps(this);
 
     switchFactory(Def.switches.room4ForRoom5Door);
-    doorFactory();
+    Npc.createDoors(this);
 
     Flow.run(
       this,
@@ -168,7 +167,7 @@ export class DungeonScene extends Phaser.Scene {
         Wp.wpsAction,
         Flow.when({
           condition: Def.switches.room4ForRoom5Door.data.state.subject,
-          action: Npc.openDoor(),
+          action: Npc.openDoor("door4To5"),
         }),
         linkSwitchWithCircleSymbol(this),
       ),

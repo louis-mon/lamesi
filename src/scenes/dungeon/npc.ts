@@ -9,6 +9,7 @@ import { createSpriteAt } from "/src/helpers/phaser";
 import { bindActionButton } from "./menu";
 import { combineLatest } from "rxjs";
 import { commonGoEvents } from "/src/helpers/component";
+import _ from "lodash";
 
 export const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
@@ -71,53 +72,63 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
   };
 };
 
-const doorDef = {
-  wp1: { room: 4, x: 4, y: 2 },
-  wp2: { room: 5, x: 0, y: 2 },
-  key: "door-4-5",
+const doors = {
+  door4To5: Wp.getWpLink(4, 5),
+  door4To3: Wp.getWpLink(4, 3),
+  door4To1: Wp.getWpLink(4, 1),
+  door5To2: Wp.getWpLink(5, 2),
+  door3To0: Wp.getWpLink(3, 0),
 };
 
-const doorObjectKey = (doorKey: string, pos: number) => `${doorKey}-${pos}`;
+type DoorKey = keyof typeof doors;
 
-export const openDoor = (): Flow.PhaserNode =>
+const doorObjectKey = (doorKey: DoorKey, pos: number) => `${doorKey}-${pos}`;
+const isDoorHorizontal = (doorKey: DoorKey): boolean =>
+  Wp.getWpDef(doors[doorKey].wp1).x === Wp.getWpDef(doors[doorKey].wp2).x;
+
+export const openDoor = (doorKey: DoorKey): Flow.PhaserNode =>
   Flow.lazy((scene) => {
+    const doorDef = doors[doorKey];
     return Flow.sequence(
       Flow.parallel(
         ...[0, 1].map((i) => {
-          const door = scene.children.getByName(
-            doorObjectKey(doorDef.key, i),
+          const doorObj = scene.children.getByName(
+            doorObjectKey(doorKey, i),
           ) as Phaser.GameObjects.Sprite;
+          const coord = isDoorHorizontal(doorKey) ? "x" : "y";
           return Flow.tween({
-            targets: door,
-            props: { y: door.y - 40 * (i * 2 - 1) },
+            targets: doorObj,
+            props: { [coord]: doorObj[coord] - 40 * (i * 2 - 1) },
             duration: 750,
           });
         }),
       ),
       Flow.call(
         Wp.setGraphLinkData({
-          wp1: Wp.getWpId(doorDef.wp1),
-          wp2: Wp.getWpId(doorDef.wp2),
+          ...doorDef,
           open: true,
         }),
       ),
     );
   });
 
-export const doorFactory = (scene: Phaser.Scene) => {
-  return () => {
-    const wp1 = Wp.wpPos(doorDef.wp1);
-    const wp2 = Wp.wpPos(doorDef.wp2);
+const doorSepBase = new Vector2(0, 33);
+export const createDoors = (scene: Phaser.Scene) => {
+  _.mapValues(doors, (doorDef, doorKey: DoorKey) => {
+    const wp1 = Wp.wpPos(Wp.getWpDef(doorDef.wp1));
+    const wp2 = Wp.wpPos(Wp.getWpDef(doorDef.wp2));
     const middlePos = wp1.clone().add(wp2).scale(0.5);
-    const doorSep = new Vector2(0, 33);
+    const doorSep = isDoorHorizontal(doorKey)
+      ? doorSepBase.clone().rotate(Math.PI / 2)
+      : doorSepBase;
     const points = [
       middlePos.clone().add(doorSep),
       middlePos.clone().subtract(doorSep),
     ];
     points.forEach((point, i) =>
       createSpriteAt(scene, point, "npc", "door-vertical")
-        .setName(doorObjectKey(doorDef.key, i))
+        .setName(doorObjectKey(doorKey, i))
         .setDepth(Def.depths.npc),
     );
-  };
+  });
 };

@@ -10,14 +10,13 @@ import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
 import { menuZoneSize } from "../menu";
 import { combineLatest } from "rxjs";
-import { auditTime, map, tap } from "rxjs/operators";
+import { auditTime, map } from "rxjs/operators";
 import { annotate } from "/src/helpers/typing";
 import {
   defineGoClass,
   declareGoInstance,
   commonGoEvents,
 } from "/src/helpers/component";
-import { combineContext } from "/src/helpers/functional";
 
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
@@ -27,8 +26,11 @@ const roomSize = new Vector2(530, 400);
 const roomMargin = new Vector2(60, 55);
 const roomPadding = new Vector2(45, 30);
 const scenePos = new Vector2(menuZoneSize + 20, 100);
+
+const getRoomPos = (room: number) => Phaser.Math.ToXY(room, 3, 2);
+
 export const wpPos = (wp: WpDef) => {
-  const roomPos = Phaser.Math.ToXY(wp.room, 3, 2);
+  const roomPos = getRoomPos(wp.room);
   return scenePos
     .clone()
     .add(roomPadding)
@@ -60,6 +62,31 @@ const allWpById = _.keyBy(allWp, getWpId);
 
 export const getWpDef = (id: WpId): WpDef => allWpById[id];
 
+export type WpLink = { wp1: WpId; wp2: WpId };
+
+export const getWpLink = (room1: number, room2: number): WpLink => {
+  const roomPos = {
+    [room1]: getRoomPos(room1),
+    [room2]: getRoomPos(room2),
+  };
+  const getCoordinate = (coord: keyof Vector2, from: number, to: number) =>
+    roomPos[from][coord] === roomPos[to][coord]
+      ? 2
+      : roomPos[from][coord] < roomPos[to][coord]
+      ? 4
+      : 0;
+  const getLinkPart = (from: number, to: number) =>
+    getWpId({
+      room: from,
+      x: getCoordinate("x", from, to),
+      y: getCoordinate("y", from, to),
+    });
+  return {
+    wp1: getLinkPart(room1, room2),
+    wp2: getLinkPart(room2, room1),
+  };
+};
+
 const initialWpGraph = (): WpGraph => {
   return _.mapValues(allWpById, (wp, id) => ({
     links: Geom.pointsAround(new Vector2(wp), 1)
@@ -89,9 +116,7 @@ export const setGraphLinkData = ({
   wp1,
   wp2,
   open,
-}: {
-  wp1: WpId;
-  wp2: WpId;
+}: WpLink & {
   open: boolean;
 }) => (scene: Phaser.Scene) => {
   Def.scene.data.wpGraph.updateValue((graph) =>
