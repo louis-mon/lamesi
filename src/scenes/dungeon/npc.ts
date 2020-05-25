@@ -19,6 +19,7 @@ import {
 } from "/src/helpers/component";
 import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
+import { combineContext } from "/src/helpers/functional";
 
 export const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
@@ -233,7 +234,11 @@ export const altarComponent = (params: AltarComponentParams) => {
               create: ({ pos }) => (scene) =>
                 createImageAt(scene, pos, "menu", "action-take"),
               action: Flow.call(
-                Def.scene.data.currentSkill.setValue(params.key),
+                combineContext(
+                  Def.scene.data.currentSkill.setValue(params.key),
+                  (scene) =>
+                    altarClass.getObj(itemKey)(scene).setVisible(false),
+                ),
               ),
             },
           ),
