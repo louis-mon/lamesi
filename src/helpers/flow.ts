@@ -63,7 +63,7 @@ type ObservableFactory<C, T> = FuncOrConst<C, Observable<T>>;
 const composeObservable = <C, T, U>(
   factory: ObservableFactory<C, T>,
   f: (t: Observable<T>) => Observable<U>,
-): ObservableFactory<C, U> => (c) => f(funcOrConstValue(factory, c));
+): ObservableFactory<C, U> => (c) => f(funcOrConstValue(c, factory));
 
 export function observe<C>(
   observable: ObservableFactory<C, ActionNode<C>>,
@@ -78,7 +78,7 @@ export function observe<C, T>(
   actionMapper?: (t: T) => ActionNode<C>,
 ): ActionNode<C> {
   return (context) => (p) => {
-    const source = funcOrConstValue(factory, context);
+    const source = funcOrConstValue(context, factory);
     const observable = actionMapper
       ? (source as Observable<T>).pipe(map(actionMapper))
       : (source as Observable<ActionNode<C>>);
@@ -114,7 +114,7 @@ export const when = <C>(params: {
   action: ActionNode<C>;
 }): ActionNode<C> => (c) =>
   observe(
-    funcOrConstValue(params.condition, c).pipe(
+    funcOrConstValue(c, params.condition).pipe(
       first((x) => x),
       map(() => params.action),
     ),
@@ -153,6 +153,11 @@ export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
 export const lazy = <C>(action: (c: C) => ActionNode<C>): ActionNode<C> => (
   c,
 ) => (p) => action(c)(c)(p);
+
+export const withContext = <C, CNew>(
+  newContext: (old: C) => CNew,
+  action: ActionNode<CNew>,
+): ActionNode<C> => (c) => (p) => action(newContext(c))(p);
 
 /**
  * Start execution of a flow with a given context

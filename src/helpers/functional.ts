@@ -3,7 +3,7 @@ import { unknown } from "purify-ts";
 
 export type FuncOrConst<P, R> = R | ((p: P) => R);
 
-export const funcOrConstValue = <P, R>(f: FuncOrConst<P, R>, p: P): R =>
+export const funcOrConstValue = <P, R>(p: P, f: FuncOrConst<P, R>): R =>
   _.isFunction(f) ? f(p) : f;
 
 export const combineContext = <C>(

@@ -2,14 +2,16 @@ import * as Phaser from "phaser";
 
 import * as Flow from "./flow";
 import _ from "lodash";
+import { FuncOrConst, funcOrConstValue } from "./functional";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
 export type PhaserNode = Flow.ActionNode<Context>;
 
 export const tween = (
-  config: Phaser.Types.Tweens.TweenBuilderConfig,
+  configFactory: FuncOrConst<Context, Phaser.Types.Tweens.TweenBuilderConfig>,
 ): PhaserNode => (scene) => (params) => {
+  const config = funcOrConstValue(scene, configFactory);
   scene.tweens.add({
     ...config,
     onComplete: (t, targets, param) => {

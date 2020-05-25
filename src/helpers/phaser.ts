@@ -8,13 +8,17 @@ export type ManipulableObject =
   | Phaser.GameObjects.Shape
   | Phaser.GameObjects.Image;
 
+export type SceneContext<T> = (scene: Phaser.Scene) => T;
+
 export const placeAt = (
   obj: Phaser.GameObjects.Components.Transform,
   pos: Vector2Like,
 ) => obj.setPosition(pos.x, pos.y);
 
-export const getObjectPosition = ({ x, y }: Phaser.GameObjects.Components.Transform) =>
-  new Phaser.Math.Vector2(x, y);
+export const getObjectPosition = ({
+  x,
+  y,
+}: Phaser.GameObjects.Components.Transform) => new Phaser.Math.Vector2(x, y);
 
 export const createSpriteAt = (
   scene: Phaser.Scene,

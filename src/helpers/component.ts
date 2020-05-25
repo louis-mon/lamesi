@@ -5,6 +5,7 @@ import { UnknownFunction, annotate } from "./typing";
 import { Observable, fromEvent, empty } from "rxjs";
 import { startWith } from "rxjs/operators";
 import { Maybe } from "purify-ts";
+import { SceneContext } from "./phaser";
 
 type WithSelector = { selector: UnknownFunction };
 
@@ -12,7 +13,6 @@ export const customEvent = <T>() => ({ selector: (x: T) => x });
 
 type DefineEventMappingParams = { [Key: string]: WithSelector };
 
-export type SceneContext<T> = (scene: Phaser.Scene) => T;
 type MakeObservable<T> = SceneContext<Observable<T>>;
 type EventHelper<T> = {
   subject: MakeObservable<T>;
@@ -144,6 +144,7 @@ type GoClassDef<
   events: EventMappingDef<Events, "go">;
   data: DataMappingDef<Data, "go">;
   config: Config;
+  getObj: (id: string) => (scene: Phaser.Scene) => Cl;
 };
 
 export const defineGoClass = <
@@ -166,6 +167,7 @@ export const defineGoClass = <
   config: config || ({} as Config),
   events: defineEvents(events, "go"),
   data: defineData(data, "go"),
+  getObj: (key) => (scene) => scene.children.getByName(key) as Cl,
 });
 
 export const commonGoEvents = defineEvents(
@@ -186,7 +188,7 @@ export const declareGoInstance = <
   key: string,
   config?: Config,
 ) => {
-  const getObj = (scene: Phaser.Scene) => scene.children.getByName(key)! as Cl;
+  const getObj = goClass.getObj(key);
   return {
     config: config || ({} as Config),
     create: (obj: Cl) => {

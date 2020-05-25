@@ -5,11 +5,20 @@ import { map, tap } from "rxjs/operators";
 import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import { createSpriteAt } from "/src/helpers/phaser";
-import { bindActionButton } from "./menu";
-import { combineLatest } from "rxjs";
-import { commonGoEvents } from "/src/helpers/component";
+import {
+  createSpriteAt,
+  SceneContext,
+  createImageAt,
+} from "/src/helpers/phaser";
+import { bindActionButton, bindSkillButton } from "./menu";
+import { combineLatest, Observable } from "rxjs";
+import {
+  commonGoEvents,
+  defineGoClass,
+  declareGoInstance,
+} from "/src/helpers/component";
 import _ from "lodash";
+import { annotate } from "/src/helpers/typing";
 
 export const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
@@ -22,6 +31,21 @@ export const createNpcAnimations = (scene: Phaser.Scene) => {
     }),
   });
 };
+
+const canPlayerDoAction = (params: {
+  pos: Wp.WpId;
+  disabled: SceneContext<Observable<boolean>>;
+}) => (scene: Phaser.Scene) =>
+  combineLatest([
+    Def.player.data.currentPos.subject(scene),
+    Def.player.data.isMoving.subject(scene),
+    params.disabled(scene),
+  ]).pipe(
+    map(
+      ([pos, isMoving, disabled]) =>
+        !disabled && !isMoving && pos === params.pos,
+    ),
+  );
 
 export const switchCrystalFactory = (scene: Phaser.Scene) => {
   return (def: Def.SwitchCrystalDef) => {
@@ -41,18 +65,10 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
       scene,
       Flow.parallel(
         bindActionButton(
-          combineLatest([
-            Def.player.data.currentPos.subject(scene),
-            Def.player.data.isMoving.subject(scene),
-            stateData.dataSubject(scene),
-          ]).pipe(
-            map(
-              ([pos, isMoving, isSwitchActive]) =>
-                !isMoving &&
-                pos === Wp.getWpId(def.config.wp) &&
-                !isSwitchActive,
-            ),
-          ),
+          canPlayerDoAction({
+            pos: Wp.getWpId(def.config.wp),
+            disabled: stateData.dataSubject,
+          })(scene),
           {
             action: Flow.sequence(
               Flow.call(() => obj.anims.play("switch")),
@@ -60,7 +76,7 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
               Flow.call(stateData.setValue(true)),
             ),
             key: "activate-switch",
-            create: (pos) => (scene) =>
+            create: ({ pos }) => (scene) =>
               createSpriteAt(scene, pos, "menu", "action-attack"),
           },
         ),
@@ -131,4 +147,101 @@ export const createDoors = (scene: Phaser.Scene) => {
         .setDepth(Def.depths.npc),
     );
   });
+};
+
+type AltarComponentParams = {
+  wp: Wp.WpDef;
+  createItem: (p: {
+    pos: Vector2;
+  }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
+  key: string;
+  action: Flow.PhaserNode;
+};
+
+const altarClass = defineGoClass({
+  data: { isCurrentlyUsed: annotate<boolean>() },
+  events: {},
+  kind: annotate<Phaser.GameObjects.Sprite>(),
+});
+
+export const altarComponent = (params: AltarComponentParams) => {
+  const altarKey = `altar-${params.key}-altar`;
+  const itemKey = `altar-${params.key}-item`;
+  const itemDef = declareGoInstance(altarClass, itemKey);
+  const basePos = Wp.wpPos(params.wp);
+  const hasThisSkill: SceneContext<Observable<boolean>> = (scene) =>
+    Def.scene.data.currentSkill
+      .dataSubject(scene)
+      .pipe(map((currentSkill) => currentSkill === params.key));
+  const activateAltar: Flow.PhaserNode = Flow.lazy((scene) =>
+    Flow.sequence(
+      Flow.call(() => {
+        createSpriteAt(
+          scene,
+          basePos.clone().add(new Vector2(0, -20)),
+          "npc",
+          "altar",
+        )
+          .setDepth(Def.depths.npc)
+          .setName(altarKey)
+          .setScale(1, 0);
+      }),
+      Flow.tween(() => ({
+        targets: altarClass.getObj(altarKey)(scene),
+        props: { scaleY: 1 },
+        duration: 300,
+      })),
+      Flow.call(() =>
+        itemDef.create(
+          params
+            .createItem({ pos: basePos.clone().add(new Vector2(0, -55)) })(
+              scene,
+            )
+            .setDepth(Def.depths.floating)
+            .setScale(0),
+        ),
+      ),
+      Flow.lazy(() =>
+        Flow.parallel(
+          Flow.sequence(
+            Flow.tween({
+              targets: altarClass.getObj(itemKey)(scene),
+              props: { scale: 0.65 },
+              duration: 500,
+            }),
+            Flow.tween({
+              targets: altarClass.getObj(itemKey)(scene),
+              props: { y: basePos.y - 42 },
+              duration: 1500,
+              ease: "Cubic.InOut",
+              loop: -1,
+              yoyo: true,
+            }),
+          ),
+          bindSkillButton(hasThisSkill(scene), {
+            key: itemKey,
+            create: params.createItem,
+            action: params.action,
+          }),
+          bindActionButton(
+            canPlayerDoAction({
+              pos: Wp.getWpId(params.wp),
+              disabled: hasThisSkill,
+            })(scene),
+            {
+              key: "action-take-item",
+              create: ({ pos }) => (scene) =>
+                createImageAt(scene, pos, "menu", "action-take"),
+              action: Flow.call(
+                Def.scene.data.currentSkill.setValue(params.key),
+              ),
+            },
+          ),
+        ),
+      ),
+    ),
+  );
+  return {
+    activateAltar,
+  };
 };

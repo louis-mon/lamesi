@@ -10,10 +10,18 @@ import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent } from "../common";
 import { annotate } from "/src/helpers/typing";
-import { defineGoClass, declareGoInstance } from "/src/helpers/component";
+import {
+  defineGoClass,
+  declareGoInstance,
+  customEvent,
+} from "/src/helpers/component";
+import { combineContext } from "/src/helpers/functional";
+import { combineLatest } from "rxjs";
+import { map, tap } from "rxjs/operators";
+import { arrowSkill, initSkills } from "./skills";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const initialWp: Wp.WpDef = { room: 4, x: 0, y: 3 };
+  const initialWp: Wp.WpDef = { room: 5, x: 0, y: 3 };
   const player = Def.player.create(
     createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
       Def.depths.npc,
@@ -74,7 +82,8 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
   const mechanisms = [
     {
       switchDef: Def.switches.room5Rotate1,
-      startTurn: 2,
+      startTurn: 0,
+      //startTurn: 2,
     },
     {
       switchDef: Def.switches.room5Rotate2,
@@ -82,11 +91,12 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
     },
     {
       switchDef: Def.switches.room5Rotate3,
-      startTurn: 3,
+      startTurn: 0,
+      //startTurn: 3,
     },
   ];
   const rotateMechClass = defineGoClass({
-    events: {},
+    events: { turn: customEvent() },
     data: {
       turn: annotate<number>(),
     },
@@ -115,23 +125,37 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
     const state = switchDef.data.state;
 
     return Flow.parallel(
-      Flow.observe(turnData.subject, (turn) =>
-        Flow.sequence(
+      Flow.observe(rotateDef.events.turn.subject, () => {
+        const newTurn = (turnData.value(scene) + 1) % 6;
+        return Flow.sequence(
           Flow.rotateTween({
             targets: rotateObj,
             duration: 400,
-            props: { angle: getRotateMechAngle(turn) },
+            props: { angle: getRotateMechAngle(newTurn) },
           }),
-          Flow.call(state.setValue(false)),
-        ),
-      ),
+          Flow.call(
+            combineContext(state.setValue(false), turnData.setValue(newTurn)),
+          ),
+        );
+      }),
       Flow.repeatWhen({
         condition: state.subject,
-        action: Flow.call(turnData.updateValue((v) => v + 1)),
+        action: Flow.call(rotateDef.events.turn.emit({})),
       }),
     );
   });
-  return Flow.parallel(...switchFlows);
+  const solvePuzzle = Flow.when({
+    condition: combineLatest(
+      mechanisms.map(({ switchDef }) => {
+        const rotateDef = getRotateMechDef(switchDef.key);
+        return rotateDef.data.turn
+          .dataSubject(scene)
+          .pipe(map((turn) => turn === 0));
+      }),
+    ).pipe(map((rightPos) => rightPos.every((p) => p))),
+    action: Flow.call(Def.scene.data.arrowAvailable.setValue(true)),
+  });
+  return Flow.parallel(...switchFlows, solvePuzzle);
 };
 
 export class DungeonScene extends Phaser.Scene {
@@ -160,20 +184,27 @@ export class DungeonScene extends Phaser.Scene {
     switchFactory(Def.switches.room4ForRoom5Door);
     Npc.createDoors(this);
 
-    Flow.run(
-      this,
-      Flow.parallel(
-        playerFlow,
-        Wp.wpsAction,
-        Flow.when({
-          condition: Def.switches.room4ForRoom5Door.data.state.subject,
-          action: Npc.openDoor("door4To5"),
-        }),
-        linkSwitchWithCircleSymbol(this),
-      ),
+    const initActions = Flow.sequence(initSkills);
+
+    const ambiantActions = Flow.parallel(
+      playerFlow,
+      Wp.wpsAction,
+      Flow.when({
+        condition: Def.switches.room4ForRoom5Door.data.state.subject,
+        action: Npc.openDoor("door4To5"),
+      }),
+      linkSwitchWithCircleSymbol(this),
+      arrowSkill,
     );
+    Flow.run(this, Flow.sequence(initActions, ambiantActions));
     this.events.once(subWordGameBeginEvent, () => {
       makeMenu(this);
     });
+  }
+
+  update() {
+    this.children.sort("y", (obj1: any, obj2: any) =>
+      obj1.depth === obj2.depth ? obj1.y > obj2.y : obj1.depth > obj2.depth,
+    );
   }
 }

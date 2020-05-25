@@ -16,7 +16,12 @@ export type WpDef = { room: number; x: number; y: number };
 export type WpGraph = { [key: string]: { links: WpId[] } };
 
 export const scene = defineSceneClass({
-  data: { isWpActive: annotate<boolean>(), wpGraph: annotate<WpGraph>() },
+  data: {
+    isWpActive: annotate<boolean>(),
+    wpGraph: annotate<WpGraph>(),
+    arrowAvailable: annotate<boolean>(),
+    currentSkill: annotate<string>(),
+  },
   events: {
     movePlayer: customEvent<{ path: WpId[] }>(),
   },
@@ -60,4 +65,5 @@ export const depths = {
   carpet: 1,
   wp: 5,
   npc: 10,
+  floating: 15,
 };

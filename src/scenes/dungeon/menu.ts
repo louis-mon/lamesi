@@ -12,7 +12,7 @@ import { annotate, ValueOf } from "/src/helpers/typing";
 import { combineContext, FuncOrConst } from "/src/helpers/functional";
 import { Observable } from "rxjs";
 import { startWith, pairwise } from "rxjs/operators";
-import { getObjectPosition } from "/src/helpers/phaser";
+import { getObjectPosition, ManipulableObject } from "/src/helpers/phaser";
 import _ from "lodash";
 
 const actionEmptyFrame = "action-empty";
@@ -20,9 +20,9 @@ const actionEmptyFrame = "action-empty";
 type BindActionParams = {
   action: Flow.PhaserNode;
   key: string;
-  create: (
-    p: Phaser.Math.Vector2,
-  ) => (scene: Phaser.Scene) => Phaser.GameObjects.GameObject;
+  create: (params: {
+    pos: Phaser.Math.Vector2;
+  }) => (scene: Phaser.Scene) => ManipulableObject;
 };
 
 const buttonKey = (key: string) => `menu-button-${key}`;
@@ -47,38 +47,47 @@ export const makeMenu = (scene: Phaser.Scene) => {
   const buttonsFlow = [buttons.skill, buttons.action].map((button) => {
     button.create(
       menuScene.addRightButton(({ x, y }) =>
-        scene.add.sprite(x, y, "menu", actionEmptyFrame),
+        menuScene.add.sprite(x, y, "menu", actionEmptyFrame),
       ),
     );
-    button.data.action.setValue(Flow.noop)(scene);
+    button.data.action.setValue(Flow.noop)(menuScene);
     return Flow.parallel(
       Flow.observe(
         button.events.bindAction.subject,
         ({ action, create, key }) =>
-          Flow.call(
-            combineContext(
-              (scene) =>
-                create(getObjectPosition(button.getObj(scene)))(scene).setName(
-                  buttonKey(key),
-                ),
-              button.data.action.setValue(action),
+          Flow.sequence(
+            Flow.call(
+              combineContext(
+                () =>
+                  create({ pos: getObjectPosition(button.getObj(menuScene)) })(
+                    menuScene,
+                  )
+                    .setScale(1.3)
+                    .setName(buttonKey(key)),
+                button.data.action.setValue(action),
+              ),
             ),
+            Flow.tween(() => ({
+              targets: menuScene.children.getByName(buttonKey(key)),
+              props: { scale: 1 },
+              duration: 500,
+            })),
           ),
       ),
       Flow.observe(button.events.unbindAction.subject, ({ key }) =>
         Flow.call(
           combineContext(
-            () => scene.children.getByName(buttonKey(key))!.destroy(),
+            () => menuScene.children.getByName(buttonKey(key))!.destroy(),
             button.data.action.setValue(Flow.noop),
           ),
         ),
       ),
       Flow.observe(commonGoEvents.pointerdown(button.key).subject, () =>
-        button.data.action.value(scene),
+        Flow.withContext(() => scene, button.data.action.value(menuScene)),
       ),
     );
   });
-  Flow.run(scene, Flow.parallel(...buttonsFlow));
+  Flow.run(menuScene, Flow.parallel(...buttonsFlow));
 };
 
 const bindMenuButton = (button: ValueOf<typeof buttons>) => (
@@ -89,10 +98,13 @@ const bindMenuButton = (button: ValueOf<typeof buttons>) => (
     condition.pipe(startWith(false), pairwise()),
     ([previous, value]) => {
       if (previous === value) return Flow.noop;
-      return Flow.call(
-        value
-          ? button.events.bindAction.emit(params)
-          : button.events.unbindAction.emit(params),
+      return Flow.withContext(
+        menuHelpers.getMenuScene,
+        Flow.call(
+          value
+            ? button.events.bindAction.emit(params)
+            : button.events.unbindAction.emit(params),
+        ),
       );
     },
   );
