@@ -103,19 +103,33 @@ const doorObjectKey = (doorKey: DoorKey, pos: number) => `${doorKey}-${pos}`;
 const isDoorHorizontal = (doorKey: DoorKey): boolean =>
   Wp.getWpDef(doors[doorKey].wp1).x === Wp.getWpDef(doors[doorKey].wp2).x;
 
-export const openDoor = (doorKey: DoorKey): Flow.PhaserNode =>
+const doorSepBase = new Vector2(0, 33);
+const doorPositions = (doorKey: DoorKey, open: boolean) => {
+  const doorDef = doors[doorKey];
+  const wp1 = Wp.wpPos(Wp.getWpDef(doorDef.wp1));
+  const wp2 = Wp.wpPos(Wp.getWpDef(doorDef.wp2));
+  const middlePos = wp1.clone().add(wp2).scale(0.5);
+  const doorSep = (isDoorHorizontal(doorKey)
+    ? doorSepBase.clone().rotate(Math.PI / 2)
+    : doorSepBase
+  )
+    .clone()
+    .scale(open ? 2 : 1);
+  return [middlePos.clone().add(doorSep), middlePos.clone().subtract(doorSep)];
+};
+
+const activateDoor = (open: boolean) => (doorKey: DoorKey): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const doorDef = doors[doorKey];
-    return Flow.sequence(
+    const actions: Flow.PhaserNode[] = [
       Flow.parallel(
-        ...[0, 1].map((i) => {
+        ...doorPositions(doorKey, open).map(({ x, y }, i) => {
           const doorObj = scene.children.getByName(
             doorObjectKey(doorKey, i),
           ) as Phaser.GameObjects.Sprite;
-          const coord = isDoorHorizontal(doorKey) ? "x" : "y";
           return Flow.tween({
             targets: doorObj,
-            props: { [coord]: doorObj[coord] - 40 * (i * 2 - 1) },
+            props: { x, y },
             duration: 750,
           });
         }),
@@ -123,26 +137,20 @@ export const openDoor = (doorKey: DoorKey): Flow.PhaserNode =>
       Flow.call(
         Wp.setGraphLinkData({
           ...doorDef,
-          open: true,
+          open,
         }),
       ),
-    );
+    ];
+    return Flow.sequence(...(open ? actions : actions.slice().reverse()));
   });
 
-const doorSepBase = new Vector2(0, 33);
+export const openDoor = activateDoor(true);
+
+export const closeDoor = activateDoor(false);
+
 export const createDoors = (scene: Phaser.Scene) => {
   _.mapValues(doors, (doorDef, doorKey: DoorKey) => {
-    const wp1 = Wp.wpPos(Wp.getWpDef(doorDef.wp1));
-    const wp2 = Wp.wpPos(Wp.getWpDef(doorDef.wp2));
-    const middlePos = wp1.clone().add(wp2).scale(0.5);
-    const doorSep = isDoorHorizontal(doorKey)
-      ? doorSepBase.clone().rotate(Math.PI / 2)
-      : doorSepBase;
-    const points = [
-      middlePos.clone().add(doorSep),
-      middlePos.clone().subtract(doorSep),
-    ];
-    points.forEach((point, i) =>
+    doorPositions(doorKey, false).forEach((point, i) =>
       createSpriteAt(scene, point, "npc", "door-vertical")
         .setName(doorObjectKey(doorKey, i))
         .setDepth(Def.depths.npc),
@@ -179,7 +187,7 @@ export const altarComponent = (params: AltarComponentParams) => {
       Flow.call(() => {
         createSpriteAt(
           scene,
-          basePos.clone().add(new Vector2(0, -20)),
+          basePos.clone().add(new Vector2(0, -25)),
           "npc",
           "altar",
         )
@@ -195,7 +203,7 @@ export const altarComponent = (params: AltarComponentParams) => {
       Flow.call(() =>
         itemDef.create(
           params
-            .createItem({ pos: basePos.clone().add(new Vector2(0, -55)) })(
+            .createItem({ pos: basePos.clone().add(new Vector2(0, -60)) })(
               scene,
             )
             .setDepth(Def.depths.floating)
@@ -212,7 +220,7 @@ export const altarComponent = (params: AltarComponentParams) => {
             }),
             Flow.tween({
               targets: altarClass.getObj(itemKey)(scene),
-              props: { y: basePos.y - 42 },
+              props: { y: basePos.y - 50 },
               duration: 1500,
               ease: "Cubic.InOut",
               loop: -1,

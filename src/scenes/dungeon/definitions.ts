@@ -21,6 +21,7 @@ export const scene = defineSceneClass({
     wpGraph: annotate<WpGraph>(),
     arrowAvailable: annotate<boolean>(),
     currentSkill: annotate<string>(),
+    wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
   },
   events: {
     movePlayer: customEvent<{ path: WpId[] }>(),
@@ -56,6 +57,9 @@ export const switches = declareGoInstances(switchClass, "switch", {
   room4ForRoom5Door: {
     wp: { room: 4, x: 4, y: 3 },
     offset: new Vector2(25, 0),
+  },
+  room5ForRoom4Door: {
+    wp: {room: 5, x: 0, y: 0}, offset: new Vector2(-20, -10)
   },
 });
 export type SwitchCrystalDef = ValueOf<typeof switches>;

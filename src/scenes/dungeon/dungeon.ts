@@ -21,7 +21,7 @@ import { map, tap } from "rxjs/operators";
 import { arrowSkill, initSkills } from "./skills";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const initialWp: Wp.WpDef = { room: 5, x: 0, y: 3 };
+  const initialWp: Wp.WpDef = { room: 4, x: 0, y: 3 };
   const player = Def.player.create(
     createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
       Def.depths.npc,
@@ -158,6 +158,37 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
   return Flow.parallel(...switchFlows, solvePuzzle);
 };
 
+const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
+  Flow.call((scene) => {
+    const factory = Npc.switchCrystalFactory(scene);
+    factory(Def.switches.room4ForRoom5Door);
+    factory(Def.switches.room5ForRoom4Door);
+    Wp.setGroundObstacleRect({
+      room: 5,
+      wp1: { x: 0, y: 0 },
+      wp2: { x: 1, y: 1 },
+      open: false,
+    })(scene);
+  }),
+  Flow.parallel(
+    Flow.when({
+      condition: Def.switches.room4ForRoom5Door.data.state.subject,
+      action: Npc.openDoor("door4To5"),
+    }),
+    Flow.when({
+      condition: Def.switches.room5ForRoom4Door.data.state.subject,
+      action: Npc.openDoor("door4To5"),
+    }),
+    Flow.when({
+      condition: (scene) =>
+        Def.player.data.currentPos
+          .subject(scene)
+          .pipe(map((pos) => pos === Wp.getWpId({ room: 5, x: 0, y: 2 }))),
+      action: Npc.closeDoor("door4To5"),
+    }),
+  ),
+);
+
 export class DungeonScene extends Phaser.Scene {
   constructor() {
     super({
@@ -176,12 +207,9 @@ export class DungeonScene extends Phaser.Scene {
 
   create() {
     const playerFlow = createPlayer(this);
-    const switchFactory = Npc.switchCrystalFactory(this);
 
     Npc.createNpcAnimations(this);
-    Wp.placeWps(this);
-
-    switchFactory(Def.switches.room4ForRoom5Door);
+    Wp.initGroudMap(this);
     Npc.createDoors(this);
 
     const initActions = Flow.sequence(initSkills);
@@ -189,10 +217,7 @@ export class DungeonScene extends Phaser.Scene {
     const ambiantActions = Flow.parallel(
       playerFlow,
       Wp.wpsAction,
-      Flow.when({
-        condition: Def.switches.room4ForRoom5Door.data.state.subject,
-        action: Npc.openDoor("door4To5"),
-      }),
+      switchesForDoor4To5,
       linkSwitchWithCircleSymbol(this),
       arrowSkill,
     );
