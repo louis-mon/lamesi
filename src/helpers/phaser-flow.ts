@@ -3,6 +3,8 @@ import * as Phaser from "phaser";
 import * as Flow from "./flow";
 import _ from "lodash";
 import { FuncOrConst, funcOrConstValue } from "./functional";
+import { fromEventPattern, Observable } from "rxjs";
+import { SceneContext } from "./phaser";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
@@ -61,4 +63,32 @@ export const rotateTween = (
       };
     }),
   });
+};
+
+type ArcadeCollisionParams = {
+  object1: Phaser.GameObjects.GameObject;
+  object2: Phaser.GameObjects.GameObject;
+};
+export const observeArcadeOverlap = (params: {
+  object1:
+    | Phaser.GameObjects.Group
+    | Phaser.GameObjects.GameObject
+    | Phaser.GameObjects.GameObject[]
+    | Phaser.GameObjects.Group[];
+  object2:
+    | Phaser.GameObjects.Group
+    | Phaser.GameObjects.GameObject
+    | Phaser.GameObjects.GameObject[]
+    | Phaser.GameObjects.Group[];
+  processCallback?: ArcadePhysicsCallback | undefined;
+}): SceneContext<Observable<ArcadeCollisionParams>> => (scene) => {
+  return fromEventPattern(
+    (handler) =>
+      scene.physics.add.overlap(params.object1, params.object2, handler),
+    (handler, collider) => collider.destroy(),
+    (object1, object2) => ({
+      object1,
+      object2,
+    }),
+  );
 };

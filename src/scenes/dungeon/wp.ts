@@ -235,7 +235,7 @@ const initWalls: SceneContext<void> = (scene) => {
   Def.scene.data.wallGroup.setValue(wallGroup)(scene);
 };
 
-export const initGroudMap = (scene: Phaser.Scene) => {
+export const initGroundMap = (scene: Phaser.Scene) => {
   initWalls(scene);
 
   scene.add.image(0, 0, "rooms").setDepth(Def.depths.backgound).setOrigin(0, 0);

@@ -21,7 +21,7 @@ import { map, tap } from "rxjs/operators";
 import { arrowSkill, initSkills } from "./skills";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const initialWp: Wp.WpDef = { room: 4, x: 0, y: 3 };
+  const initialWp: Wp.WpDef = { room: 4, x: 3, y: 0 };
   const player = Def.player.create(
     createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
       Def.depths.npc,
@@ -134,7 +134,10 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
             props: { angle: getRotateMechAngle(newTurn) },
           }),
           Flow.call(
-            combineContext(state.setValue(false), turnData.setValue(newTurn)),
+            combineContext(
+              switchDef.events.deactivateSwitch.emit({}),
+              turnData.setValue(newTurn),
+            ),
           ),
         );
       }),
@@ -208,8 +211,8 @@ export class DungeonScene extends Phaser.Scene {
   create() {
     const playerFlow = createPlayer(this);
 
-    Npc.createNpcAnimations(this);
-    Wp.initGroudMap(this);
+    Npc.initNpc(this);
+    Wp.initGroundMap(this);
     Npc.createDoors(this);
 
     const initActions = Flow.sequence(initSkills);

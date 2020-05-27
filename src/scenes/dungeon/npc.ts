@@ -21,7 +21,7 @@ import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
 
-export const createNpcAnimations = (scene: Phaser.Scene) => {
+const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
     key: "switch",
     duration: 500,
@@ -31,6 +31,11 @@ export const createNpcAnimations = (scene: Phaser.Scene) => {
       prefix: "switch-",
     }),
   });
+};
+
+export const initNpc: SceneContext<void> = (scene) => {
+  createNpcAnimations(scene);
+  Def.scene.data.interactableGroup.setValue(scene.physics.add.group())(scene);
 };
 
 const canPlayerDoAction = (params: {
@@ -50,6 +55,22 @@ const canPlayerDoAction = (params: {
 
 export const switchCrystalFactory = (scene: Phaser.Scene) => {
   return (def: Def.SwitchCrystalDef) => {
+    let transitioning = false;
+    const playTransition = (anim: Flow.PhaserNode, toState: boolean) => () => {
+      if (def.data.state.value(scene) !== toState && !transitioning) {
+        transitioning = true;
+        return Flow.sequence(
+          anim,
+          Flow.wait(commonGoEvents.animationcomplete(obj.name).subject),
+          Flow.call(
+            combineContext(stateData.setValue(toState), () => {
+              transitioning = false;
+            }),
+          ),
+        );
+      }
+      return Flow.noop;
+    };
     const obj = def
       .create(
         createSpriteAt(
@@ -60,6 +81,9 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
         ),
       )
       .setDepth(Def.depths.npc);
+    Def.scene.data.interactableGroup.updateValue((group) => group.add(obj))(
+      scene,
+    );
     const stateData = def.data.state;
     stateData.setValue(false)(scene);
     Flow.run(
@@ -71,18 +95,28 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
             disabled: stateData.dataSubject,
           })(scene),
           {
-            action: Flow.sequence(
-              Flow.call(() => obj.anims.play("switch")),
-              Flow.wait(commonGoEvents.animationcomplete(obj.name).subject),
-              Flow.call(stateData.setValue(true)),
-            ),
+            action: Flow.call(def.events.activateSwitch.emit({})),
             key: "activate-switch",
             create: ({ pos }) => (scene) =>
               createSpriteAt(scene, pos, "menu", "action-attack"),
           },
         ),
-        Flow.observe(stateData.subject, (value) =>
-          value ? Flow.noop : Flow.call(() => obj.anims.playReverse("switch")),
+        Flow.observe(Def.interactableEvents.hitPhysical(obj.name).subject, () =>
+          Flow.call(def.events.activateSwitch.emit({})),
+        ),
+        Flow.observe(
+          def.events.activateSwitch.subject,
+          playTransition(
+            Flow.call(() => obj.anims.play("switch")),
+            true,
+          ),
+        ),
+        Flow.observe(
+          def.events.deactivateSwitch.subject,
+          playTransition(
+            Flow.call(() => obj.anims.playReverse("switch")),
+            false,
+          ),
         ),
       ),
     );
@@ -168,7 +202,7 @@ type AltarComponentParams = {
 };
 
 const altarClass = defineGoClass({
-  data: { isCurrentlyUsed: annotate<boolean>() },
+  data: {},
   events: {},
   kind: annotate<Phaser.GameObjects.Sprite>(),
 });

@@ -29,7 +29,7 @@ type DataHelper<T> = {
   updateValue: (f: (t: T) => T) => SceneContext<void>;
 };
 
-type ObjectKind = "go" | "scene" | "game";
+type ObjectKind = "go" | "scene" | "game" | "input";
 type HelperFactory<kind extends ObjectKind, E> = "go" extends kind
   ? (key: string) => E
   : E;
@@ -67,8 +67,9 @@ export const defineEvents = <
     });
     if (kind === "go") {
       return (id) => impl((scene) => scene.children.getByName(id));
-    } else if (kind === "game") impl((scene) => scene.game.events);
-    return impl((scene) => scene.events);
+    } else if (kind === "game") return impl((scene) => scene.game.events);
+    else if (kind === "input") return impl((scene) => scene.input);
+    else return impl((scene) => scene.events);
   }) as EventMappingDef<O, Kind>;
 
 type DefineDataMappingParams = { [Key: string]: unknown };
@@ -235,3 +236,15 @@ export const defineSceneClass = <
   events: defineEvents(events, "scene"),
   data: defineData(data, "scene"),
 });
+
+export const commonInputEvents = defineEvents(
+  {
+    pointerdown: {
+      selector: (
+        pointer: Phaser.Input.Pointer,
+        currentlyOver: Phaser.GameObjects.GameObject[],
+      ) => ({ pointer, currentlyOver }),
+    },
+  },
+  "input",
+);

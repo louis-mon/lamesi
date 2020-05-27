@@ -9,6 +9,7 @@ import {
   declareGoInstance,
   declareGoInstances,
   customEvent,
+  defineEvents,
 } from "/src/helpers/component";
 
 export type WpId = string & { __wpIdTag: null };
@@ -22,6 +23,7 @@ export const scene = defineSceneClass({
     arrowAvailable: annotate<boolean>(),
     currentSkill: annotate<string>(),
     wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
+    interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
   },
   events: {
     movePlayer: customEvent<{ path: WpId[] }>(),
@@ -39,13 +41,20 @@ export const playerClass = defineGoClass({
 
 export const player = declareGoInstance(playerClass, "player");
 
+export const interactableEvents = defineEvents(
+  {
+    hitPhysical: customEvent(),
+  },
+  "go",
+);
+
 type ObjectNextWp = {
   wp: WpDef;
   offset: Vector2;
 };
 export const switchClass = defineGoClass({
   data: { state: annotate<boolean>() },
-  events: {},
+  events: { activateSwitch: customEvent(), deactivateSwitch: customEvent() },
   kind: annotate<Phaser.GameObjects.Sprite>(),
   config: annotate<ObjectNextWp>(),
 });
@@ -59,7 +68,8 @@ export const switches = declareGoInstances(switchClass, "switch", {
     offset: new Vector2(25, 0),
   },
   room5ForRoom4Door: {
-    wp: {room: 5, x: 0, y: 0}, offset: new Vector2(-20, -10)
+    wp: { room: 5, x: 0, y: 0 },
+    offset: new Vector2(-20, -10),
   },
 });
 export type SwitchCrystalDef = ValueOf<typeof switches>;

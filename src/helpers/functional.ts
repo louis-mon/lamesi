@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { unknown } from "purify-ts";
+import { unknown, string } from "purify-ts";
 
 export type FuncOrConst<P, R> = R | ((p: P) => R);
 
@@ -13,3 +13,7 @@ export const combineContext = <C>(
     acc(c);
     f(c);
   });
+
+export const getProp = <T, P extends keyof T>(prop: P): ((t: T) => T[P]) => (
+  obj,
+) => obj[prop];
