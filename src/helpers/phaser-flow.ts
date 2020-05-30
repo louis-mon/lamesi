@@ -65,21 +65,19 @@ export const rotateTween = (
   });
 };
 
+type ArcadeCollisionObject =
+  | Phaser.GameObjects.Group
+  | Phaser.GameObjects.GameObject
+  | Phaser.GameObjects.GameObject[]
+  | Phaser.GameObjects.Group[];
 type ArcadeCollisionParams = {
   object1: Phaser.GameObjects.GameObject;
   object2: Phaser.GameObjects.GameObject;
+  getObjects(): Phaser.GameObjects.GameObject[];
 };
-export const observeArcadeOverlap = (params: {
-  object1:
-    | Phaser.GameObjects.Group
-    | Phaser.GameObjects.GameObject
-    | Phaser.GameObjects.GameObject[]
-    | Phaser.GameObjects.Group[];
-  object2:
-    | Phaser.GameObjects.Group
-    | Phaser.GameObjects.GameObject
-    | Phaser.GameObjects.GameObject[]
-    | Phaser.GameObjects.Group[];
+export const arcadeOverlapSubject = (params: {
+  object1: ArcadeCollisionObject;
+  object2: ArcadeCollisionObject;
   processCallback?: ArcadePhysicsCallback | undefined;
 }): SceneContext<Observable<ArcadeCollisionParams>> => (scene) => {
   return fromEventPattern(
@@ -89,6 +87,7 @@ export const observeArcadeOverlap = (params: {
     (object1, object2) => ({
       object1,
       object2,
+      getObjects: () => [object1, object2],
     }),
   );
 };

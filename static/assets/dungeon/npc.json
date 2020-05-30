@@ -168,31 +168,31 @@
         "y": 0.5
       }
     },
-    "switch-0": {
+    "light-particle": {
       "frame": {
         "x": 623,
         "y": 79,
-        "w": 30,
-        "h": 40
+        "w": 31,
+        "h": 31
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 2,
+        "x": 1,
         "y": 1,
-        "w": 30,
-        "h": 40
+        "w": 31,
+        "h": 31
       },
       "sourceSize": {
-        "w": 35,
-        "h": 45
+        "w": 32,
+        "h": 32
       },
       "pivot": {
         "x": 0.5,
         "y": 0.5
       }
     },
-    "switch-1": {
+    "switch-0": {
       "frame": {
         "x": 557,
         "y": 110,
@@ -216,7 +216,7 @@
         "y": 0.5
       }
     },
-    "switch-2": {
+    "switch-1": {
       "frame": {
         "x": 760,
         "y": 3,
@@ -240,7 +240,7 @@
         "y": 0.5
       }
     },
-    "switch-3": {
+    "switch-2": {
       "frame": {
         "x": 796,
         "y": 3,
@@ -264,9 +264,33 @@
         "y": 0.5
       }
     },
-    "spikes-v": {
+    "switch-3": {
       "frame": {
         "x": 832,
+        "y": 3,
+        "w": 30,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 1,
+        "w": 30,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 35,
+        "h": 45
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "spikes-v": {
+      "frame": {
+        "x": 868,
         "y": 3,
         "w": 28,
         "h": 80
@@ -367,7 +391,7 @@
     "image": "npc.png",
     "format": "RGBA8888",
     "size": {
-      "w": 863,
+      "w": 899,
       "h": 212
     },
     "scale": 1

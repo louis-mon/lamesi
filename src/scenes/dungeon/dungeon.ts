@@ -21,7 +21,7 @@ import { map, tap } from "rxjs/operators";
 import { arrowSkill, initSkills } from "./skills";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const initialWp: Wp.WpDef = { room: 4, x: 3, y: 0 };
+  const initialWp: Wp.WpDef = { room: 5, x: 3, y: 0 };
   const player = Def.player.create(
     createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
       Def.depths.npc,
