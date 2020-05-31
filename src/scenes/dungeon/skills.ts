@@ -39,11 +39,14 @@ export const arrowSkill: Flow.PhaserNode = Flow.lazy((scene) => {
       createItem: ({ pos }) => (scene) =>
         createSpriteAt(scene, pos, "menu", "magic-arrow"),
       action: Flow.sequence(
+        Flow.call(Def.scene.data.skillPointerActive.setValue(true)),
         Flow.observe(
           commonInputEvents.pointerdown.subject(scene).pipe(
             first(),
             map(({ pointer }) =>
               Flow.lazy(() => {
+                pointer.event.stopPropagation();
+                Def.scene.data.skillPointerActive.setValue(false)(scene);
                 const arrowObj = scene.physics.add.existing(
                   arrowDef
                     .create(

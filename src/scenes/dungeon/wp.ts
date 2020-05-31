@@ -182,6 +182,8 @@ export const setGroundObstacleLink = ({
       )
       .setName(key);
     Def.scene.data.interactableGroup.value(scene).add(wall);
+  } else if (kind === "none" && oldObj) {
+    oldObj.destroy();
   }
 };
 
@@ -310,7 +312,7 @@ export const initGroundMap = (scene: Phaser.Scene) => {
 };
 
 export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
-  const isActiveData = Def.scene.data.isWpActive;
+  const skillPointerActive = Def.scene.data.skillPointerActive;
   const wpGraphData = Def.scene.data.wpGraph;
   const currentPosData = Def.player.data.currentPos;
 
@@ -320,7 +322,7 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
       startPoint: currentPosData.value(scene),
     });
 
-  isActiveData.setValue(true)(scene);
+  skillPointerActive.setValue(false)(scene);
 
   const toggleWp = ({
     wpDef,
@@ -342,16 +344,13 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const computeWps = Flow.observe(
     combineLatest([
-      isActiveData.dataSubject(scene),
       wpGraphData.dataSubject(scene),
       currentPosData.dataSubject(scene),
     ]).pipe(
       auditTime(50),
-      map(([isActive]) => {
-        const getActiveWpIds = (): WpId[] => {
-          if (isActive) return _.keys(performBfs().paths) as WpId[];
-          return [];
-        };
+      map(() => {
+        const getActiveWpIds = (): WpId[] =>
+          _.keys(performBfs().paths) as WpId[];
         const activeWpIds = getActiveWpIds();
         const inactiveWps = _.difference(
           _.keys(allWpById),
@@ -372,7 +371,9 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
   const wpsFlow = allWp.map((wpDef) => {
     const wpId = getWpId(wpDef);
     return Flow.observe(commonGoEvents.pointerdown(wpId).subject, () => {
-      if (!wpClass.data.isActive(wpId).value(scene)) return Flow.noop;
+      const isSkillActive = skillPointerActive.value(scene);
+      if (isSkillActive || !wpClass.data.isActive(wpId).value(scene))
+        return Flow.noop;
       const wpsPath = Graph.extractPath(performBfs(), wpId);
       return Flow.call(Def.scene.events.movePlayer.emit({ path: wpsPath }));
     });

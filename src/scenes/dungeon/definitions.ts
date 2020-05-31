@@ -18,7 +18,8 @@ export type WpGraph = { [key: string]: { links: WpId[] } };
 
 export const scene = defineSceneClass({
   data: {
-    isWpActive: annotate<boolean>(),
+    // pointer input request active for special situations like arrow destination 
+    skillPointerActive: annotate<boolean>(),
     wpGraph: annotate<WpGraph>(),
     arrowAvailable: annotate<boolean>(),
     currentSkill: annotate<string>(),
