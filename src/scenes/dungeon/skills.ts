@@ -103,6 +103,7 @@ export const arrowSkill: Flow.PhaserNode = Flow.lazy((scene) => {
                     }),
                     Flow.call(() => {
                       arrowObj.destroy();
+                      lightParticles.destroy();
                     }),
                   );
                   return Flow.withBackground({
