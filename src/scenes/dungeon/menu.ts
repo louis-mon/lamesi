@@ -10,7 +10,7 @@ import {
 } from "/src/helpers/component";
 import { annotate, ValueOf } from "/src/helpers/typing";
 import { combineContext, FuncOrConst } from "/src/helpers/functional";
-import { Observable } from "rxjs";
+import { Observable, fromEvent } from "rxjs";
 import { startWith, pairwise } from "rxjs/operators";
 import { getObjectPosition, ManipulableObject } from "/src/helpers/phaser";
 import _ from "lodash";
@@ -34,11 +34,12 @@ const menuButtonClass = defineGoClass({
   },
   data: { action: annotate<Flow.PhaserNode>() },
   kind: annotate<Phaser.GameObjects.Sprite>(),
+  config: annotate<{ shortcut: string }>(),
 });
 
 const buttons = declareGoInstances(menuButtonClass, "buttons", {
-  skill: {},
-  action: {},
+  skill: { shortcut: "A" },
+  action: { shortcut: "E" },
 });
 
 export const makeMenu = (scene: Phaser.Scene) => {
@@ -51,6 +52,17 @@ export const makeMenu = (scene: Phaser.Scene) => {
       ),
     );
     button.data.action.setValue(Flow.noop)(menuScene);
+    const fireButtonAction = () =>
+      Flow.withContext(() => scene, button.data.action.value(menuScene));
+    const shortcutKey = menuScene.input.keyboard.addKey(button.config.shortcut);
+    const buttonObj = button.getObj(menuScene);
+    menuScene.add
+      .text(
+        buttonObj.getBottomRight().x - 15,
+        buttonObj.getBottomRight().y - 10,
+        button.config.shortcut,
+      )
+      .setFontSize(25);
     return Flow.parallel(
       Flow.observe(
         button.events.bindAction.subject,
@@ -59,9 +71,7 @@ export const makeMenu = (scene: Phaser.Scene) => {
             Flow.call(
               combineContext(
                 () =>
-                  create({ pos: getObjectPosition(button.getObj(menuScene)) })(
-                    menuScene,
-                  )
+                  create({ pos: getObjectPosition(buttonObj) })(menuScene)
                     .setScale(1.3)
                     .setName(buttonKey(key)),
                 button.data.action.setValue(action),
@@ -82,8 +92,10 @@ export const makeMenu = (scene: Phaser.Scene) => {
           ),
         ),
       ),
-      Flow.observe(commonGoEvents.pointerdown(button.key).subject, () =>
-        Flow.withContext(() => scene, button.data.action.value(menuScene)),
+      Flow.observe(fromEvent(shortcutKey, "down"), fireButtonAction),
+      Flow.observe(
+        commonGoEvents.pointerdown(button.key).subject,
+        fireButtonAction,
       ),
     );
   });

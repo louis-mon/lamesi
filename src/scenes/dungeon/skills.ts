@@ -45,7 +45,6 @@ export const arrowSkill: Flow.PhaserNode = Flow.lazy((scene) => {
             first(),
             map(({ pointer }) =>
               Flow.lazy(() => {
-                pointer.event.stopPropagation();
                 Def.scene.data.skillPointerActive.setValue(false)(scene);
                 const arrowObj = scene.physics.add.existing(
                   arrowDef
