@@ -8,7 +8,7 @@ import Vector2 = Phaser.Math.Vector2;
 import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
-import { subWordGameBeginEvent } from "../common";
+import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import { annotate } from "/src/helpers/typing";
 import {
   defineGoClass,
@@ -17,8 +17,9 @@ import {
 } from "/src/helpers/component";
 import { combineContext } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
-import { map, tap } from "rxjs/operators";
-import { arrowSkill, initSkills } from "./skills";
+import { map } from "rxjs/operators";
+import { initSkills, skillsFlow } from "./skills";
+import { menuHelpers } from "../menu";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
@@ -82,8 +83,7 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
   const mechanisms = [
     {
       switchDef: Def.switches.room5Rotate1,
-      startTurn: 0,
-      //startTurn: 2,
+      startTurn: 2,
     },
     {
       switchDef: Def.switches.room5Rotate2,
@@ -91,10 +91,10 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
     },
     {
       switchDef: Def.switches.room5Rotate3,
-      startTurn: 0,
-      //startTurn: 3,
+      startTurn: 3,
     },
   ];
+
   const rotateMechClass = defineGoClass({
     events: { turn: customEvent() },
     data: {
@@ -107,6 +107,16 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
   const totalTurns = 6;
   const turnAngle = 360 / totalTurns;
   const getRotateMechAngle = (i: number) => turnAngle * i;
+
+  const hint = createImageAt(
+    scene,
+    Wp.wpPos({ room: 5, x: 4, y: 0 }),
+    "npc",
+    "symbol-circle-hint",
+  )
+    .setDepth(Def.depths.carpet)
+    .setScale(0.5);
+
   const switchFlows = mechanisms.map(({ switchDef, startTurn }, i) => {
     Npc.switchCrystalFactory(scene)(switchDef);
     const rotateDef = getRotateMechDef(switchDef.key);
@@ -156,7 +166,11 @@ const linkSwitchWithCircleSymbol = (scene: Phaser.Scene) => {
           .pipe(map((turn) => turn === 0));
       }),
     ).pipe(map((rightPos) => rightPos.every((p) => p))),
-    action: Flow.call(Def.scene.data.arrowAvailable.setValue(true)),
+    action: Flow.sequence(
+      Flow.tween({ targets: hint, props: { alpha: 0 } }),
+      Flow.call(() => hint.destroy()),
+      Flow.call(Def.scene.data.arrowAvailable.setValue(true)),
+    ),
   });
   return Flow.parallel(...switchFlows, solvePuzzle);
 };
@@ -192,6 +206,38 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
   ),
 );
 
+const endGoal1: Flow.PhaserNode = Flow.withContext(
+  menuHelpers.getMenuScene,
+  Flow.lazy((scene) => {
+    scene.add
+      .text(gameWidth / 2, 50, "Objectif 1 atteint", {
+        boundsAlignH: true,
+      })
+      .setFontSize(30);
+    const moon = scene.add.sprite(
+      gameWidth / 2,
+      gameHeight / 2,
+      "menu",
+      "goal-1",
+    );
+    return Flow.sequence(
+      Flow.tween({ targets: moon, props: { scale: 5 }, duration: 1700 }),
+      Flow.tween({
+        targets: moon,
+        props: { angle: -20 },
+        duration: 1000,
+      }),
+      Flow.tween({
+        targets: moon,
+        props: { angle: 20 },
+        yoyo: true,
+        loop: -1,
+        duration: 2000,
+      }),
+    );
+  }),
+);
+
 const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const switchFactory = Npc.switchCrystalFactory(scene);
   const switches = [Def.switches.goal1Left, Def.switches.goal1Right];
@@ -215,6 +261,7 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
       createSpriteAt(scene, pos, "menu", "goal-1"),
     key: "goal-1",
     wp: { room: 4, x: 2, y: 2 },
+    action: endGoal1,
   });
   const setGoalSpikes = (open: boolean) =>
     Wp.setGroundObstacleRect({
@@ -274,7 +321,7 @@ export class DungeonScene extends Phaser.Scene {
       Wp.wpsAction,
       switchesForDoor4To5,
       linkSwitchWithCircleSymbol(this),
-      arrowSkill,
+      skillsFlow,
       createGoal1,
     );
     Flow.run(this, Flow.sequence(initActions, ambiantActions));

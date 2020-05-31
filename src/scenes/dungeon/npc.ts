@@ -198,11 +198,11 @@ type AltarComponentParams = {
     pos: Vector2;
   }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
   key: string;
-  action?: Flow.PhaserNode;
+  action: Flow.PhaserNode;
 };
 
 const altarClass = defineGoClass({
-  data: {},
+  data: { isEmpty: annotate<boolean>() },
   events: {},
   kind: annotate<Phaser.GameObjects.Sprite>(),
 });
@@ -214,10 +214,6 @@ export const altarComponent = (
   const itemKey = `altar-${params.key}-item`;
   const itemDef = declareGoInstance(altarClass, itemKey);
   const basePos = Wp.wpPos(params.wp);
-  const hasThisSkill: SceneContext<Observable<boolean>> = (scene) =>
-    Def.scene.data.currentSkill
-      .dataSubject(scene)
-      .pipe(map((currentSkill) => currentSkill === params.key));
   return Flow.lazy((scene) =>
     Flow.sequence(
       Flow.call(() => {
@@ -246,6 +242,7 @@ export const altarComponent = (
             .setScale(0),
         ),
       ),
+      Flow.call(itemDef.data.isEmpty.setValue(false)),
       Flow.lazy(() =>
         Flow.parallel(
           Flow.sequence(
@@ -263,26 +260,23 @@ export const altarComponent = (
               yoyo: true,
             }),
           ),
-          params.action ? bindSkillButton(hasThisSkill(scene), {
-            key: itemKey,
-            create: params.createItem,
-            action: params.action,
-          }): Flow.noop,
+          Flow.observe(itemDef.data.isEmpty.dataSubject, (isEmpty) =>
+            Flow.call((scene) =>
+              altarClass.getObj(itemKey)(scene).setVisible(!isEmpty),
+            ),
+          ),
           bindActionButton(
             canPlayerDoAction({
               pos: Wp.getWpId(params.wp),
-              disabled: hasThisSkill,
+              disabled: itemDef.data.isEmpty.dataSubject,
             })(scene),
             {
               key: "action-take-item",
               create: ({ pos }) => (scene) =>
                 createImageAt(scene, pos, "menu", "action-take"),
-              action: Flow.call(
-                combineContext(
-                  Def.scene.data.currentSkill.setValue(params.key),
-                  (scene) =>
-                    altarClass.getObj(itemKey)(scene).setVisible(false),
-                ),
+              action: Flow.sequence(
+                Flow.call(itemDef.data.isEmpty.setValue(true)),
+                params.action,
               ),
             },
           ),
