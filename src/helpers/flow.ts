@@ -1,4 +1,3 @@
-import { Maybe } from "purify-ts";
 import { Observable, of, empty } from "rxjs";
 import _ from "lodash";
 import { startWith, pairwise, map, flatMap, first } from "rxjs/operators";
@@ -6,6 +5,8 @@ import { FuncOrConst, funcOrConstValue } from "./functional";
 
 export type ActionRunParams = {
   onComplete: () => void;
+  registerAbort: (f: () => void) => void;
+  unregisterAbort: (f: () => void) => void;
 };
 export type ActionNode<C> = (context: C) => (params: ActionRunParams) => void;
 
@@ -47,6 +48,26 @@ export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   };
 }
 
+export const withBackground = <C>(params: {
+  main: ActionNode<C>;
+  back: ActionNode<C>;
+}): ActionNode<C> => (c) => (p) => {
+  const emitter = new Phaser.Events.EventEmitter();
+  const eventName = "abort";
+  params.back(c)({
+    onComplete: _.noop,
+    registerAbort: (f) => emitter.on(eventName, f),
+    unregisterAbort: (f) => emitter.off(eventName, f),
+  });
+  params.main(c)({
+    ...p,
+    onComplete: () => {
+      emitter.emit(eventName);
+      p.onComplete();
+    },
+  });
+};
+
 /**
  * Ensapsulate a simple function call
  */
@@ -84,14 +105,20 @@ export function observe<C, T>(
       : (source as Observable<ActionNode<C>>);
     let nbRunning = 0;
     let completed = false;
-    observable.subscribe({
+    const unsubsribe = () => subscription.unsubscribe();
+    const completeAction = () => {
+      p.unregisterAbort(unsubsribe);
+      p.onComplete();
+    };
+    const subscription = observable.subscribe({
       next: (action) => {
         ++nbRunning;
         action(context)({
+          ...p,
           onComplete: () => {
             --nbRunning;
             if (completed) {
-              p.onComplete();
+              completeAction();
             }
           },
         });
@@ -99,10 +126,11 @@ export function observe<C, T>(
       complete: () => {
         completed = true;
         if (nbRunning === 0) {
-          p.onComplete();
+          completeAction();
         }
       },
     });
+    p.registerAbort(unsubsribe);
   };
 }
 
@@ -140,10 +168,18 @@ export const wait = <C>(observable: ObservableFactory<C, unknown>) =>
 export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
   context,
 ) => (p) => {
-  const rec = () =>
-    action(context)({
-      onComplete: rec,
-    });
+  let aborted = false;
+  const rec = () => {
+    if (!aborted) {
+      return action(context)({
+        ...p,
+        onComplete: rec,
+      });
+    }
+  };
+  p.registerAbort(() => {
+    aborted = true;
+  });
   rec();
 };
 
@@ -165,4 +201,6 @@ export const withContext = <C, CNew>(
 export const run = <C>(context: C, node: ActionNode<C>): void =>
   node(context)({
     onComplete: () => {},
+    registerAbort: _.noop,
+    unregisterAbort: _.noop,
   });
