@@ -170,7 +170,7 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
       room: 5,
       wp1: { x: 0, y: 0 },
       wp2: { x: 1, y: 1 },
-      open: false,
+      kind: "spike",
     })(scene);
   }),
   Flow.parallel(

@@ -169,9 +169,9 @@ const activateDoor = (open: boolean) => (doorKey: DoorKey): Flow.PhaserNode =>
         }),
       ),
       Flow.call(
-        Wp.setGraphLinkData({
+        Wp.setGroundObstacleLink({
           ...doorDef,
-          open,
+          kind: open ? "none" : "wall",
         }),
       ),
     ];

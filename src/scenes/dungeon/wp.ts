@@ -18,6 +18,7 @@ import {
   commonGoEvents,
 } from "/src/helpers/component";
 import { SceneContext, createImageAt } from "/src/helpers/phaser";
+import { gameHeight, gameWidth } from "../common";
 
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
@@ -28,8 +29,11 @@ const roomMargin = new Vector2(60, 55);
 const wpPerSide = 5;
 const wpHalfSize = roomSize.clone().scale(0.5 / wpPerSide);
 const scenePos = new Vector2(menuZoneSize + 20, 100);
+const nbRoomsW = 3;
+const nbRoomsH = 2;
+const nbRooms = nbRoomsW * nbRoomsH;
 
-const getRoomPos = (room: number) => Phaser.Math.ToXY(room, 3, 2);
+const getRoomPos = (room: number) => Phaser.Math.ToXY(room, nbRoomsW, nbRoomsH);
 
 export const wpPos = (wp: WpDef) => {
   const roomPos = getRoomPos(wp.room);
@@ -62,7 +66,7 @@ const RoomRectangle = new Phaser.Geom.Rectangle(
   wpPerSide - 1,
 );
 
-const allWp: WpDef[] = _.flatMap(_.range(6), (i) =>
+const allWp: WpDef[] = _.flatMap(_.range(nbRooms), (i) =>
   _.range(wpPerSide * wpPerSide).map((posI) => ({
     ...Phaser.Math.ToXY(posI, wpPerSide, wpPerSide),
     room: i,
@@ -122,7 +126,7 @@ const setGraphLink = (
   },
 });
 
-export const setGraphLinkData = ({
+const setGraphLinkData = ({
   wp1,
   wp2,
   open,
@@ -133,50 +137,62 @@ export const setGraphLinkData = ({
     setGraphLink(graph, wp1, wp2, open),
   );
 
-export const getGraphLinkDataBetween = ({
+const getGraphLinkDataBetween = ({
   wp1,
   wp2,
 }: WpLink): SceneContext<boolean> => (scene) =>
   Def.scene.data.wpGraph.value(scene)[wp1].links.includes(wp2);
 
+type ObstacleKind = "none" | "wall" | "spike";
 export const setGroundObstacleLink = ({
   wp1,
   wp2,
-  open,
-}: {
-  wp1: WpDef;
-  wp2: WpDef;
-  open: boolean;
+  kind,
+}: WpLink & {
+  kind: ObstacleKind;
 }): SceneContext<void> => (scene) => {
-  const wp1Id = getWpId(wp2);
-  const wp2Id = getWpId(wp1);
   const wpGraph = Def.scene.data.wpGraph.value(scene);
-  if (
-    !wpGraph[wp1Id] ||
-    !wpGraph[wp2Id] ||
-    getGraphLinkDataBetween({ wp1: wp1Id, wp2: wp2Id })(scene) === open
-  ) {
+  if (!wpGraph[wp1] || !wpGraph[wp2]) {
     return;
   }
-  const pos = wpPos(wp1).add(wpPos(wp2)).scale(0.5);
-  const spike = createImageAt(
-    scene,
-    pos,
-    "npc",
-    wp1.x === wp2.x ? "spikes-h" : "spikes-v",
-  ).setDepth(Def.depths.npc);
-  setGraphLinkData({ wp2: wp2Id, wp1: wp1Id, open })(scene);
-  Def.scene.data.wallGroup.updateValue((group) => group.add(spike))(scene);
+  const open = kind === "none";
+  setGraphLinkData({ wp2, wp1, open })(scene);
+  const wpDef1 = getWpDef(wp1);
+  const wpDef2 = getWpDef(wp2);
+  const pos = wpPos(wpDef1).add(wpPos(wpDef2)).scale(0.5);
+  const sameXCoord = wpDef1.x === wpDef2.x;
+  const key = _.sortBy([wp1, wp2]).join("--");
+  const oldObj = scene.children.getByName(key);
+  if (kind === "spike" && !oldObj) {
+    const spike = createImageAt(
+      scene,
+      pos,
+      "npc",
+      sameXCoord ? "spikes-h" : "spikes-v",
+    )
+      .setDepth(Def.depths.npc)
+      .setName(key);
+  } else if (kind === "wall" && !oldObj) {
+    const wall = scene.add
+      .zone(
+        pos.x,
+        pos.y,
+        sameXCoord ? wpHalfSize.x * 2 : roomMargin.x,
+        sameXCoord ? roomMargin.y : wpHalfSize.y * 2,
+      )
+      .setName(key);
+    Def.scene.data.interactableGroup.value(scene).add(wall);
+  }
 };
 
 export const setGroundObstacleLine = ({
   line,
-  open,
+  kind,
   room,
 }: {
   line: Phaser.Geom.Line;
   room: number;
-  open: boolean;
+  kind: ObstacleKind;
 }): SceneContext<void> => (scene) => {
   const points = line.getPoints(0, 1);
   const norm = new Vector2(line.getPointA())
@@ -185,9 +201,9 @@ export const setGroundObstacleLine = ({
     .normalize();
   points.forEach(({ x, y }) => {
     setGroundObstacleLink({
-      wp1: { room, x: x - Math.abs(norm.x), y: y - Math.abs(norm.y) },
-      wp2: { room, x, y },
-      open,
+      wp1: getWpId({ room, x: x - Math.abs(norm.x), y: y - Math.abs(norm.y) }),
+      wp2: getWpId({ room, x, y }),
+      kind,
     })(scene);
   });
 };
@@ -195,13 +211,13 @@ export const setGroundObstacleLine = ({
 export const setGroundObstacleRect = ({
   wp1,
   wp2,
-  open,
+  kind,
   room,
 }: {
   wp1: Phaser.Types.Math.Vector2Like;
   wp2: Phaser.Types.Math.Vector2Like;
   room: number;
-  open: boolean;
+  kind: ObstacleKind;
 }): SceneContext<void> => (scene) => {
   const { left, right, top, bottom } = Phaser.Geom.Rectangle.FromPoints([
     wp1,
@@ -216,7 +232,7 @@ export const setGroundObstacleRect = ({
   lines.forEach((line) =>
     setGroundObstacleLine({
       line,
-      open,
+      kind,
       room,
     })(scene),
   );
@@ -231,8 +247,48 @@ const wpClass = defineGoClass({
 const declareWp = (wp: WpDef) => declareGoInstance(wpClass, getWpId(wp));
 
 const initWalls: SceneContext<void> = (scene) => {
-  const wallGroup = scene.physics.add.staticGroup();
-  Def.scene.data.wallGroup.setValue(wallGroup)(scene);
+  Def.scene.data.wpGraph.setValue(initialWpGraph())(scene);
+
+  const bounds = roomSize
+    .clone()
+    .multiply(new Vector2(nbRoomsW, nbRoomsH))
+    .add(roomMargin.clone().multiply(new Vector2(nbRoomsW - 1, nbRoomsH - 1)))
+    .add(scenePos);
+  const addBoundWall = (rect: Phaser.Geom.Rectangle) => {
+    const wall = scene.add
+      .zone(rect.x, rect.y, rect.width, rect.height)
+      .setOrigin(0, 0);
+    Def.scene.data.interactableGroup.value(scene).add(wall);
+  };
+  [
+    new Phaser.Geom.Rectangle(0, 0, scenePos.x, gameHeight),
+    new Phaser.Geom.Rectangle(bounds.x, 0, gameWidth - bounds.x, gameHeight),
+    new Phaser.Geom.Rectangle(scenePos.x, 0, bounds.x - scenePos.x, scenePos.y),
+    new Phaser.Geom.Rectangle(
+      scenePos.x,
+      bounds.y,
+      bounds.x - scenePos.x,
+      gameHeight - bounds.y,
+    ),
+  ].map(addBoundWall);
+  _.range(nbRooms / 2).forEach((room) => {
+    _.range(wpPerSide).forEach((x) => {
+      setGroundObstacleLink({
+        kind: "wall",
+        wp1: getWpId({ room, x, y: wpPerSide - 1 }),
+        wp2: getWpId({ room: room + nbRooms / 2, x, y: 0 }),
+      })(scene);
+    });
+  });
+  [0, 1, 3, 4].forEach((room) => {
+    _.range(wpPerSide).forEach((y) => {
+      setGroundObstacleLink({
+        kind: "wall",
+        wp1: getWpId({ room, x: wpPerSide - 1, y }),
+        wp2: getWpId({ room: room + 1, x: 0, y }),
+      })(scene);
+    });
+  });
 };
 
 export const initGroundMap = (scene: Phaser.Scene) => {
@@ -265,7 +321,6 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
     });
 
   isActiveData.setValue(true)(scene);
-  wpGraphData.setValue(initialWpGraph())(scene);
 
   const toggleWp = ({
     wpDef,
@@ -294,15 +349,22 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
       auditTime(50),
       map(([isActive]) => {
         const getActiveWpIds = (): WpId[] => {
-          if (isActive) return _.keys(performBfs().paths) as WpId[]
+          if (isActive) return _.keys(performBfs().paths) as WpId[];
           return [];
-        }
+        };
         const activeWpIds = getActiveWpIds();
-        const inactiveWps = _.difference(_.keys(allWpById), activeWpIds) as WpId[];
+        const inactiveWps = _.difference(
+          _.keys(allWpById),
+          activeWpIds,
+        ) as WpId[];
         return Flow.parallel(
-          ...activeWpIds.map(wpId => toggleWp({wpDef: getWpDef(wpId), isActive: true})),
-          ...inactiveWps.map(wpId => toggleWp({wpDef: getWpDef(wpId), isActive: false})),
-        )
+          ...activeWpIds.map((wpId) =>
+            toggleWp({ wpDef: getWpDef(wpId), isActive: true }),
+          ),
+          ...inactiveWps.map((wpId) =>
+            toggleWp({ wpDef: getWpDef(wpId), isActive: false }),
+          ),
+        );
       }),
     ),
   );

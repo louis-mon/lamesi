@@ -22,7 +22,6 @@ export const scene = defineSceneClass({
     wpGraph: annotate<WpGraph>(),
     arrowAvailable: annotate<boolean>(),
     currentSkill: annotate<string>(),
-    wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
     interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
   },
   events: {

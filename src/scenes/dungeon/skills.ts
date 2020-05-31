@@ -55,20 +55,20 @@ export const arrowSkill: Flow.PhaserNode = Flow.lazy((scene) => {
                       ),
                     )
                     .setDepth(Def.depths.floating)
-                    .setScale(0),
+                    .setScale(0.1),
                 ) as Phaser.Physics.Arcade.Sprite;
                 scene.physics.moveTo(
                   arrowObj,
                   pointer.worldX,
                   pointer.worldY,
-                  1000,
+                  800,
                 );
                 arrowObj.rotation =
                   arrowObj.body.velocity.angle() - (Math.PI / 4) * 3;
                 const zoomTween = scene.add.tween({
                   targets: arrowObj,
                   props: { scale: 0.7 },
-                  duration: 50,
+                  duration: 200,
                 });
                 const backAngle =
                   Phaser.Math.RadToDeg(arrowObj.body.velocity.angle()) + 180;
