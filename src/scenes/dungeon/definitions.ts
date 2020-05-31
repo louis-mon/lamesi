@@ -18,7 +18,7 @@ export type WpGraph = { [key: string]: { links: WpId[] } };
 
 export const scene = defineSceneClass({
   data: {
-    // pointer input request active for special situations like arrow destination 
+    // pointer input request active for special situations like arrow destination
     skillPointerActive: annotate<boolean>(),
     wpGraph: annotate<WpGraph>(),
     arrowAvailable: annotate<boolean>(),
@@ -70,6 +70,14 @@ export const switches = declareGoInstances(switchClass, "switch", {
   room5ForRoom4Door: {
     wp: { room: 5, x: 0, y: 0 },
     offset: new Vector2(-20, -10),
+  },
+  goal1Left: {
+    wp: { room: 4, x: 0, y: 0 },
+    offset: new Vector2(-20, 0),
+  },
+  goal1Right: {
+    wp: { room: 4, x: 4, y: 0 },
+    offset: new Vector2(20, 0),
   },
 });
 export type SwitchCrystalDef = ValueOf<typeof switches>;

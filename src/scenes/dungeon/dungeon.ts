@@ -21,7 +21,7 @@ import { map, tap } from "rxjs/operators";
 import { arrowSkill, initSkills } from "./skills";
 
 const createPlayer = (scene: Phaser.Scene) => {
-  const initialWp: Wp.WpDef = { room: 5, x: 3, y: 0 };
+  const initialWp: Wp.WpDef = { room: 4, x: 3, y: 0 };
   const player = Def.player.create(
     createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
       Def.depths.npc,
@@ -192,6 +192,58 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
   ),
 );
 
+const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
+  const switchFactory = Npc.switchCrystalFactory(scene);
+  const switches = [Def.switches.goal1Left, Def.switches.goal1Right];
+  switches.forEach((switchDef) => {
+    switchFactory(switchDef);
+  });
+  Wp.setGroundObstacleRect({
+    wp1: { x: 1, y: 0 },
+    wp2: { x: 1, y: 1 },
+    room: 4,
+    kind: "spike",
+  })(scene);
+  Wp.setGroundObstacleRect({
+    wp1: { x: 4, y: 0 },
+    wp2: { x: 4, y: 1 },
+    room: 4,
+    kind: "spike",
+  })(scene);
+  const goalAltar = Npc.altarComponent({
+    createItem: ({ pos }) => (scene) =>
+      createSpriteAt(scene, pos, "menu", "goal-1"),
+    key: "goal-1",
+    wp: { room: 4, x: 2, y: 2 },
+  });
+  const setGoalSpikes = (open: boolean) =>
+    Wp.setGroundObstacleRect({
+      wp1: { x: 2, y: 2 },
+      wp2: { x: 3, y: 3 },
+      room: 4,
+      kind: open ? "none" : "spike",
+    });
+  setGoalSpikes(false)(scene);
+  return Flow.parallel(
+    goalAltar,
+    Flow.when({
+      condition: combineLatest(
+        switches.map((switchDef) => switchDef.data.state.subject(scene)),
+      ).pipe(map((states) => states.every(_.identity))),
+      action: Flow.call(setGoalSpikes(true)),
+    }),
+    ...switches.map((switchDef) =>
+      Flow.repeatWhen({
+        condition: switchDef.data.state.subject,
+        action: Flow.sequence(
+          Flow.waitTimer(1500),
+          Flow.call(switchDef.events.deactivateSwitch.emit({})),
+        ),
+      }),
+    ),
+  );
+});
+
 export class DungeonScene extends Phaser.Scene {
   constructor() {
     super({
@@ -223,6 +275,7 @@ export class DungeonScene extends Phaser.Scene {
       switchesForDoor4To5,
       linkSwitchWithCircleSymbol(this),
       arrowSkill,
+      createGoal1,
     );
     Flow.run(this, Flow.sequence(initActions, ambiantActions));
     this.events.once(subWordGameBeginEvent, () => {

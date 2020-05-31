@@ -198,7 +198,7 @@ type AltarComponentParams = {
     pos: Vector2;
   }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
   key: string;
-  action: Flow.PhaserNode;
+  action?: Flow.PhaserNode;
 };
 
 const altarClass = defineGoClass({
@@ -207,7 +207,9 @@ const altarClass = defineGoClass({
   kind: annotate<Phaser.GameObjects.Sprite>(),
 });
 
-export const altarComponent = (params: AltarComponentParams) => {
+export const altarComponent = (
+  params: AltarComponentParams,
+): Flow.PhaserNode => {
   const altarKey = `altar-${params.key}-altar`;
   const itemKey = `altar-${params.key}-item`;
   const itemDef = declareGoInstance(altarClass, itemKey);
@@ -216,7 +218,7 @@ export const altarComponent = (params: AltarComponentParams) => {
     Def.scene.data.currentSkill
       .dataSubject(scene)
       .pipe(map((currentSkill) => currentSkill === params.key));
-  const activateAltar: Flow.PhaserNode = Flow.lazy((scene) =>
+  return Flow.lazy((scene) =>
     Flow.sequence(
       Flow.call(() => {
         createSpriteAt(
@@ -261,11 +263,11 @@ export const altarComponent = (params: AltarComponentParams) => {
               yoyo: true,
             }),
           ),
-          bindSkillButton(hasThisSkill(scene), {
+          params.action ? bindSkillButton(hasThisSkill(scene), {
             key: itemKey,
             create: params.createItem,
             action: params.action,
-          }),
+          }): Flow.noop,
           bindActionButton(
             canPlayerDoAction({
               pos: Wp.getWpId(params.wp),
@@ -288,7 +290,4 @@ export const altarComponent = (params: AltarComponentParams) => {
       ),
     ),
   );
-  return {
-    activateAltar,
-  };
 };

@@ -35,7 +35,8 @@ export const arrowSkill: Flow.PhaserNode = Flow.lazy((scene) => {
     condition: of(true),
     action: Npc.altarComponent({
       key: "arrow-skill",
-      wp: { room: 5, x: 4, y: 0 },
+      //wp: { room: 5, x: 4, y: 0 },
+      wp: { room: 4, x: 0, y: 4 },
       createItem: ({ pos }) => (scene) =>
         createSpriteAt(scene, pos, "menu", "magic-arrow"),
       action: Flow.sequence(
@@ -143,6 +144,6 @@ export const arrowSkill: Flow.PhaserNode = Flow.lazy((scene) => {
           ),
         ),
       ),
-    }).activateAltar,
+    }),
   });
 });
