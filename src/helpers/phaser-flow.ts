@@ -5,6 +5,7 @@ import _ from "lodash";
 import { FuncOrConst, funcOrConstValue } from "./functional";
 import { fromEventPattern, Observable } from "rxjs";
 import { SceneContext } from "./phaser";
+import { NodeEventHandler } from "rxjs/internal/observable/fromEvent";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
@@ -75,14 +76,17 @@ type ArcadeCollisionParams = {
   object2: Phaser.GameObjects.GameObject;
   getObjects(): Phaser.GameObjects.GameObject[];
 };
-export const arcadeOverlapSubject = (params: {
+
+const arcadeGenericCollideSubject = (
+  method: 'overlap' | 'collider',
+) => (params: {
   object1: ArcadeCollisionObject;
   object2: ArcadeCollisionObject;
   processCallback?: ArcadePhysicsCallback | undefined;
 }): SceneContext<Observable<ArcadeCollisionParams>> => (scene) => {
   return fromEventPattern(
     (handler) =>
-      scene.physics.add.overlap(params.object1, params.object2, handler),
+      scene.physics.add[method](params.object1, params.object2, handler),
     (handler, collider) => collider.destroy(),
     (object1, object2) => ({
       object1,
@@ -91,3 +95,7 @@ export const arcadeOverlapSubject = (params: {
     }),
   );
 };
+
+export const arcadeOverlapSubject = arcadeGenericCollideSubject('overlap');
+
+export const arcadeColliderSubject = arcadeGenericCollideSubject('collider');

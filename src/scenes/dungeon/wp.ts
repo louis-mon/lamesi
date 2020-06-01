@@ -137,12 +137,6 @@ const setGraphLinkData = ({
     setGraphLink(graph, wp1, wp2, open),
   );
 
-const getGraphLinkDataBetween = ({
-  wp1,
-  wp2,
-}: WpLink): SceneContext<boolean> => (scene) =>
-  Def.scene.data.wpGraph.value(scene)[wp1].links.includes(wp2);
-
 type ObstacleKind = "none" | "wall" | "spike";
 export const setGroundObstacleLink = ({
   wp1,
@@ -181,7 +175,7 @@ export const setGroundObstacleLink = ({
         sameXCoord ? roomMargin.y : wpHalfSize.y * 2,
       )
       .setName(key);
-    Def.scene.data.interactableGroup.value(scene).add(wall);
+    Def.scene.data.wallGroup.value(scene).add(wall);
   } else if (kind === "none" && oldObj) {
     oldObj.destroy();
   }
@@ -260,7 +254,7 @@ const initWalls: SceneContext<void> = (scene) => {
     const wall = scene.add
       .zone(rect.x, rect.y, rect.width, rect.height)
       .setOrigin(0, 0);
-    Def.scene.data.interactableGroup.value(scene).add(wall);
+    Def.scene.data.wallGroup.value(scene).add(wall);
   };
   [
     new Phaser.Geom.Rectangle(0, 0, scenePos.x, gameHeight),

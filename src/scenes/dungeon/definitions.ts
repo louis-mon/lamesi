@@ -24,6 +24,7 @@ export const scene = defineSceneClass({
     arrowAvailable: annotate<boolean>(),
     currentSkill: annotate<string>(),
     interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
+    wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
   },
   events: {
     movePlayer: customEvent<{ path: WpId[] }>(),

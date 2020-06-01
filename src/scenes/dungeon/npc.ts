@@ -36,6 +36,7 @@ const createNpcAnimations = (scene: Phaser.Scene) => {
 export const initNpc: SceneContext<void> = (scene) => {
   createNpcAnimations(scene);
   Def.scene.data.interactableGroup.setValue(scene.physics.add.group())(scene);
+  Def.scene.data.wallGroup.setValue(scene.physics.add.staticGroup())(scene);
 };
 
 const canPlayerDoAction = (params: {
@@ -210,8 +211,8 @@ const altarClass = defineGoClass({
 export const altarComponent = (
   params: AltarComponentParams,
 ): Flow.PhaserNode => {
-  const altarKey = `altar-${params.key}-altar`;
-  const itemKey = `altar-${params.key}-item`;
+  const altarKey = `altar-${params.key}-${Wp.getWpId(params.wp)}-altar`;
+  const itemKey = `altar-${params.key}-${Wp.getWpId(params.wp)}-item`;
   const itemDef = declareGoInstance(altarClass, itemKey);
   const basePos = Wp.wpPos(params.wp);
   return Flow.lazy((scene) =>
