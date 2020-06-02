@@ -33,7 +33,7 @@ const createPlayer = (scene: Phaser.Scene) => {
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosData.setValue(wp)(scene);
   };
-  const playerSpeed = 0.5;
+  const playerSpeed = 0.3;
   scene.anims.create({
     key: "walk",
     repeat: -1,
@@ -246,13 +246,13 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
   });
   Wp.setGroundObstacleRect({
     wp1: { x: 1, y: 0 },
-    wp2: { x: 1, y: 1 },
+    wp2: { x: 1, y: 2 },
     room: 4,
     kind: "spike",
   })(scene);
   Wp.setGroundObstacleRect({
     wp1: { x: 4, y: 0 },
-    wp2: { x: 4, y: 1 },
+    wp2: { x: 4, y: 2 },
     room: 4,
     kind: "spike",
   })(scene);
