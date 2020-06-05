@@ -20,6 +20,7 @@ import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 import { initSkills, skillsFlow } from "./skills";
 import { menuHelpers } from "../menu";
+import { puzzleForBellAltar } from "./goal-2";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
@@ -323,6 +324,7 @@ export class DungeonScene extends Phaser.Scene {
       linkSwitchWithCircleSymbol(this),
       skillsFlow,
       createGoal1,
+      puzzleForBellAltar,
     );
     Flow.run(this, Flow.sequence(initActions, ambiantActions));
     this.events.once(subWordGameBeginEvent, () => {

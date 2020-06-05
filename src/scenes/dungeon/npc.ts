@@ -11,7 +11,7 @@ import {
   createImageAt,
 } from "/src/helpers/phaser";
 import { bindActionButton, bindSkillButton } from "./menu";
-import { combineLatest, Observable } from "rxjs";
+import { combineLatest, Observable, of } from "rxjs";
 import {
   commonGoEvents,
   defineGoClass,
@@ -24,7 +24,7 @@ import { combineContext } from "/src/helpers/functional";
 const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
     key: "switch",
-    duration: 500,
+    duration: 300,
     frames: scene.anims.generateFrameNames("npc", {
       start: 0,
       end: 4,
@@ -93,10 +93,16 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
         bindActionButton(
           canPlayerDoAction({
             pos: Wp.getWpId(def.config.wp),
-            disabled: stateData.dataSubject,
+            disabled: def.config.deactivable
+              ? () => of(false)
+              : stateData.dataSubject,
           })(scene),
           {
-            action: Flow.call(def.events.activateSwitch.emit({})),
+            action: Flow.call(() =>
+              (stateData.value(scene)
+                ? def.events.deactivateSwitch.emit({})
+                : def.events.activateSwitch.emit({}))(scene),
+            ),
             key: "activate-switch",
             create: ({ pos }) => (scene) =>
               createSpriteAt(scene, pos, "menu", "action-attack"),

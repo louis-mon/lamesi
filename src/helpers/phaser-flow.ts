@@ -15,13 +15,16 @@ export const tween = (
   configFactory: FuncOrConst<Context, Phaser.Types.Tweens.TweenBuilderConfig>,
 ): PhaserNode => (scene) => (params) => {
   const config = funcOrConstValue(scene, configFactory);
-  scene.tweens.add({
+  const abortHandler = () => tween.stop();
+  const tween = scene.tweens.add({
     ...config,
     onComplete: (t, targets, param) => {
+      params.unregisterAbort(abortHandler);
       if (config.onComplete) config.onComplete(t, targets, param);
       params.onComplete();
     },
   });
+  params.registerAbort(abortHandler);
 };
 
 export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
@@ -78,7 +81,7 @@ type ArcadeCollisionParams = {
 };
 
 const arcadeGenericCollideSubject = (
-  method: 'overlap' | 'collider',
+  method: "overlap" | "collider",
 ) => (params: {
   object1: ArcadeCollisionObject;
   object2: ArcadeCollisionObject;
@@ -96,6 +99,6 @@ const arcadeGenericCollideSubject = (
   );
 };
 
-export const arcadeOverlapSubject = arcadeGenericCollideSubject('overlap');
+export const arcadeOverlapSubject = arcadeGenericCollideSubject("overlap");
 
-export const arcadeColliderSubject = arcadeGenericCollideSubject('collider');
+export const arcadeColliderSubject = arcadeGenericCollideSubject("collider");

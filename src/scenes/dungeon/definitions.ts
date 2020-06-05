@@ -57,7 +57,7 @@ export const switchClass = defineGoClass({
   data: { state: annotate<boolean>() },
   events: { activateSwitch: customEvent(), deactivateSwitch: customEvent() },
   kind: annotate<Phaser.GameObjects.Sprite>(),
-  config: annotate<ObjectNextWp>(),
+  config: annotate<ObjectNextWp & { deactivable?: boolean }>(),
 });
 
 export const switches = declareGoInstances(switchClass, "switch", {

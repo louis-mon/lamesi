@@ -81,7 +81,7 @@ export const call = <C>(f: (context: C) => void): ActionNode<C> => (
 export const noop = call(() => {});
 
 type ObservableFactory<C, T> = FuncOrConst<C, Observable<T>>;
-const composeObservable = <C, T, U>(
+export const composeObservable = <C, T, U>(
   factory: ObservableFactory<C, T>,
   f: (t: Observable<T>) => Observable<U>,
 ): ObservableFactory<C, U> => (c) => f(funcOrConstValue(c, factory));
@@ -182,6 +182,24 @@ export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
   });
   rec();
 };
+
+export const taskWithSentinel = <C>({
+  condition,
+  task,
+}: {
+  condition: ObservableFactory<C, boolean>;
+  task: ActionNode<C>;
+}) =>
+  repeatWhen({
+    condition,
+    action: withBackground({
+      main: when({
+        condition: composeObservable(condition, (o) => o.pipe(map((x) => !x))),
+        action: noop,
+      }),
+      back: task,
+    }),
+  });
 
 /**
  * Generate a flow dynamically depending on the context
