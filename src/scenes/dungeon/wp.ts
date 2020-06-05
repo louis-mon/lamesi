@@ -158,23 +158,23 @@ export const setGroundObstacleLink = ({
   const key = _.sortBy([wp1, wp2]).join("--");
   const oldObj = scene.children.getByName(key);
   if (kind === "spike" && !oldObj) {
-    const spike = createImageAt(
-      scene,
-      pos,
-      "npc",
-      sameXCoord ? "spikes-h" : "spikes-v",
-    )
+    createImageAt(scene, pos, "npc", sameXCoord ? "spikes-h" : "spikes-v")
       .setDepth(Def.depths.npc)
       .setName(key);
   } else if (kind === "wall" && !oldObj) {
-    const wall = scene.add
-      .zone(
-        pos.x,
-        pos.y,
-        sameXCoord ? wpHalfSize.x * 2 : roomMargin.x,
-        sameXCoord ? roomMargin.y : wpHalfSize.y * 2,
-      )
-      .setName(key);
+    const wall =
+      wpDef1.room === wpDef2.room
+        ? createImageAt(scene, pos, "npc", sameXCoord ? "wall-h" : "wall-v")
+            .setDepth(Def.depths.npc)
+            .setName(key)
+        : scene.add
+            .zone(
+              pos.x,
+              pos.y,
+              sameXCoord ? wpHalfSize.x * 2 : roomMargin.x,
+              sameXCoord ? roomMargin.y : wpHalfSize.y * 2,
+            )
+            .setName(key);
     Def.scene.data.wallGroup.value(scene).add(wall);
   } else if (kind === "none" && oldObj) {
     oldObj.destroy();
