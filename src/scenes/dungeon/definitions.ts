@@ -21,7 +21,6 @@ export const scene = defineSceneClass({
     // pointer input request active for special situations like arrow destination
     skillPointerActive: annotate<boolean>(),
     wpGraph: annotate<WpGraph>(),
-    arrowAvailable: annotate<boolean>(),
     currentSkill: annotate<string>(),
     interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
     wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),

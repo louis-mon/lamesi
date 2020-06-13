@@ -54,7 +54,7 @@ const bellAlignControlSwitches = [
   },
 ];
 
-export const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
+const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
   const switchFactory = Npc.switchCrystalFactory(scene);
   bellAlignSwitches.forEach(switchFactory);
   bellAlignControlSwitches.map(getProp("switchDef")).forEach(switchFactory);
@@ -121,9 +121,12 @@ export const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
   });
 
   return Flow.parallel(
-    Npc.openDoor("door4To3"),
     ...controlledFlow,
     ...moveControl,
     solved,
   );
 });
+
+export const dungeonGoal2 = Flow.parallel(
+  puzzleForBellAltar,
+);

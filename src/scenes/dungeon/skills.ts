@@ -23,7 +23,6 @@ import { combineContext } from "/src/helpers/functional";
 import { bindSkillButton } from "./menu";
 
 export const initSkills: Flow.PhaserNode = Flow.call((scene) => {
-  Def.scene.data.arrowAvailable.setValue(false)(scene);
   Def.scene.data.currentSkill.setValue("")(scene);
 });
 
@@ -41,10 +40,15 @@ type SkillDef = {
   }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
 };
 
-const skillAltar = (params: SkillDef & { wp: Wp.WpDef }): Flow.PhaserNode =>
+const skillAltar = (skillDef: SkillDef) => ({
+  wp,
+}: {
+  wp: Wp.WpDef;
+}): Flow.PhaserNode =>
   Npc.altarComponent({
-    ...params,
-    action: Flow.call(Def.scene.data.currentSkill.setValue(params.key)),
+    ...skillDef,
+    wp,
+    action: Flow.call(Def.scene.data.currentSkill.setValue(skillDef.key)),
   });
 
 const arrowDef = declareGoInstance(arrowClass, "player-arrow");
@@ -164,6 +168,8 @@ const arrowSkillDef: SkillDef = {
 
 const skillDefs = [arrowSkillDef];
 
+export const arrowSkillAltar = skillAltar(arrowSkillDef);
+
 export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const hasThisSkill = (key: string): SceneContext<Observable<boolean>> => (
     scene,
@@ -179,10 +185,5 @@ export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
         action: skillDef.useAction,
       }),
     ),
-    // skillAltar({ ...arrowSkillDef, wp: { room: 4, x: 1, y: 4 } }),
-    Flow.when({
-      condition: Def.scene.data.arrowAvailable.subject,
-      action: skillAltar({ ...arrowSkillDef, wp: { room: 5, x: 4, y: 0 } }),
-    }),
   );
 });
