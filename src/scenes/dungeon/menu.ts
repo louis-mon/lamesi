@@ -25,6 +25,8 @@ type BindActionParams = {
   }) => (scene: Phaser.Scene) => ManipulableObject;
 };
 
+type BindActionState = Pick<BindActionParams, "action" | "key">;
+
 const buttonKey = (key: string) => `menu-button-${key}`;
 
 const menuButtonClass = defineGoClass({
@@ -32,10 +34,15 @@ const menuButtonClass = defineGoClass({
     bindAction: customEvent<BindActionParams>(),
     unbindAction: customEvent<BindActionParams>(),
   },
-  data: { action: annotate<Flow.PhaserNode>() },
+  data: { action: annotate<BindActionState>() },
   kind: annotate<Phaser.GameObjects.Sprite>(),
   config: annotate<{ shortcut: string }>(),
 });
+
+const emptyAction: BindActionState = {
+  action: Flow.noop,
+  key: "",
+};
 
 const buttons = declareGoInstances(menuButtonClass, "buttons", {
   skill: { shortcut: "A" },
@@ -51,9 +58,9 @@ export const makeMenu = (scene: Phaser.Scene) => {
         menuScene.add.sprite(x, y, "menu", actionEmptyFrame),
       ),
     );
-    button.data.action.setValue(Flow.noop)(menuScene);
+    button.data.action.setValue(emptyAction)(menuScene);
     const fireButtonAction = () =>
-      Flow.withContext(() => scene, button.data.action.value(menuScene));
+      Flow.withContext(() => scene, button.data.action.value(menuScene).action);
     const shortcutKey = menuScene.input.keyboard.addKey(button.config.shortcut);
     const buttonObj = button.getObj(menuScene);
     menuScene.add
@@ -74,7 +81,7 @@ export const makeMenu = (scene: Phaser.Scene) => {
                   create({ pos: getObjectPosition(buttonObj) })(menuScene)
                     .setScale(1.3)
                     .setName(buttonKey(key)),
-                button.data.action.setValue(action),
+                button.data.action.setValue({ action, key }),
               ),
             ),
             Flow.tween(() => ({
@@ -88,7 +95,9 @@ export const makeMenu = (scene: Phaser.Scene) => {
         Flow.call(
           combineContext(
             () => menuScene.children.getByName(buttonKey(key))!.destroy(),
-            button.data.action.setValue(Flow.noop),
+            button.data.action.updateValue((oldAction) =>
+              oldAction.key === key ? emptyAction : oldAction,
+            ),
           ),
         ),
       ),
