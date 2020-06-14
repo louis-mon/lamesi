@@ -27,7 +27,8 @@ export const getWpId = ({ room, x, y }: WpDef): WpId =>
 const roomSize = new Vector2(530, 400);
 const roomMargin = new Vector2(60, 55);
 const wpPerSide = 5;
-const wpHalfSize = roomSize.clone().scale(0.5 / wpPerSide);
+export const wpSize = roomSize.clone().scale(1 / wpPerSide);
+export const wpHalfSize = wpSize.clone().scale(0.5);
 const scenePos = new Vector2(menuZoneSize + 20, 100);
 const nbRoomsW = 3;
 const nbRoomsH = 2;

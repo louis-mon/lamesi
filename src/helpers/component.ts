@@ -6,6 +6,7 @@ import { Observable, fromEvent, empty } from "rxjs";
 import { startWith } from "rxjs/operators";
 import { Maybe } from "purify-ts";
 import { SceneContext } from "./phaser";
+import { getProp } from "./functional";
 
 type WithSelector = { selector: UnknownFunction };
 
@@ -44,6 +45,26 @@ export type EventMappingDef<
   >;
 };
 
+type EventEmitterFactory = SceneContext<Phaser.Events.EventEmitter | null>;
+
+const makeEventHelper = (emitterFactory: EventEmitterFactory) => <T>({
+  key,
+  selector,
+}: { key: string } & WithSelector): EventHelper<T> => ({
+  subject: (scene) =>
+    Maybe.fromNullable(emitterFactory(scene)).mapOrDefault(
+      (emitter) => fromEvent(emitter, key, selector),
+      empty(),
+    ),
+  emit: (value) => (scene) =>
+    Maybe.fromNullable(emitterFactory(scene)).ifJust((emitter) =>
+      emitter.emit(key, value),
+    ),
+});
+
+const sceneEmitterFactory: EventEmitterFactory = getProp("events");
+export const makeSceneEventHelper = makeEventHelper(sceneEmitterFactory);
+
 export const defineEvents = <
   O extends DefineEventMappingParams,
   Kind extends ObjectKind
@@ -54,22 +75,12 @@ export const defineEvents = <
   _.mapValues(data, (value, key) => {
     const impl = (
       emitterFactory: SceneContext<Phaser.Events.EventEmitter | null>,
-    ): EventHelper<unknown> => ({
-      subject: (scene) =>
-        Maybe.fromNullable(emitterFactory(scene)).mapOrDefault(
-          (emitter) => fromEvent(emitter, key, value.selector),
-          empty(),
-        ),
-      emit: (value) => (scene) =>
-        Maybe.fromNullable(emitterFactory(scene)).ifJust((emitter) =>
-          emitter.emit(key, value),
-        ),
-    });
+    ) => makeEventHelper(emitterFactory)({ key, ...value });
     if (kind === "go") {
       return (id) => impl((scene) => scene.children.getByName(id));
     } else if (kind === "game") return impl((scene) => scene.game.events);
     else if (kind === "input") return impl((scene) => scene.input);
-    else return impl((scene) => scene.events);
+    else return impl(sceneEmitterFactory);
   }) as EventMappingDef<O, Kind>;
 
 type DefineDataMappingParams = { [Key: string]: unknown };
@@ -170,6 +181,9 @@ export const defineGoClass = <
   data: defineData(data, "go"),
   getObj: (key) => (scene) => scene.children.getByName(key) as Cl,
 });
+
+export const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() =>
+  defineGoClass({ events: {}, data: {}, kind: annotate<Cl>() });
 
 export const commonGoEvents = defineEvents(
   {

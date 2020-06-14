@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
+import * as Geom from "/src/helpers/math/geom";
 import * as Npc from "./npc";
 import * as Def from "./definitions";
 
@@ -15,6 +16,7 @@ import {
   declareGoInstance,
   commonInputEvents,
   customEvent,
+  defineGoClassKind,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { take, map, tap, first } from "rxjs/operators";
@@ -22,8 +24,26 @@ import { of, Observable } from "rxjs";
 import { combineContext } from "/src/helpers/functional";
 import { bindSkillButton } from "./menu";
 
+const arrowLightParticleDef = declareGoInstance(
+  defineGoClassKind<Phaser.GameObjects.Particles.ParticleEmitterManager>(),
+  "arrow-particles",
+);
+
+const bellParticlesDef = declareGoInstance(
+  defineGoClassKind<Phaser.GameObjects.Particles.ParticleEmitterManager>(),
+  "bell-particles",
+);
+
 export const initSkills: Flow.PhaserNode = Flow.call((scene) => {
   Def.scene.data.currentSkill.setValue("")(scene);
+  arrowLightParticleDef.create(
+    scene.add.particles("npc", "light-particle").setDepth(Def.depths.floating),
+  );
+  bellParticlesDef.create(
+    scene.add
+      .particles("npc", "bell-hint-particle")
+      .setDepth(Def.depths.floating),
+  );
 });
 
 const arrowClass = defineGoClass({
@@ -79,26 +99,25 @@ const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
     const backAngle =
       Phaser.Math.RadToDeg(arrowObj.body.velocity.angle()) + 180;
     const particleAngleSpread = 40;
-    const lightParticles = scene.add
-      .particles("npc", "light-particle", {
-        follow: arrowObj,
-        speed: 300,
-        quantity: 1,
-        angle: {
-          min: Phaser.Math.Angle.WrapDegrees(backAngle - particleAngleSpread),
-          max: Phaser.Math.Angle.WrapDegrees(backAngle + particleAngleSpread),
-        },
-        lifespan: 400,
-        scale: { start: 0.6, end: 0.1, ease: "Cubic.In" },
-        alpha: { start: 0.6, end: 0 },
-        tint: 0xffef42,
-      })
-      .setDepth(Def.depths.floating);
+    const lightParticles = arrowLightParticleDef.getObj(scene);
+    const emmitter = lightParticles.createEmitter({
+      follow: arrowObj,
+      speed: 300,
+      quantity: 1,
+      angle: {
+        min: Phaser.Math.Angle.WrapDegrees(backAngle - particleAngleSpread),
+        max: Phaser.Math.Angle.WrapDegrees(backAngle + particleAngleSpread),
+      },
+      lifespan: 400,
+      scale: { start: 0.6, end: 0.1, ease: "Cubic.In" },
+      alpha: { start: 0.6, end: 0 },
+      tint: 0xffef42,
+    });
     const explodeArrow: Flow.PhaserNode = Flow.sequence(
       Flow.call(() => {
         arrowObj.body.stop();
         zoomTween.stop();
-        lightParticles.emitters.each((emitter) => emitter.stop());
+        emmitter.stop();
       }),
       Flow.tween({
         targets: arrowObj,
@@ -108,7 +127,6 @@ const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
       }),
       Flow.call(() => {
         arrowObj.destroy();
-        lightParticles.destroy();
       }),
     );
     return Flow.withBackground({
@@ -159,6 +177,7 @@ const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) =>
         ),
       ),
 );
+
 const arrowSkillDef: SkillDef = {
   key: "arrow-skill",
   createItem: ({ pos }) => (scene) =>
@@ -166,9 +185,66 @@ const arrowSkillDef: SkillDef = {
   useAction: arrowUseAction,
 };
 
-const skillDefs = [arrowSkillDef];
+const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
+  const particles = bellParticlesDef.getObj(scene);
+  const player = Def.player.getObj(scene);
+  const radius = { r: 30 };
+  const emmiter = particles.createEmitter({
+    speed: 20,
+    follow: player,
+    scale: {
+      start: 0.5,
+      end: 0,
+    },
+    alpha: { start: 0.8, end: 0 },
+    tint: { onEmit: () => new Phaser.Display.Color().random(128).color },
+    quantity: 15,
+    emitZone: {
+      type: "random",
+      source: {
+        getRandomPoint(point: Vector2) {
+          Phaser.Math.RandomXY(point, radius.r);
+        },
+      },
+    },
+  });
+  const playerWp = Def.player.data.currentPos.value(scene);
+  const playerWpDef = Wp.getWpDef(playerWp);
+  return Flow.sequence(
+    Flow.parallel(
+      Flow.tween({
+        targets: radius,
+        props: { r: Wp.wpHalfSize.x * 3 },
+        duration: 1200,
+      }),
+      Flow.sequence(
+        Flow.waitTimer(500),
+        Flow.call(Def.bellHitEvent(playerWp).emit({})),
+        Flow.waitTimer(500),
+        ...Geom.pointsAround(new Vector2(playerWpDef), 1).map((nwp) =>
+          Flow.call(
+            Def.bellHitEvent(
+              Wp.getWpId({ ...nwp, room: playerWpDef.room }),
+            ).emit({}),
+          ),
+        ),
+      ),
+    ),
+    Flow.call(() => emmiter.stop()),
+  );
+});
+
+const bellSkillDef: SkillDef = {
+  key: "bell-skill",
+  createItem: ({ pos }) => (scene) =>
+    createSpriteAt(scene, pos, "menu", "bell"),
+  useAction: bellUseAction,
+};
+
+const skillDefs = [arrowSkillDef, bellSkillDef];
 
 export const arrowSkillAltar = skillAltar(arrowSkillDef);
+export const bellSkillAltar = skillAltar(bellSkillDef);
 
 export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const hasThisSkill = (key: string): SceneContext<Observable<boolean>> => (

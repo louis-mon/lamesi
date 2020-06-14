@@ -10,6 +10,7 @@ import {
   declareGoInstances,
   customEvent,
   defineEvents,
+  makeSceneEventHelper,
 } from "/src/helpers/component";
 
 export type WpId = string & { __wpIdTag: null };
@@ -29,6 +30,9 @@ export const scene = defineSceneClass({
     movePlayer: customEvent<{ path: WpId[] }>(),
   },
 });
+
+export const bellHitEvent = (wp: WpId) =>
+  makeSceneEventHelper({ key: `bell-hit-${wp}`, selector: _.identity });
 
 export const playerClass = defineGoClass({
   data: {

@@ -18,7 +18,7 @@ import {
 import { combineContext } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
-import { initSkills, skillsFlow, arrowSkillAltar } from "./skills";
+import { initSkills, skillsFlow, arrowSkillAltar, bellSkillAltar } from "./skills";
 import { menuHelpers } from "../menu";
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
@@ -109,6 +109,7 @@ export class DungeonScene extends Phaser.Scene {
     const debugActions = Flow.parallel(
       Npc.openDoor("door4To3"),
       arrowSkillAltar({ wp: { room: 4, x: 1, y: 4 } }),
+      bellSkillAltar({ wp: { room: 4, x: 3, y: 4 } }),
     );
 
     const ambiantActions = Flow.parallel(
