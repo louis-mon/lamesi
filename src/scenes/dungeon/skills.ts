@@ -234,6 +234,45 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
+export const bellHiddenAction = ({
+  action,
+  wp,
+}: {
+  action: (p: { wp: Def.WpDef }) => Flow.PhaserNode;
+  wp: Def.WpDef;
+}): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    const { x, y } = Wp.wpPos(wp);
+    const emitter = bellParticlesDef.getObj(scene).createEmitter({
+      speed: 20,
+      scale: {
+        start: 0.5,
+        end: 0,
+      },
+      lifespan: 3000,
+      alpha: { start: 0.8, end: 0 },
+      tint: { onEmit: () => new Phaser.Display.Color().random(128).color },
+      quantity: 1,
+      frequency: 800,
+      emitZone: {
+        type: "random",
+        source: new Phaser.Geom.Rectangle(
+          -Wp.wpHalfSize.x,
+          -Wp.wpHalfSize.y,
+          Wp.wpSize.x,
+          Wp.wpSize.y,
+        ),
+      },
+      x,
+      y,
+    });
+    return Flow.sequence(
+      Flow.wait(Def.bellHitEvent(Wp.getWpId(wp)).subject),
+      Flow.call(() => emitter.stop()),
+      action({ wp }),
+    );
+  });
+
 const bellSkillDef: SkillDef = {
   key: "bell-skill",
   createItem: ({ pos }) => (scene) =>

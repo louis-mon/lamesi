@@ -183,6 +183,10 @@ export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
   rec();
 };
 
+/**
+ * Perform the given task whenever the condition is true,
+ * but abort the task whenever the condition becomes false
+ */
 export const taskWithSentinel = <C>({
   condition,
   task,

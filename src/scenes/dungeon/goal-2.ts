@@ -18,7 +18,12 @@ import {
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
-import { initSkills, skillsFlow } from "./skills";
+import {
+  initSkills,
+  skillsFlow,
+  bellSkillAltar,
+  bellHiddenAction,
+} from "./skills";
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -91,7 +96,7 @@ const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
                 props: {
                   y,
                 },
-                duration: Math.abs(y - target.y) / (150 / 1000),
+                duration: Math.abs(y - target.y) / (75 / 1000),
               };
             }),
             Flow.call(() => {
@@ -117,16 +122,26 @@ const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
     condition: combineLatest(
       ...bellAlignSwitches.map((def) => def.data.state.dataSubject(scene)),
     ).pipe(map((states) => states.every(_.identity))),
-    action: Flow.call(() => console.log("bla")),
+    action: bellSkillAltar({ wp: { room: 3, x: 0, y: 0 } }),
   });
 
-  return Flow.parallel(
-    ...controlledFlow,
-    ...moveControl,
-    solved,
-  );
+  return Flow.parallel(...controlledFlow, ...moveControl, solved);
 });
 
-export const dungeonGoal2 = Flow.parallel(
-  puzzleForBellAltar,
-);
+const hintSymbol = bellHiddenAction({
+  wp: { room: 3, x: 4, y: 0 },
+  action: ({ wp }) =>
+    Flow.lazy((scene) => {
+      const hintObj = createSpriteAt(
+        scene,
+        Wp.wpPos(wp).clone().add(new Vector2(0, 50)),
+        "npc",
+        "goal-2-hint",
+      )
+        .setAlpha(0)
+        .setScale(0.35);
+      return Flow.tween({ targets: hintObj, props: { alpha: 1 } });
+    }),
+});
+
+export const dungeonGoal2 = Flow.parallel(puzzleForBellAltar, hintSymbol);
