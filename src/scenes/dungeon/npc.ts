@@ -20,6 +20,8 @@ import {
 import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
+import { menuHelpers } from "../menu";
+import { gameWidth, gameHeight } from "../common";
 
 const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
@@ -292,3 +294,42 @@ export const altarComponent = (
     ),
   );
 };
+
+export const endGoalAltarPlaceholder = (params: { n: number; wp: Wp.WpDef }) =>
+  altarComponent({
+    createItem: ({ pos }) => (scene) =>
+      createSpriteAt(scene, pos, "menu", "goal-1"),
+    key: "goal-1",
+    wp: params.wp,
+    action: Flow.withContext(
+      menuHelpers.getMenuScene,
+      Flow.lazy((scene) => {
+        scene.add
+          .text(gameWidth / 2, 50, `Objectif ${params.n} atteint`, {
+            boundsAlignH: true,
+          })
+          .setFontSize(30);
+        const moon = scene.add.sprite(
+          gameWidth / 2,
+          gameHeight / 2,
+          "menu",
+          "goal-1",
+        );
+        return Flow.sequence(
+          Flow.tween({ targets: moon, props: { scale: 5 }, duration: 1700 }),
+          Flow.tween({
+            targets: moon,
+            props: { angle: -20 },
+            duration: 1000,
+          }),
+          Flow.tween({
+            targets: moon,
+            props: { angle: 20 },
+            yoyo: true,
+            loop: -1,
+            duration: 2000,
+          }),
+        );
+      }),
+    ),
+  });

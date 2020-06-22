@@ -147,38 +147,6 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
   ),
 );
 
-const endGoal1: Flow.PhaserNode = Flow.withContext(
-  menuHelpers.getMenuScene,
-  Flow.lazy((scene) => {
-    scene.add
-      .text(gameWidth / 2, 50, "Objectif 1 atteint", {
-        boundsAlignH: true,
-      })
-      .setFontSize(30);
-    const moon = scene.add.sprite(
-      gameWidth / 2,
-      gameHeight / 2,
-      "menu",
-      "goal-1",
-    );
-    return Flow.sequence(
-      Flow.tween({ targets: moon, props: { scale: 5 }, duration: 1700 }),
-      Flow.tween({
-        targets: moon,
-        props: { angle: -20 },
-        duration: 1000,
-      }),
-      Flow.tween({
-        targets: moon,
-        props: { angle: 20 },
-        yoyo: true,
-        loop: -1,
-        duration: 2000,
-      }),
-    );
-  }),
-);
-
 const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const switchFactory = Npc.switchCrystalFactory(scene);
   const switches = [Def.switches.goal1Left, Def.switches.goal1Right];
@@ -197,12 +165,9 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
     room: 4,
     kind: "spike",
   })(scene);
-  const goalAltar = Npc.altarComponent({
-    createItem: ({ pos }) => (scene) =>
-      createSpriteAt(scene, pos, "menu", "goal-1"),
-    key: "goal-1",
+  const goalAltar = Npc.endGoalAltarPlaceholder({
     wp: { room: 4, x: 2, y: 2 },
-    action: endGoal1,
+    n: 1,
   });
   const setGoalSpikes = (open: boolean) =>
     Wp.setGroundObstacleRect({

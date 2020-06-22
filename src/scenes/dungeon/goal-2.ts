@@ -14,10 +14,13 @@ import {
   defineGoClass,
   declareGoInstance,
   customEvent,
+  defineData,
+  makeSceneDataHelper,
+  defineGoClassKind,
 } from "/src/helpers/component";
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, pairwise, auditTime, first } from "rxjs/operators";
 import {
   initSkills,
   skillsFlow,
@@ -134,14 +137,93 @@ const hintSymbol = bellHiddenAction({
     Flow.lazy((scene) => {
       const hintObj = createSpriteAt(
         scene,
-        Wp.wpPos(wp).clone().add(new Vector2(0, 50)),
+        Wp.wpPos(wp).clone().add(new Vector2(0, 10)),
         "npc",
         "goal-2-hint",
       )
         .setAlpha(0)
-        .setScale(0.35);
+        .setDepth(Def.depths.carpet);
       return Flow.tween({ targets: hintObj, props: { alpha: 1 } });
     }),
 });
 
-export const dungeonGoal2 = Flow.parallel(puzzleForBellAltar, hintSymbol);
+type Room2FloorState = { [key: string]: boolean };
+const room2floorState = makeSceneDataHelper<Room2FloorState>(
+  "room2-floor-state",
+);
+
+export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
+  room2floorState.setValue({})(scene);
+  const nbTilesX = 3;
+  const nbTilesY = 4;
+  const tilesWps: Wp.WpDef[] = _.range(nbTilesX * nbTilesY).map((i) => {
+    const { x, y } = Phaser.Math.ToXY(i, nbTilesX, nbTilesY).add(
+      new Vector2(2, 1),
+    );
+    return { room: 2, x, y };
+  });
+  const tileDef = defineGoClassKind<Phaser.GameObjects.Sprite>();
+  const tileName = (wp: Def.WpDef) => `room2-floor-tile-${Wp.getWpId(wp)}`;
+  tilesWps.forEach((wp) => {
+    createSpriteAt(scene, Wp.wpPos(wp), "npc", "room-2-floor")
+      .setDepth(Def.depths.carpet)
+      .setName(tileName(wp))
+      .setAlpha(0);
+  });
+  const bellEvents = Flow.parallel(
+    ...tilesWps.map((wp) =>
+      Flow.repeat(
+        bellHiddenAction({
+          action: () =>
+            Flow.call(
+              room2floorState.updateValue((state) => ({
+                ...state,
+                [Wp.getWpId(wp)]: !state[Wp.getWpId(wp)],
+              })),
+            ),
+          wp,
+        }),
+      ),
+    ),
+  );
+  const controlTiles = Flow.observe(
+    room2floorState.dataSubject(scene).pipe(
+      pairwise(),
+      map(([old, current]) =>
+        Flow.call(() => {
+          tilesWps.forEach((wp) => {
+            const currentState = current[Wp.getWpId(wp)];
+            if (currentState != old[Wp.getWpId(wp)]) {
+              tileDef
+                .getObj(tileName(wp))(scene)
+                .setAlpha(currentState ? 0.7 : 0);
+            }
+          });
+        }),
+      ),
+    ),
+  );
+  const checkSolve = Flow.observe(
+    room2floorState.dataSubject(scene).pipe(
+      auditTime(1000),
+      first((state) => {
+        const solution = [0, 1, 2, 4, 6, 7, 8, 10].map((i) =>
+          Wp.getWpId(tilesWps[i]),
+        );
+        return tilesWps.every(
+          (wp) => solution.includes(Wp.getWpId(wp)) === !!state[Wp.getWpId(wp)],
+        );
+      }),
+      map(() =>
+        Npc.endGoalAltarPlaceholder({ wp: { room: 2, x: 3, y: 0 }, n: 2 }),
+      ),
+    ),
+  );
+  return Flow.parallel(controlTiles, bellEvents, checkSolve);
+});
+
+export const dungeonGoal2 = Flow.parallel(
+  puzzleForBellAltar,
+  hintSymbol,
+  room2GoalPuzzle,
+);

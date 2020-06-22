@@ -243,14 +243,19 @@ export const bellHiddenAction = ({
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const { x, y } = Wp.wpPos(wp);
+    const updateAlpha: Phaser.Types.GameObjects.Particles.EmitterOpOnUpdateCallback = (
+      p,
+      k,
+      t,
+    ) => Phaser.Math.Interpolation.Bezier([0, 1, 0], t);
     const emitter = bellParticlesDef.getObj(scene).createEmitter({
-      speed: 20,
+      speed: 10,
       scale: {
         start: 0.5,
         end: 0,
       },
       lifespan: 3000,
-      alpha: { start: 0.8, end: 0 },
+      alpha: updateAlpha,
       tint: { onEmit: () => new Phaser.Display.Color().random(128).color },
       quantity: 1,
       frequency: 800,
@@ -268,7 +273,7 @@ export const bellHiddenAction = ({
     });
     return Flow.sequence(
       Flow.wait(Def.bellHitEvent(Wp.getWpId(wp)).subject),
-      Flow.call(() => emitter.stop()),
+      Flow.call(() => emitter.remove()),
       action({ wp }),
     );
   });

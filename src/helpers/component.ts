@@ -90,6 +90,40 @@ type DataMappingDef<
   Kind extends ObjectKind
 > = { [Key in keyof O]: HelperFactory<Kind, DataHelper<O[Key]>> };
 
+const makeDataHelper = (
+  emitterFactory: SceneContext<Maybe<Phaser.Events.EventEmitter>>,
+  managerFactory: SceneContext<Maybe<Phaser.Data.DataManager>>,
+) => <T>(key: string): DataHelper<T> => {
+  const eventKey = `changedata-${key}`;
+  const updateValue: DataHelper<T>["updateValue"] = (f) => (scene) => {
+    return managerFactory(scene).ifJust((manager) =>
+      manager.set(key, f(manager.get(key))),
+    );
+  };
+  const value: DataHelper<T>["value"] = (scene) =>
+    managerFactory(scene).mapOrDefault(
+      (manager) => manager.get(key),
+      undefined,
+    );
+  const subject: DataHelper<T>["subject"] = (scene) =>
+    emitterFactory(scene).mapOrDefault(
+      (emitter) => fromEvent(emitter, eventKey, (p, value) => value),
+      empty(),
+    );
+  return {
+    subject,
+    dataSubject: (scene) => subject(scene).pipe(startWith(value(scene))),
+    value,
+    setValue: (v) => updateValue(() => v),
+    updateValue,
+  };
+};
+
+export const makeSceneDataHelper = makeDataHelper(
+  (scene) => Maybe.of(scene.events),
+  (scene) => Maybe.of(scene.data),
+);
+
 export const defineData = <
   O extends DefineDataMappingParams,
   Kind extends ObjectKind
@@ -98,36 +132,10 @@ export const defineData = <
   kind: Kind,
 ) =>
   _.mapValues(data, (v, key) => {
-    const eventKey = `changedata-${key}`;
     const impl = (
       emitterFactory: SceneContext<Maybe<Phaser.Events.EventEmitter>>,
       managerFactory: SceneContext<Maybe<Phaser.Data.DataManager>>,
-    ): DataHelper<unknown> => {
-      const updateValue: DataHelper<unknown>["updateValue"] = (f) => (
-        scene,
-      ) => {
-        return managerFactory(scene).ifJust((manager) =>
-          manager.set(key, f(manager.get(key))),
-        );
-      };
-      const value: DataHelper<unknown>["value"] = (scene) =>
-        managerFactory(scene).mapOrDefault(
-          (manager) => manager.get(key),
-          undefined,
-        );
-      const subject: DataHelper<unknown>["subject"] = (scene) =>
-        emitterFactory(scene).mapOrDefault(
-          (emitter) => fromEvent(emitter, eventKey, (p, value) => value),
-          empty(),
-        );
-      return {
-        subject,
-        dataSubject: (scene) => subject(scene).pipe(startWith(value(scene))),
-        value,
-        setValue: (v) => updateValue(() => v),
-        updateValue,
-      };
-    };
+    ) => makeDataHelper(emitterFactory, managerFactory)(key);
     if (kind === "go") {
       return (id) =>
         impl(
@@ -140,10 +148,7 @@ export const defineData = <
         (scene) => Maybe.of(scene.game.events),
         (scene) => Maybe.of(scene.registry),
       );
-    return impl(
-      (scene) => Maybe.of(scene.events),
-      (scene) => Maybe.of(scene.data),
-    );
+    return makeSceneDataHelper(key);
   }) as DataMappingDef<O, Kind>;
 
 type GoClassDef<
