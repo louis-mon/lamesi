@@ -68,7 +68,12 @@ const skillAltar = (skillDef: SkillDef) => ({
   Npc.altarComponent({
     ...skillDef,
     wp,
-    action: Flow.call(Def.scene.data.currentSkill.setValue(skillDef.key)),
+    action: Flow.call(
+      combineContext(
+        Def.scene.data.currentSkillInUse.setValue(false),
+        Def.scene.data.currentSkill.setValue(skillDef.key),
+      ),
+    ),
   });
 
 const arrowDef = declareGoInstance(arrowClass, "player-arrow");
@@ -186,6 +191,7 @@ const arrowSkillDef: SkillDef = {
 };
 
 const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
+  if (Def.scene.data.currentSkillInUse.value(scene)) return Flow.noop;
   const particles = bellParticlesDef.getObj(scene);
   const player = Def.player.getObj(scene);
   const radius = { r: 30 };
@@ -210,6 +216,7 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
   });
   const playerWp = Def.player.data.currentPos.value(scene);
   const playerWpDef = Wp.getWpDef(playerWp);
+  Def.scene.data.currentSkillInUse.setValue(true)(scene);
   return Flow.sequence(
     Flow.parallel(
       Flow.tween({
@@ -231,6 +238,7 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     ),
     Flow.call(() => emmiter.stop()),
+    Flow.call(Def.scene.data.currentSkillInUse.setValue(false)),
   );
 });
 

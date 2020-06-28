@@ -23,6 +23,7 @@ export const scene = defineSceneClass({
     skillPointerActive: annotate<boolean>(),
     wpGraph: annotate<WpGraph>(),
     currentSkill: annotate<string>(),
+    currentSkillInUse: annotate<boolean>(),
     interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
     wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
   },

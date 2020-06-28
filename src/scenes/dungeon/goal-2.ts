@@ -174,31 +174,24 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
     ...tilesWps.map((wp) =>
       Flow.repeat(
         bellHiddenAction({
-          action: () =>
-            Flow.call(
-              room2floorState.updateValue((state) => ({
-                ...state,
-                [Wp.getWpId(wp)]: !state[Wp.getWpId(wp)],
-              })),
-            ),
+          action: () => {
+            const wpId = Wp.getWpId(wp);
+            const floorActive = room2floorState.value(scene)[wpId];
+            return Flow.sequence(
+              Flow.tween({
+                targets: tileDef.getObj(tileName(wp))(scene),
+                props: { alpha: floorActive ? 0 : 0.7 },
+                duration: 500,
+              }),
+              Flow.call(
+                room2floorState.updateValue((state) => ({
+                  ...state,
+                  [wpId]: !state[wpId],
+                })),
+              ),
+            );
+          },
           wp,
-        }),
-      ),
-    ),
-  );
-  const controlTiles = Flow.observe(
-    room2floorState.dataSubject(scene).pipe(
-      pairwise(),
-      map(([old, current]) =>
-        Flow.call(() => {
-          tilesWps.forEach((wp) => {
-            const currentState = current[Wp.getWpId(wp)];
-            if (currentState != old[Wp.getWpId(wp)]) {
-              tileDef
-                .getObj(tileName(wp))(scene)
-                .setAlpha(currentState ? 0.7 : 0);
-            }
-          });
         }),
       ),
     ),
@@ -219,7 +212,7 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     ),
   );
-  return Flow.parallel(controlTiles, bellEvents, checkSolve);
+  return Flow.parallel(bellEvents, checkSolve);
 });
 
 export const dungeonGoal2 = Flow.parallel(
