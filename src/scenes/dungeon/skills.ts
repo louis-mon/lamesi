@@ -67,6 +67,7 @@ const skillAltar = (skillDef: SkillDef) => ({
 }): Flow.PhaserNode =>
   Npc.altarComponent({
     ...skillDef,
+    infinite: true,
     wp,
     action: Flow.call(
       combineContext(

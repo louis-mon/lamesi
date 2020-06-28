@@ -133,6 +133,7 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
 };
 
 const doors = {
+  door1to2: Wp.getWpLink(1, 2),
   door4To5: Wp.getWpLink(4, 5),
   door4To3: Wp.getWpLink(4, 3),
   door4To1: Wp.getWpLink(4, 1),
@@ -193,6 +194,10 @@ export const closeDoor = activateDoor(false);
 
 export const createDoors = (scene: Phaser.Scene) => {
   _.mapValues(doors, (doorDef, doorKey: DoorKey) => {
+    Wp.setGroundObstacleLink({
+      ...doorDef,
+      kind: "wall",
+    })(scene);
     doorPositions(doorKey, false).forEach((point, i) =>
       createSpriteAt(scene, point, "npc", "door-vertical")
         .setName(doorObjectKey(doorKey, i))
@@ -208,6 +213,7 @@ type AltarComponentParams = {
   }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
   key: string;
   action: Flow.PhaserNode;
+  infinite?: boolean;
 };
 
 const altarClass = defineGoClass({
@@ -284,7 +290,9 @@ export const altarComponent = (
               create: ({ pos }) => (scene) =>
                 createImageAt(scene, pos, "menu", "action-take"),
               action: Flow.sequence(
-                Flow.call(itemDef.data.isEmpty.setValue(true)),
+                params.infinite
+                  ? Flow.noop
+                  : Flow.call(itemDef.data.isEmpty.setValue(true)),
                 params.action,
               ),
             },

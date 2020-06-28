@@ -271,7 +271,7 @@ const initWalls: SceneContext<void> = (scene) => {
   _.range(nbRooms / 2).forEach((room) => {
     _.range(wpPerSide).forEach((x) => {
       setGroundObstacleLink({
-        kind: "wall",
+        kind: x === 2 ? "none" : "wall",
         wp1: getWpId({ room, x, y: wpPerSide - 1 }),
         wp2: getWpId({ room: room + nbRooms / 2, x, y: 0 }),
       })(scene);
@@ -280,12 +280,27 @@ const initWalls: SceneContext<void> = (scene) => {
   [0, 1, 3, 4].forEach((room) => {
     _.range(wpPerSide).forEach((y) => {
       setGroundObstacleLink({
-        kind: "wall",
+        kind: y === 2 ? "none" : "wall",
         wp1: getWpId({ room, x: wpPerSide - 1, y }),
         wp2: getWpId({ room: room + 1, x: 0, y }),
       })(scene);
     });
   });
+  setGroundObstacleLine({
+    line: new Phaser.Geom.Line(2, 0, 2, 5),
+    kind: "wall",
+    room: 2,
+  })(scene);
+  setGroundObstacleLine({
+    line: new Phaser.Geom.Line(4, 2, 4, 4),
+    kind: "wall",
+    room: 1,
+  })(scene);
+  setGroundObstacleLine({
+    line: new Phaser.Geom.Line(3, 4, 4, 4),
+    kind: "wall",
+    room: 1,
+  })(scene);
 };
 
 export const initGroundMap = (scene: Phaser.Scene) => {

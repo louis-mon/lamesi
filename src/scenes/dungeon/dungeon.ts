@@ -114,6 +114,7 @@ export class DungeonScene extends Phaser.Scene {
     const debugActions = Flow.parallel(
       Npc.openDoor("door4To3"),
       Npc.openDoor("door5To2"),
+      Npc.openDoor("door4To1"),
       arrowSkillAltar({ wp: { room: 4, x: 1, y: 4 } }),
       bellSkillAltar({ wp: { room: 4, x: 3, y: 4 } }),
     );
