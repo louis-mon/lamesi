@@ -27,6 +27,7 @@ import {
 import { menuHelpers } from "../menu";
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
+import { dragon } from "./dragon";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
@@ -99,6 +100,7 @@ export class DungeonScene extends Phaser.Scene {
   preload() {
     this.load.atlas("npc");
     this.load.atlas("menu");
+    this.load.atlas("dragon");
     this.load.image("rooms");
   }
 
@@ -126,6 +128,7 @@ export class DungeonScene extends Phaser.Scene {
       dungeonGoal1,
       dungeonGoal2,
       debugActions,
+      dragon,
     );
     Flow.run(this, Flow.sequence(initActions, ambiantActions));
     this.events.once(subWordGameBeginEvent, () => {

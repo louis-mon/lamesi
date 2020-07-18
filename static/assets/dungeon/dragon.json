@@ -1,0 +1,111 @@
+{
+  "frames": {
+    "body": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 102,
+        "h": 111
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 16,
+        "y": 3,
+        "w": 102,
+        "h": 111
+      },
+      "sourceSize": {
+        "w": 130,
+        "h": 115
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "foot": {
+      "frame": {
+        "x": 108,
+        "y": 2,
+        "w": 102,
+        "h": 63
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 0,
+        "w": 102,
+        "h": 63
+      },
+      "sourceSize": {
+        "w": 112,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "wing": {
+      "frame": {
+        "x": 214,
+        "y": 2,
+        "w": 92,
+        "h": 77
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 14,
+        "w": 92,
+        "h": 77
+      },
+      "sourceSize": {
+        "w": 100,
+        "h": 100
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "head": {
+      "frame": {
+        "x": 108,
+        "y": 69,
+        "w": 79,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 3,
+        "y": 23,
+        "w": 79,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 100,
+        "h": 100
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.6",
+    "image": "dragon.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 308,
+      "h": 115
+    },
+    "scale": 1
+  }
+}
