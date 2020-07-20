@@ -14,7 +14,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "phaser": "3.23.0",
     "purify-ts": "^0.15.1",
     "rxjs": "^6.5.5"
