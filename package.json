@@ -13,7 +13,6 @@
     "check": "tsc --noEmit",
     "test": "jest"
   },
-
   "dependencies": {
     "lodash": "4.17.15",
     "phaser": "3.23.0",
