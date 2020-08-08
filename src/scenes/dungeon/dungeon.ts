@@ -1,3 +1,4 @@
+import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
 import * as Phaser from "phaser";
 import _ from "lodash";
 import * as Wp from "./wp";
@@ -127,6 +128,7 @@ export class DungeonScene extends Phaser.Scene {
       skillsFlow,
       dungeonGoal1,
       dungeonGoal2,
+      dungeonGoal3,
       debugActions,
       dragon,
     );

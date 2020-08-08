@@ -1,3 +1,4 @@
+import { PhaserNode } from "/src/helpers/phaser-flow";
 import * as Phaser from "phaser";
 import _ from "lodash";
 import * as Wp from "./wp";
@@ -28,36 +29,13 @@ import {
   bellHiddenAction,
 } from "./skills";
 
-export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
-  const basePos = new Vector2(0, -9.0).add(Wp.wpPos({ room: 1, x: 2, y: 1 }));
-  const bodyObj = createSpriteAt(scene, basePos, "dragon", "body").setDepth(
-    Def.depths.npc,
-  );
-  const headObj = createSpriteAt(
-    scene,
-    new Vector2(0, -60).add(basePos),
-    "dragon",
-    "head",
-  ).setDepth(Def.depths.floating);
-  const wingObjs = [1, -1].map((flip) =>
-    createSpriteAt(
-      scene,
-      new Vector2(flip * 50, 0).add(basePos),
-      "dragon",
-      "wing",
-    ).setFlipX(flip === 1).setDepth(
-        Def.depths.npc,
-      ),
-  );
-  const footObjs = [1, -1].map((flip) =>
-    createSpriteAt(
-      scene,
-      new Vector2(flip * 50, 50).add(basePos),
-      "dragon",
-      "foot",
-    ).setFlipX(flip === 1).setDepth(
-        Def.depths.npc,
-      ),
-  );
-  return Flow.parallel();
+const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
+  const switchDef = Def.switches.room1ForRoom2Door;
+  Npc.switchCrystalFactory(scene)(switchDef);
+  return Flow.when({
+    condition: switchDef.data.state.subject(scene),
+    action: Npc.openDoor("door1to2"),
+  });
 });
+
+export const dungeonGoal3 = Flow.parallel(puzzleDoorRoom1);
