@@ -37,6 +37,7 @@ const createPlayer = (scene: Phaser.Scene) => {
       Def.depths.npc,
     ),
   );
+  Def.scene.data.playerGroup.setValue(scene.physics.add.group())(scene);
   const currentPosData = Def.player.data.currentPos;
   const isMovingData = Def.player.data.isMoving;
   const setPlayerWp = (wp: Wp.WpId) => {

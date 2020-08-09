@@ -205,9 +205,10 @@ export const declareGoInstance = <
   Config extends object
 >(
   goClass: GoClassDef<Cl, Events, Data, Config>,
-  key: string,
+  keyOrNull: string | null,
   config?: Config,
 ) => {
+  const key = keyOrNull || _.uniqueId("go-unique");
   const getObj = goClass.getObj(key);
   return {
     config: config || ({} as Config),

@@ -119,11 +119,11 @@ const setGraphLink = (
   ...graph,
   [wp1]: {
     ...graph[wp1],
-    links: (open === true ? _.union : _.difference)(graph[wp1].links, [wp2]),
+    links: (open ? _.union : _.difference)(graph[wp1].links, [wp2]),
   },
   [wp2]: {
     ...graph[wp1],
-    links: (open === true ? _.union : _.difference)(graph[wp2].links, [wp1]),
+    links: (open ? _.union : _.difference)(graph[wp2].links, [wp1]),
   },
 });
 
