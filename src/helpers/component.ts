@@ -14,7 +14,7 @@ export const customEvent = <T>() => ({ selector: (x: T) => x });
 
 type DefineEventMappingParams = { [Key: string]: WithSelector };
 
-type MakeObservable<T> = SceneContext<Observable<T>>;
+export type MakeObservable<T> = SceneContext<Observable<T>>;
 type EventHelper<T> = {
   subject: MakeObservable<T>;
   emit: (value: T) => SceneContext<void>;

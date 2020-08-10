@@ -1,6 +1,7 @@
 import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
 import * as Phaser from "phaser";
 import _ from "lodash";
+import { playerCannotActSubject } from "./definitions";
 import { getWpId } from "./wp";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -70,9 +71,13 @@ const createPlayer = (scene: Phaser.Scene) => {
   Def.scene.data.playerCheckpoint.setValue(getWpId(initialWp))(scene);
   setPlayerWp(Wp.getWpId(initialWp));
   isMovingData.setValue(false)(scene);
+  isDeadData.setValue(false)(scene);
   return Flow.parallel(
+    Flow.observe(playerCannotActSubject, (canAct) =>
+      Flow.call(Def.player.data.cannotAct.setValue(canAct)),
+    ),
     Flow.observe(Def.scene.events.movePlayer.subject, ({ path }) => {
-      if (isMovingData.value(scene) || isDeadData.value(scene))
+      if (isMovingData.value(scene) || Def.player.data.cannotAct.value(scene))
         return Flow.noop;
       isMovingData.setValue(true)(scene);
       player.anims.play("walk");
@@ -104,12 +109,12 @@ const createPlayer = (scene: Phaser.Scene) => {
       if (isDeadData.value(scene)) return Flow.noop;
       isDeadData.setValue(true)(scene);
       return Flow.sequence(
-        Flow.waitTimer(2000),
         Flow.call(() => {
           const newPosId = Def.scene.data.playerCheckpoint.value(scene);
           setPlayerWp(newPosId);
           placeAt(player, Wp.wpPos(Wp.getWpDef(newPosId)));
         }),
+        Flow.waitTimer(3000),
         Flow.call(isDeadData.setValue(false)),
       );
     }),

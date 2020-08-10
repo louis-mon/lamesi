@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { playerCannotActSubject } from "./definitions";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Geom from "/src/helpers/math/geom";
@@ -20,7 +21,7 @@ import {
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { take, map, tap, first } from "rxjs/operators";
-import { of, Observable } from "rxjs";
+import { of, Observable, combineLatest } from "rxjs";
 import { combineContext } from "/src/helpers/functional";
 import { bindSkillButton } from "./menu";
 
@@ -81,7 +82,6 @@ const arrowDef = declareGoInstance(arrowClass, "player-arrow");
 
 const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    Def.scene.data.skillPointerActive.setValue(false)(scene);
     const arrowObj = scene.physics.add.existing(
       arrowDef
         .create(
@@ -106,7 +106,7 @@ const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
       Phaser.Math.RadToDeg(arrowObj.body.velocity.angle()) + 180;
     const particleAngleSpread = 40;
     const lightParticles = arrowLightParticleDef.getObj(scene);
-    const emmitter = lightParticles.createEmitter({
+    const emitter = lightParticles.createEmitter({
       follow: arrowObj,
       speed: 300,
       quantity: 1,
@@ -123,7 +123,7 @@ const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
       Flow.call(() => {
         arrowObj.body.stop();
         zoomTween.stop();
-        emmitter.stop();
+        emitter.stop();
       }),
       Flow.tween({
         targets: arrowObj,
@@ -173,14 +173,25 @@ const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) =>
     ? Flow.noop
     : Flow.sequence(
         Flow.call(Def.scene.data.skillPointerActive.setValue(true)),
-        Flow.observe(
-          commonInputEvents.pointerdown.subject(scene).pipe(
-            first(),
-            map(({ pointer }) =>
-              fireArrow(new Vector2(pointer.worldX, pointer.worldY)),
+        Flow.concurrent(
+          Flow.when({
+            condition: Def.player.data.cannotAct.subject,
+            action: Flow.noop,
+          }),
+          Flow.observe(
+            commonInputEvents.pointerdown.subject(scene).pipe(
+              first(),
+              map(({ pointer }) =>
+                Flow.call(
+                  Def.scene.events.sendMagicArrow.emit(
+                    new Vector2(pointer.worldX, pointer.worldY),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
+        Flow.call(Def.scene.data.skillPointerActive.setValue(false)),
       ),
 );
 
@@ -196,7 +207,7 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
   const particles = bellParticlesDef.getObj(scene);
   const player = Def.player.getObj(scene);
   const radius = { r: 30 };
-  const emmiter = particles.createEmitter({
+  const emitter = particles.createEmitter({
     speed: 20,
     follow: player,
     scale: {
@@ -238,7 +249,7 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
         ),
       ),
     ),
-    Flow.call(() => emmiter.stop()),
+    Flow.call(() => emitter.stop()),
     Flow.call(Def.scene.data.currentSkillInUse.setValue(false)),
   );
 });
@@ -303,10 +314,14 @@ export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const hasThisSkill = (key: string): SceneContext<Observable<boolean>> => (
     scene,
   ) =>
-    Def.scene.data.currentSkill
-      .dataSubject(scene)
-      .pipe(map((currentSkill) => currentSkill === key));
+    combineLatest([
+      Def.scene.data.currentSkill.dataSubject(scene),
+      playerCannotActSubject(scene),
+    ]).pipe(
+      map(([currentSkill, cannotAct]) => currentSkill === key && !cannotAct),
+    );
   return Flow.parallel(
+    Flow.observe(Def.scene.events.sendMagicArrow.subject, fireArrow),
     ...skillDefs.map((skillDef) =>
       bindSkillButton(hasThisSkill(skillDef.key)(scene), {
         key: skillDef.key,

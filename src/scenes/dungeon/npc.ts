@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { playerCannotActSubject } from "./definitions";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import { map, tap } from "rxjs/operators";
@@ -48,11 +49,12 @@ const canPlayerDoAction = (params: {
   combineLatest([
     Def.player.data.currentPos.subject(scene),
     Def.player.data.isMoving.subject(scene),
+    playerCannotActSubject(scene),
     params.disabled(scene),
   ]).pipe(
     map(
-      ([pos, isMoving, disabled]) =>
-        !disabled && !isMoving && pos === params.pos,
+      ([pos, isMoving, cannotAct, disabled]) =>
+        !disabled && !isMoving && !cannotAct && pos === params.pos,
     ),
   );
 

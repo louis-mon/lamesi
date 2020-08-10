@@ -11,8 +11,11 @@ import {
   customEvent,
   defineEvents,
   makeSceneEventHelper,
+  MakeObservable,
 } from "/src/helpers/component";
 import { boolean } from "purify-ts";
+import { combineLatest } from "rxjs";
+import { map } from "rxjs/operators";
 
 export type WpId = string & { __wpIdTag: null };
 export type WpDef = { room: number; x: number; y: number };
@@ -24,6 +27,7 @@ export const scene = defineSceneClass({
 
     // pointer input request active for special situations like arrow destination
     skillPointerActive: annotate<boolean>(),
+
     currentSkill: annotate<string>(),
     currentSkillInUse: annotate<boolean>(),
 
@@ -35,6 +39,8 @@ export const scene = defineSceneClass({
   events: {
     movePlayer: customEvent<{ path: WpId[] }>(),
     killPlayer: customEvent(),
+
+    sendMagicArrow: customEvent<Vector2>(),
   },
 });
 
@@ -46,12 +52,18 @@ export const playerClass = defineGoClass({
     currentPos: annotate<WpId>(),
     isMoving: annotate<boolean>(),
     isDead: annotate<boolean>(),
+    cannotAct: annotate<boolean>(),
   },
   events: {},
   kind: annotate<Phaser.GameObjects.Sprite>(),
 });
 
 export const player = declareGoInstance(playerClass, "player");
+
+export const playerCannotActSubject: MakeObservable<boolean> = (scene) =>
+  combineLatest([player.data.isDead.dataSubject(scene)]).pipe(
+    map(([isDead]) => isDead),
+  );
 
 export const interactableEvents = defineEvents(
   {

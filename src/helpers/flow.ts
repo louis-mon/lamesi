@@ -68,8 +68,30 @@ export const withBackground = <C>(params: {
   });
 };
 
+/** Completes whenever any of the actions complete, cancelling the others */
+export const concurrent = <C>(...actions: ActionNode<C>[]): ActionNode<C> => (
+  c,
+) => (p) => {
+  const emitter = new Phaser.Events.EventEmitter();
+  const eventName = "abort";
+  let completed = false;
+  actions.forEach((action) =>
+    action(c)({
+      onComplete: () => {
+        if (!completed) {
+          completed = true;
+          emitter.emit(eventName);
+          p.onComplete();
+        }
+      },
+      registerAbort: (f) => emitter.on(eventName, f),
+      unregisterAbort: (f) => emitter.off(eventName, f),
+    }),
+  );
+};
+
 /**
- * Ensapsulate a simple function call
+ * Encapsulate a simple function call
  */
 export const call = <C>(f: (context: C) => void): ActionNode<C> => (
   context,
@@ -105,9 +127,9 @@ export function observe<C, T>(
       : (source as Observable<ActionNode<C>>);
     let nbRunning = 0;
     let completed = false;
-    const unsubsribe = () => subscription.unsubscribe();
+    const unsubscribe = () => subscription.unsubscribe();
     const completeAction = () => {
-      p.unregisterAbort(unsubsribe);
+      p.unregisterAbort(unsubscribe);
       p.onComplete();
     };
     const subscription = observable.subscribe({
@@ -130,7 +152,7 @@ export function observe<C, T>(
         }
       },
     });
-    p.registerAbort(unsubsribe);
+    p.registerAbort(unsubscribe);
   };
 }
 
