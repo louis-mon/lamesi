@@ -24,6 +24,7 @@ export type WpGraph = { [key: string]: { links: WpId[] } };
 export const scene = defineSceneClass({
   data: {
     wpGraph: annotate<WpGraph>(),
+    movePlayerCanceled: annotate<boolean>(),
 
     // pointer input request active for special situations like arrow destination
     skillPointerActive: annotate<boolean>(),
@@ -37,6 +38,7 @@ export const scene = defineSceneClass({
     playerCheckpoint: annotate<WpId>(),
   },
   events: {
+    clickWp: customEvent<WpId>(),
     movePlayer: customEvent<{ path: WpId[] }>(),
     killPlayer: customEvent(),
 

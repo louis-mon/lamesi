@@ -157,7 +157,7 @@ export function observe<C, T>(
 }
 
 /**
- * Run the action when the condition is true and complete after
+ * Run the action when the condition is true and completes after
  */
 export const when = <C>(params: {
   condition: ObservableFactory<C, boolean>;
@@ -171,6 +171,20 @@ export const when = <C>(params: {
   )(c);
 
 /**
+ * Run the action when the event fires and completes after
+ */
+export const whenDo = <C>(params: {
+  condition: ObservableFactory<C, unknown>;
+  action: ActionNode<C>;
+}): ActionNode<C> =>
+  when({
+    condition: composeObservable(params.condition, (o) =>
+      o.pipe(map(_.stubTrue)),
+    ),
+    action: params.action,
+  });
+
+/**
  * Run the action when the condition is true and repeat, sequentially
  */
 export const repeatWhen = <C>(params: {
@@ -179,8 +193,8 @@ export const repeatWhen = <C>(params: {
 }): ActionNode<C> => repeat(when(params));
 
 export const wait = <C>(observable: ObservableFactory<C, unknown>) =>
-  when({
-    condition: composeObservable(observable, (o) => o.pipe(map(_.stubTrue))),
+  whenDo({
+    condition: observable,
     action: noop,
   });
 
@@ -226,6 +240,21 @@ export const taskWithSentinel = <C>({
       back: task,
     }),
   });
+
+/** Run an action whenever an event is observed like {@link observe},
+ * but terminates the previous action
+ * when a new one is ran
+ */
+export const observeSentinel = <C, T>(
+  condition: ObservableFactory<C, T>,
+  action: (t: T) => ActionNode<C>,
+) =>
+  observe(condition, (t) =>
+    withBackground({
+      main: wait(condition),
+      back: action(t),
+    }),
+  );
 
 /**
  * Generate a flow dynamically depending on the context

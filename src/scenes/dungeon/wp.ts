@@ -380,14 +380,34 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const wpsFlow = allWp.map((wpDef) => {
     const wpId = getWpId(wpDef);
-    return Flow.observe(commonGoEvents.pointerdown(wpId).subject, () => {
-      const isSkillActive = skillPointerActive.value(scene);
-      if (isSkillActive || !wpClass.data.isActive(wpId).value(scene))
-        return Flow.noop;
-      const wpsPath = Graph.extractPath(performBfs(), wpId);
-      return Flow.call(Def.scene.events.movePlayer.emit({ path: wpsPath }));
-    });
+    return Flow.observe(commonGoEvents.pointerdown(wpId).subject, () =>
+      Flow.call(Def.scene.events.clickWp.emit(wpId)),
+    );
   });
 
-  return Flow.parallel(computeWps, ...wpsFlow);
+  const clickWp = Flow.observeSentinel(
+    Def.scene.events.clickWp.subject,
+    (wpId) => {
+      const computeAndRunMove = () => {
+        const isSkillActive = skillPointerActive.value(scene);
+        if (isSkillActive || !wpClass.data.isActive(wpId).value(scene))
+          return Flow.noop;
+        const wpsPath = Graph.extractPath(performBfs(), wpId);
+        return Flow.call(Def.scene.events.movePlayer.emit({ path: wpsPath }));
+      };
+      if (Def.player.data.isMoving.value(scene)) {
+        return Flow.sequence(
+          Flow.call(Def.scene.data.movePlayerCanceled.setValue(true)),
+          Flow.when({
+            condition: Def.player.data.isMoving
+              .dataSubject(scene)
+              .pipe(map((x) => !x)),
+            action: Flow.lazy(computeAndRunMove),
+          }),
+        );
+      } else return computeAndRunMove();
+    },
+  );
+
+  return Flow.parallel(computeWps, clickWp, ...wpsFlow);
 });

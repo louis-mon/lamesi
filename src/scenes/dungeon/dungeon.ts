@@ -1,4 +1,5 @@
 import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
+import { eventsHelpers } from "/src/scenes/global-events";
 import * as Phaser from "phaser";
 import _ from "lodash";
 import { playerCannotActSubject } from "./definitions";
@@ -56,7 +57,14 @@ const createPlayer = (scene: Phaser.Scene) => {
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosData.setValue(wp)(scene);
   };
-  const playerSpeed = 0.3;
+  const runKey = scene.input.keyboard.addKey(
+    Phaser.Input.Keyboard.KeyCodes.SHIFT,
+  );
+  const playerSpeed = () =>
+    runKey.isDown &&
+    eventsHelpers.getEventFilter(scene)({ eventRequired: "cheatCodes" })
+      ? 0.4
+      : 0.2;
   scene.anims.create({
     key: "walk",
     repeat: -1,
@@ -77,30 +85,32 @@ const createPlayer = (scene: Phaser.Scene) => {
       Flow.call(Def.player.data.cannotAct.setValue(canAct)),
     ),
     Flow.observe(Def.scene.events.movePlayer.subject, ({ path }) => {
-      if (isMovingData.value(scene) || Def.player.data.cannotAct.value(scene))
-        return Flow.noop;
+      if (Def.player.data.cannotAct.value(scene)) return Flow.noop;
       isMovingData.setValue(true)(scene);
       player.anims.play("walk");
       return Flow.sequence(
         ...path.map((wpId) => {
           const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
           return Flow.lazy(() =>
-            Flow.sequence(
-              Flow.tween({
-                targets: player,
-                props: vecToXY(wpPos),
-                duration:
-                  wpPos.distance(
-                    Wp.wpPos(Wp.getWpDef(currentPosData.value(scene))),
-                  ) / playerSpeed,
-              }),
-              Flow.call(() => setPlayerWp(wpId)),
-            ),
+            Def.scene.data.movePlayerCanceled.value(scene)
+              ? Flow.noop
+              : Flow.sequence(
+                  Flow.tween({
+                    targets: player,
+                    props: vecToXY(wpPos),
+                    duration:
+                      wpPos.distance(
+                        Wp.wpPos(Wp.getWpDef(currentPosData.value(scene))),
+                      ) / playerSpeed(),
+                  }),
+                  Flow.call(() => setPlayerWp(wpId)),
+                ),
           );
         }),
         Flow.call(() => {
           player.anims.stop();
           player.setFrame("player-still");
+          Def.scene.data.movePlayerCanceled.setValue(false)(scene);
           isMovingData.setValue(false)(scene);
         }),
       );
