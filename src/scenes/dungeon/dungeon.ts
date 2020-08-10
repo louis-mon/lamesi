@@ -1,12 +1,19 @@
 import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
 import * as Phaser from "phaser";
 import _ from "lodash";
+import { getWpId } from "./wp";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
+import {
+  createSpriteAt,
+  vecToXY,
+  createImageAt,
+  placeAt,
+  addPhysicsFromSprite,
+} from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
@@ -25,21 +32,26 @@ import {
   arrowSkillAltar,
   bellSkillAltar,
 } from "./skills";
-import { menuHelpers } from "../menu";
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
 import { dragon } from "./dragon";
 
 const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
-  const player = Def.player.create(
-    createSpriteAt(scene, Wp.wpPos(initialWp), "npc", "player-still").setDepth(
-      Def.depths.npc,
+  const player = addPhysicsFromSprite(
+    scene,
+    Def.player.create(
+      createSpriteAt(
+        scene,
+        Wp.wpPos(initialWp),
+        "npc",
+        "player-still",
+      ).setDepth(Def.depths.npc),
     ),
   );
-  Def.scene.data.playerGroup.setValue(scene.physics.add.group())(scene);
   const currentPosData = Def.player.data.currentPos;
   const isMovingData = Def.player.data.isMoving;
+  const isDeadData = Def.player.data.isDead;
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosData.setValue(wp)(scene);
   };
@@ -55,11 +67,13 @@ const createPlayer = (scene: Phaser.Scene) => {
       zeroPad: 2,
     }),
   });
+  Def.scene.data.playerCheckpoint.setValue(getWpId(initialWp))(scene);
   setPlayerWp(Wp.getWpId(initialWp));
   isMovingData.setValue(false)(scene);
   return Flow.parallel(
     Flow.observe(Def.scene.events.movePlayer.subject, ({ path }) => {
-      if (isMovingData.value(scene)) return Flow.noop;
+      if (isMovingData.value(scene) || isDeadData.value(scene))
+        return Flow.noop;
       isMovingData.setValue(true)(scene);
       player.anims.play("walk");
       return Flow.sequence(
@@ -84,6 +98,19 @@ const createPlayer = (scene: Phaser.Scene) => {
           player.setFrame("player-still");
           isMovingData.setValue(false)(scene);
         }),
+      );
+    }),
+    Flow.observe(Def.scene.events.killPlayer.subject, () => {
+      if (isDeadData.value(scene)) return Flow.noop;
+      isDeadData.setValue(true)(scene);
+      return Flow.sequence(
+        Flow.waitTimer(2000),
+        Flow.call(() => {
+          const newPosId = Def.scene.data.playerCheckpoint.value(scene);
+          setPlayerWp(newPosId);
+          placeAt(player, Wp.wpPos(Wp.getWpDef(newPosId)));
+        }),
+        Flow.call(isDeadData.setValue(false)),
       );
     }),
   );

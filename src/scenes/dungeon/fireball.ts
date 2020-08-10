@@ -80,6 +80,13 @@ export const launchFireball = ({
           }),
           () => Flow.call(fireballDef.events.collideWall.emit({})),
         ),
+        Flow.observe(
+          Flow.arcadeOverlapSubject({
+            object1: fireballObj,
+            object2: Def.player.getObj(scene),
+          }),
+          () => Flow.call(Def.scene.events.killPlayer.emit({})),
+        ),
         Flow.sequence(
           Flow.waitTimer(1000),
           Flow.call(fireballDef.events.collideWall.emit({})),

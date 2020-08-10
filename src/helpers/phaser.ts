@@ -35,3 +35,8 @@ export const createImageAt = (
 ) => scene.add.image(pos.x, pos.y, texture, frame);
 
 export const vecToXY = (vec: Phaser.Math.Vector2) => ({ x: vec.x, y: vec.y });
+
+export const addPhysicsFromSprite = (
+  scene: Phaser.Scene,
+  obj: Phaser.GameObjects.Sprite,
+) => scene.physics.add.existing(obj) as Phaser.Physics.Arcade.Sprite;

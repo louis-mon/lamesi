@@ -12,6 +12,7 @@ import {
   defineEvents,
   makeSceneEventHelper,
 } from "/src/helpers/component";
+import { boolean } from "purify-ts";
 
 export type WpId = string & { __wpIdTag: null };
 export type WpDef = { room: number; x: number; y: number };
@@ -19,17 +20,21 @@ export type WpGraph = { [key: string]: { links: WpId[] } };
 
 export const scene = defineSceneClass({
   data: {
+    wpGraph: annotate<WpGraph>(),
+
     // pointer input request active for special situations like arrow destination
     skillPointerActive: annotate<boolean>(),
-    wpGraph: annotate<WpGraph>(),
     currentSkill: annotate<string>(),
     currentSkillInUse: annotate<boolean>(),
-    playerGroup: annotate<Phaser.Physics.Arcade.Group>(),
+
     interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
     wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
+
+    playerCheckpoint: annotate<WpId>(),
   },
   events: {
     movePlayer: customEvent<{ path: WpId[] }>(),
+    killPlayer: customEvent(),
   },
 });
 
@@ -40,6 +45,7 @@ export const playerClass = defineGoClass({
   data: {
     currentPos: annotate<WpId>(),
     isMoving: annotate<boolean>(),
+    isDead: annotate<boolean>(),
   },
   events: {},
   kind: annotate<Phaser.GameObjects.Sprite>(),
