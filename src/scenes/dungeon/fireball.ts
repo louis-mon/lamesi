@@ -17,7 +17,6 @@ import {
   customEvent,
   defineData,
   makeSceneDataHelper,
-  defineGoClassKind,
 } from "/src/helpers/component";
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";

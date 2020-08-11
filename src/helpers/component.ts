@@ -187,8 +187,13 @@ export const defineGoClass = <
   getObj: (key) => (scene) => scene.children.getByName(key) as Cl,
 });
 
-export const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() =>
+const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() =>
   defineGoClass({ events: {}, data: {}, kind: annotate<Cl>() });
+
+export const spriteClassKind = defineGoClassKind<Phaser.GameObjects.Sprite>();
+export const particleEmitterManagerClassKind = defineGoClassKind<
+  Phaser.GameObjects.Particles.ParticleEmitterManager
+>();
 
 export const commonGoEvents = defineEvents(
   {

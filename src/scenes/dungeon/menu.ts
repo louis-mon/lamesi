@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { Maybe } from "purify-ts";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import { menuHelpers } from "../menu";
@@ -7,10 +8,11 @@ import {
   customEvent,
   declareGoInstances,
   commonGoEvents,
+  spriteClassKind,
 } from "/src/helpers/component";
 import { annotate, ValueOf } from "/src/helpers/typing";
 import { combineContext, FuncOrConst } from "/src/helpers/functional";
-import { Observable, fromEvent } from "rxjs";
+import { Observable, fromEvent, of } from "rxjs";
 import { startWith, pairwise } from "rxjs/operators";
 import { getObjectPosition, ManipulableObject } from "/src/helpers/phaser";
 import _ from "lodash";
@@ -20,12 +22,13 @@ const actionEmptyFrame = "action-empty";
 type BindActionParams = {
   action: Flow.PhaserNode;
   key: string;
+  disabled?: Observable<boolean>;
   create: (params: {
     pos: Phaser.Math.Vector2;
   }) => (scene: Phaser.Scene) => ManipulableObject;
 };
 
-type BindActionState = Pick<BindActionParams, "action" | "key">;
+type BindActionState = Pick<BindActionParams, "action" | "key" | "disabled">;
 
 const buttonKey = (key: string) => `menu-button-${key}`;
 
@@ -59,8 +62,14 @@ export const makeMenu = (scene: Phaser.Scene) => {
       ),
     );
     button.data.action.setValue(emptyAction)(menuScene);
+    let buttonDisabled: boolean = false;
     const fireButtonAction = () =>
-      Flow.withContext(() => scene, button.data.action.value(menuScene).action);
+      buttonDisabled
+        ? Flow.noop
+        : Flow.withContext(
+            () => scene,
+            button.data.action.value(menuScene).action,
+          );
     const shortcutKey = menuScene.input.keyboard.addKey(button.config.shortcut);
     const buttonObj = button.getObj(menuScene);
     menuScene.add
@@ -70,22 +79,40 @@ export const makeMenu = (scene: Phaser.Scene) => {
         button.config.shortcut,
       )
       .setFontSize(25);
+    const getButtonActionObj = (key: string) =>
+      spriteClassKind.getObj(buttonKey(key))(menuScene);
+
     return Flow.parallel(
+      Flow.observeSentinel(button.data.action.subject, ({ disabled, key }) =>
+        disabled
+          ? Flow.observe(disabled, (isDisabled) =>
+              Flow.call(() => {
+                buttonDisabled = isDisabled;
+                Maybe.fromNullable(getButtonActionObj(key)).ifJust(
+                  (obj) => (obj.alpha = isDisabled ? 0.5 : 1),
+                );
+              }),
+            )
+          : Flow.noop,
+      ),
       Flow.observe(
         button.events.bindAction.subject,
-        ({ action, create, key }) =>
+        ({ action, create, key, disabled }) =>
           Flow.sequence(
+            Flow.call(() => {
+              buttonDisabled = false;
+            }),
             Flow.call(
               combineContext(
                 () =>
                   create({ pos: getObjectPosition(buttonObj) })(menuScene)
                     .setScale(1.3)
                     .setName(buttonKey(key)),
-                button.data.action.setValue({ action, key }),
+                button.data.action.setValue({ action, key, disabled }),
               ),
             ),
             Flow.tween(() => ({
-              targets: menuScene.children.getByName(buttonKey(key)),
+              targets: getButtonActionObj(key),
               props: { scale: 1 },
               duration: 500,
             })),
@@ -94,7 +121,7 @@ export const makeMenu = (scene: Phaser.Scene) => {
       Flow.observe(button.events.unbindAction.subject, ({ key }) =>
         Flow.call(
           combineContext(
-            () => menuScene.children.getByName(buttonKey(key))!.destroy(),
+            () => getButtonActionObj(key)!.destroy(),
             button.data.action.updateValue((oldAction) =>
               oldAction.key === key ? emptyAction : oldAction,
             ),

@@ -1,32 +1,16 @@
-import * as Phaser from "phaser";
-import _ from "lodash";
-import * as Wp from "./wp";
+import { declareGoInstance, makeSceneDataHelper, spriteClassKind } from "/src/helpers/component";
+import { getProp } from "/src/helpers/functional";
+import { createSpriteAt } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
-import * as Def from "./definitions";
-
-import Vector2 = Phaser.Math.Vector2;
-import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
-import * as Npc from "./npc";
-import { makeMenu } from "./menu";
-import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
-import { annotate } from "/src/helpers/typing";
-import {
-  defineGoClass,
-  declareGoInstance,
-  customEvent,
-  defineData,
-  makeSceneDataHelper,
-  defineGoClassKind,
-} from "/src/helpers/component";
-import { combineContext, getProp } from "/src/helpers/functional";
+import _ from "lodash";
+import * as Phaser from "phaser";
 import { combineLatest } from "rxjs";
-import { map, pairwise, auditTime, first } from "rxjs/operators";
-import {
-  initSkills,
-  skillsFlow,
-  bellSkillAltar,
-  bellHiddenAction,
-} from "./skills";
+import { auditTime, first, map } from "rxjs/operators";
+import * as Def from "./definitions";
+import * as Npc from "./npc";
+import { bellHiddenAction, bellSkillAltar } from "./skills";
+import * as Wp from "./wp";
+import Vector2 = Phaser.Math.Vector2;
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -162,7 +146,6 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
     );
     return { room: 2, x, y };
   });
-  const tileDef = defineGoClassKind<Phaser.GameObjects.Sprite>();
   const tileName = (wp: Def.WpDef) => `room2-floor-tile-${Wp.getWpId(wp)}`;
   tilesWps.forEach((wp) => {
     createSpriteAt(scene, Wp.wpPos(wp), "npc", "room-2-floor")
@@ -179,7 +162,7 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
             const floorActive = room2floorState.value(scene)[wpId];
             return Flow.sequence(
               Flow.tween({
-                targets: tileDef.getObj(tileName(wp))(scene),
+                targets: spriteClassKind.getObj(tileName(wp))(scene),
                 props: { alpha: floorActive ? 0 : 0.7 },
                 duration: 500,
               }),

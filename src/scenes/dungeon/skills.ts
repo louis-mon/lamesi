@@ -17,7 +17,7 @@ import {
   declareGoInstance,
   commonInputEvents,
   customEvent,
-  defineGoClassKind,
+  particleEmitterManagerClassKind,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { take, map, tap, first } from "rxjs/operators";
@@ -26,12 +26,12 @@ import { combineContext } from "/src/helpers/functional";
 import { bindSkillButton } from "./menu";
 
 const arrowLightParticleDef = declareGoInstance(
-  defineGoClassKind<Phaser.GameObjects.Particles.ParticleEmitterManager>(),
+  particleEmitterManagerClassKind,
   "arrow-particles",
 );
 
 const bellParticlesDef = declareGoInstance(
-  defineGoClassKind<Phaser.GameObjects.Particles.ParticleEmitterManager>(),
+  particleEmitterManagerClassKind,
   "bell-particles",
 );
 
@@ -209,7 +209,8 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
   const radius = { r: 30 };
   const emitter = particles.createEmitter({
     speed: 20,
-    follow: player,
+    x: player.x,
+    y: player.y,
     scale: {
       start: 0.5,
       end: 0,
@@ -314,12 +315,9 @@ export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const hasThisSkill = (key: string): SceneContext<Observable<boolean>> => (
     scene,
   ) =>
-    combineLatest([
-      Def.scene.data.currentSkill.dataSubject(scene),
-      playerCannotActSubject(scene),
-    ]).pipe(
-      map(([currentSkill, cannotAct]) => currentSkill === key && !cannotAct),
-    );
+    Def.scene.data.currentSkill
+      .dataSubject(scene)
+      .pipe(map((currentSkill) => currentSkill === key));
   return Flow.parallel(
     Flow.observe(Def.scene.events.sendMagicArrow.subject, fireArrow),
     ...skillDefs.map((skillDef) =>
@@ -327,6 +325,10 @@ export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
         key: skillDef.key,
         create: skillDef.createItem,
         action: skillDef.useAction,
+        disabled: combineLatest([
+          playerCannotActSubject(scene),
+          Def.player.data.isMoving.dataSubject(scene),
+        ]).pipe(map(([cannotAct, isMoving]) => cannotAct || isMoving)),
       }),
     ),
   );
