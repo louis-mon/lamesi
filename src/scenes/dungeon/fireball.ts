@@ -73,8 +73,11 @@ export const launchFireball = ({
       ),
       back: Flow.parallel(
         Flow.observe(
-          Flow.arcadeColliderSubject({
-            object1: Def.scene.data.wallGroup.value(scene),
+          Flow.arcadeOverlapSubject({
+            object1: [
+              Def.scene.data.wallGroup.value(scene),
+              Def.scene.data.shieldGroup.value(scene),
+            ],
             object2: fireballObj,
           }),
           () => Flow.call(fireballDef.events.collideWall.emit({})),

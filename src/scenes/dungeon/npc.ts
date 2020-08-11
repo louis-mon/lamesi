@@ -39,6 +39,7 @@ const createNpcAnimations = (scene: Phaser.Scene) => {
 export const initNpc: SceneContext<void> = (scene) => {
   createNpcAnimations(scene);
   Def.scene.data.interactableGroup.setValue(scene.physics.add.group())(scene);
+  Def.scene.data.shieldGroup.setValue(scene.physics.add.group())(scene);
   Def.scene.data.wallGroup.setValue(scene.physics.add.staticGroup())(scene);
 };
 

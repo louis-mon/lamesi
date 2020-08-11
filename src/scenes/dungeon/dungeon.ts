@@ -33,6 +33,7 @@ import {
   skillsFlow,
   arrowSkillAltar,
   bellSkillAltar,
+  amuletSkillAltar,
 } from "./skills";
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
@@ -54,6 +55,8 @@ const createPlayer = (scene: Phaser.Scene) => {
   const currentPosData = Def.player.data.currentPos;
   const isMovingData = Def.player.data.isMoving;
   const isDeadData = Def.player.data.isDead;
+  const movePlayerCanceled = Def.scene.data.movePlayerCanceled;
+  const cannotAct = Def.player.data.cannotAct;
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosData.setValue(wp)(scene);
   };
@@ -80,37 +83,43 @@ const createPlayer = (scene: Phaser.Scene) => {
   setPlayerWp(Wp.getWpId(initialWp));
   isMovingData.setValue(false)(scene);
   isDeadData.setValue(false)(scene);
+
+  const movePlayerNext = (wpId: Wp.WpId) => {
+    const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
+    return Flow.lazy(() =>
+      movePlayerCanceled.value(scene) || cannotAct.value(scene)
+        ? Flow.noop
+        : Flow.concurrent(
+            Flow.when({ condition: cannotAct.subject, action: Flow.noop }),
+            Flow.sequence(
+              Flow.tween({
+                targets: player,
+                props: vecToXY(wpPos),
+                duration:
+                  wpPos.distance(
+                    Wp.wpPos(Wp.getWpDef(currentPosData.value(scene))),
+                  ) / playerSpeed(),
+              }),
+              Flow.call(() => setPlayerWp(wpId)),
+            ),
+          ),
+    );
+  };
+
   return Flow.parallel(
-    Flow.observe(playerCannotActSubject, (canAct) =>
-      Flow.call(Def.player.data.cannotAct.setValue(canAct)),
+    Flow.observe(playerCannotActSubject, (cannotActValue) =>
+      Flow.call(cannotAct.setValue(cannotActValue)),
     ),
     Flow.observe(Def.scene.events.movePlayer.subject, ({ path }) => {
-      if (Def.player.data.cannotAct.value(scene)) return Flow.noop;
+      if (cannotAct.value(scene)) return Flow.noop;
       isMovingData.setValue(true)(scene);
+      movePlayerCanceled.setValue(false)(scene);
       player.anims.play("walk");
       return Flow.sequence(
-        ...path.map((wpId) => {
-          const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
-          return Flow.lazy(() =>
-            Def.scene.data.movePlayerCanceled.value(scene)
-              ? Flow.noop
-              : Flow.sequence(
-                  Flow.tween({
-                    targets: player,
-                    props: vecToXY(wpPos),
-                    duration:
-                      wpPos.distance(
-                        Wp.wpPos(Wp.getWpDef(currentPosData.value(scene))),
-                      ) / playerSpeed(),
-                  }),
-                  Flow.call(() => setPlayerWp(wpId)),
-                ),
-          );
-        }),
+        ...path.map(movePlayerNext),
         Flow.call(() => {
           player.anims.stop();
           player.setFrame("player-still");
-          Def.scene.data.movePlayerCanceled.setValue(false)(scene);
           isMovingData.setValue(false)(scene);
         }),
       );
@@ -124,7 +133,7 @@ const createPlayer = (scene: Phaser.Scene) => {
           setPlayerWp(newPosId);
           placeAt(player, Wp.wpPos(Wp.getWpDef(newPosId)));
         }),
-        Flow.waitTimer(3000),
+        Flow.waitTimer(2000),
         Flow.call(isDeadData.setValue(false)),
       );
     }),
@@ -163,6 +172,7 @@ export class DungeonScene extends Phaser.Scene {
       Npc.openDoor("door4To1"),
       arrowSkillAltar({ wp: { room: 4, x: 1, y: 4 } }),
       bellSkillAltar({ wp: { room: 4, x: 3, y: 4 } }),
+      amuletSkillAltar({ wp: { room: 4, x: 2, y: 3 } }),
     );
 
     const ambiantActions = Flow.parallel(

@@ -11,7 +11,7 @@ import {
   customEvent,
   defineEvents,
   makeSceneEventHelper,
-  MakeObservable,
+  MakeObservable, spriteClassKind
 } from "/src/helpers/component";
 import { boolean } from "purify-ts";
 import { combineLatest } from "rxjs";
@@ -33,6 +33,7 @@ export const scene = defineSceneClass({
     currentSkillInUse: annotate<boolean>(),
 
     interactableGroup: annotate<Phaser.Physics.Arcade.Group>(),
+    shieldGroup: annotate<Phaser.Physics.Arcade.Group>(),
     wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
 
     playerCheckpoint: annotate<WpId>(),

@@ -1,24 +1,25 @@
-import * as Phaser from "phaser";
-import * as Flow from "/src/helpers/phaser-flow";
-import * as Graph from "/src/helpers/math/graph";
+import {
+  commonGoEvents,
+  declareGoInstance,
+  defineGoClass,
+} from "/src/helpers/component";
 import * as Geom from "/src/helpers/math/geom";
+import * as Graph from "/src/helpers/math/graph";
+import { createImageAt, SceneContext } from "/src/helpers/phaser";
+import * as Flow from "/src/helpers/phaser-flow";
+import { annotate } from "/src/helpers/typing";
+import _ from "lodash";
+import * as Phaser from "phaser";
+import { combineLatest } from "rxjs";
+import { auditTime, map } from "rxjs/operators";
+import { gameHeight, gameWidth } from "../common";
+import { menuZoneSize } from "../menu";
 import * as Def from "./definitions";
-import { WpId, WpDef, WpGraph } from "./definitions";
+import { WpDef, WpGraph, WpId } from "./definitions";
+
 export { WpId, WpDef } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import _ from "lodash";
-import { menuZoneSize } from "../menu";
-import { combineLatest } from "rxjs";
-import { auditTime, map } from "rxjs/operators";
-import { annotate } from "/src/helpers/typing";
-import {
-  defineGoClass,
-  declareGoInstance,
-  commonGoEvents,
-} from "/src/helpers/component";
-import { SceneContext, createImageAt } from "/src/helpers/phaser";
-import { gameHeight, gameWidth } from "../common";
 
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
@@ -292,12 +293,12 @@ const initWalls: SceneContext<void> = (scene) => {
     room: 2,
   })(scene);
   setGroundObstacleLine({
-    line: new Phaser.Geom.Line(4, 2, 4, 4),
+    line: new Phaser.Geom.Line(4, 2, 4, 3),
     kind: "wall",
     room: 1,
   })(scene);
   setGroundObstacleLine({
-    line: new Phaser.Geom.Line(3, 4, 4, 4),
+    line: new Phaser.Geom.Line(3, 3, 4, 3),
     kind: "wall",
     room: 1,
   })(scene);
@@ -388,24 +389,23 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
   const clickWp = Flow.observeSentinel(
     Def.scene.events.clickWp.subject,
     (wpId) => {
-      const computeAndRunMove = () => {
-        const isSkillActive = skillPointerActive.value(scene);
-        if (isSkillActive || !wpClass.data.isActive(wpId).value(scene))
-          return Flow.noop;
-        const wpsPath = Graph.extractPath(performBfs(), wpId);
-        return Flow.call(Def.scene.events.movePlayer.emit({ path: wpsPath }));
-      };
-      if (Def.player.data.isMoving.value(scene)) {
-        return Flow.sequence(
-          Flow.call(Def.scene.data.movePlayerCanceled.setValue(true)),
-          Flow.when({
-            condition: Def.player.data.isMoving
-              .dataSubject(scene)
-              .pipe(map((x) => !x)),
-            action: Flow.lazy(computeAndRunMove),
+      return Flow.sequence(
+        Flow.call(Def.scene.data.movePlayerCanceled.setValue(true)),
+        Flow.when({
+          condition: Def.player.data.isMoving
+            .dataSubject(scene)
+            .pipe(map((x) => !x)),
+          action: Flow.lazy(() => {
+            const isSkillActive = skillPointerActive.value(scene);
+            if (isSkillActive || !wpClass.data.isActive(wpId).value(scene))
+              return Flow.noop;
+            const wpsPath = Graph.extractPath(performBfs(), wpId);
+            return Flow.call(
+              Def.scene.events.movePlayer.emit({ path: wpsPath }),
+            );
           }),
-        );
-      } else return computeAndRunMove();
+        }),
+      );
     },
   );
 

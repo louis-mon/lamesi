@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { Maybe } from "purify-ts";
 import { playerCannotActSubject } from "./definitions";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -18,6 +19,7 @@ import {
   commonInputEvents,
   customEvent,
   particleEmitterManagerClassKind,
+  spriteClassKind,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { take, map, tap, first } from "rxjs/operators";
@@ -306,10 +308,50 @@ const bellSkillDef: SkillDef = {
   useAction: bellUseAction,
 };
 
-const skillDefs = [arrowSkillDef, bellSkillDef];
+const amuletShieldInst = declareGoInstance(spriteClassKind, "amulet-shield");
+
+const deactivateAmulet: Flow.PhaserNode = Flow.call((scene) => {
+  Maybe.fromNullable(amuletShieldInst.getObj(scene)).ifJust((shield) =>
+    shield.destroy(),
+  );
+});
+
+const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
+  const playerObj = Def.player.getObj(scene);
+  const shield = scene.physics.add.existing(
+    amuletShieldInst.create(
+      createSpriteAt(
+        scene,
+        getObjectPosition(playerObj),
+        "npc",
+        "symbol-circle-1",
+      ),
+    ),
+  ) as Phaser.Physics.Arcade.Sprite;
+  shield.scale = 0.5;
+  Def.scene.data.shieldGroup.value(scene).add(shield);
+  return Flow.when({
+    condition: Def.player.data.isMoving.subject,
+    action: deactivateAmulet,
+  });
+});
+
+const amuletUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
+  return amuletShieldInst.getObj(scene) ? deactivateAmulet : activateAmulet;
+});
+
+const amuletSkillDef: SkillDef = {
+  key: "amulet-skill",
+  createItem: ({ pos }) => (scene) =>
+    createSpriteAt(scene, pos, "menu", "bell"),
+  useAction: amuletUseAction,
+};
+
+const skillDefs = [arrowSkillDef, bellSkillDef, amuletSkillDef];
 
 export const arrowSkillAltar = skillAltar(arrowSkillDef);
 export const bellSkillAltar = skillAltar(bellSkillDef);
+export const amuletSkillAltar = skillAltar(amuletSkillDef);
 
 export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const hasThisSkill = (key: string): SceneContext<Observable<boolean>> => (
