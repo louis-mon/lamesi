@@ -328,6 +328,7 @@ const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     ),
   ) as Phaser.Physics.Arcade.Sprite;
+  shield.body.isCircle = true;
   shield.scale = 0.5;
   Def.scene.data.shieldGroup.value(scene).add(shield);
   return Flow.when({

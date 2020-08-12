@@ -293,12 +293,12 @@ const initWalls: SceneContext<void> = (scene) => {
     room: 2,
   })(scene);
   setGroundObstacleLine({
-    line: new Phaser.Geom.Line(4, 2, 4, 3),
+    line: new Phaser.Geom.Line(4, 2, 4, 4),
     kind: "wall",
     room: 1,
   })(scene);
   setGroundObstacleLine({
-    line: new Phaser.Geom.Line(3, 3, 4, 3),
+    line: new Phaser.Geom.Line(3, 4, 4, 4),
     kind: "wall",
     room: 1,
   })(scene);

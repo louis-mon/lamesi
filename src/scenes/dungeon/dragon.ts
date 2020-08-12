@@ -44,7 +44,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
           .dataSubject(scene)
           .pipe(map((wpId) => Wp.getWpDef(wpId).room === 1)),
       action: Flow.sequence(
-        Flow.waitTimer(700),
+        Flow.waitTimer(1000),
         Flow.parallel(
           ..._.range(0, 14).map((i) =>
             Flow.sequence(
