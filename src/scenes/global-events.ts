@@ -13,7 +13,7 @@ export const events = defineData(
     lights3: annotate<boolean>(),
     lights4: annotate<boolean>(),
 
-    cheatCodes:  annotate<boolean>(),
+    cheatCodes: annotate<boolean>(),
   },
   "game",
 );

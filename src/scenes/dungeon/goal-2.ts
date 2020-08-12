@@ -1,4 +1,8 @@
-import { declareGoInstance, makeSceneDataHelper, spriteClassKind } from "/src/helpers/component";
+import {
+  declareGoInstance,
+  makeSceneDataHelper,
+  spriteClassKind,
+} from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
 import { createSpriteAt } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";

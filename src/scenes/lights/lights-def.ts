@@ -43,7 +43,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "l2",
-      eventRequired: 'lights3',
+      eventRequired: "lights3",
       create: (scene) => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
       movablePath: {
         path: new Phaser.Curves.Path(1880, 975)
@@ -71,7 +71,7 @@ export const sceneDef: LightSceneDef = {
       key: "m-triangle-1",
       depth: 0.7,
       movable: true,
-      eventRequired: 'lights1',
+      eventRequired: "lights1",
       rope: {
         minDepth: 0.2,
         maxDepth: 0.9,
@@ -83,7 +83,7 @@ export const sceneDef: LightSceneDef = {
       key: "m-bar-1",
       depth: 0.5,
       movable: true,
-      eventRequired: 'lights4',
+      eventRequired: "lights4",
       rope: {
         minDepth: 0.4,
         maxDepth: 0.9,

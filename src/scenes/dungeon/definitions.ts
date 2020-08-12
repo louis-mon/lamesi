@@ -11,7 +11,8 @@ import {
   customEvent,
   defineEvents,
   makeSceneEventHelper,
-  MakeObservable, spriteClassKind
+  MakeObservable,
+  spriteClassKind,
 } from "/src/helpers/component";
 import { boolean } from "purify-ts";
 import { combineLatest } from "rxjs";

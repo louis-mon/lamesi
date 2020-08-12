@@ -10,7 +10,7 @@
   "scripts": {
     "start": "parcel index.html --open",
     "build": "parcel build index.html",
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && prettier --write src",
     "test": "jest"
   },
   "dependencies": {
