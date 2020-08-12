@@ -319,17 +319,19 @@ const deactivateAmulet: Flow.PhaserNode = Flow.call((scene) => {
 const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
   const playerObj = Def.player.getObj(scene);
   const shield = scene.physics.add.existing(
-    amuletShieldInst.create(
-      createSpriteAt(
-        scene,
-        getObjectPosition(playerObj),
-        "npc",
-        "symbol-circle-1",
-      ),
-    ),
+    amuletShieldInst
+      .create(
+        createSpriteAt(
+          scene,
+          getObjectPosition(playerObj),
+          "npc",
+          "symbol-circle-1",
+        ),
+      )
+      .setDepth(Def.depths.floating)
+      .setScale(0.5),
   ) as Phaser.Physics.Arcade.Sprite;
   shield.body.isCircle = true;
-  shield.scale = 0.5;
   Def.scene.data.shieldGroup.value(scene).add(shield);
   return Flow.when({
     condition: Def.player.data.isMoving.subject,

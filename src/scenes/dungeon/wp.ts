@@ -287,11 +287,7 @@ const initWalls: SceneContext<void> = (scene) => {
       })(scene);
     });
   });
-  setGroundObstacleLine({
-    line: new Phaser.Geom.Line(2, 0, 2, 5),
-    kind: "wall",
-    room: 2,
-  })(scene);
+  // room 1
   setGroundObstacleLine({
     line: new Phaser.Geom.Line(4, 2, 4, 4),
     kind: "wall",
@@ -301,6 +297,17 @@ const initWalls: SceneContext<void> = (scene) => {
     line: new Phaser.Geom.Line(3, 4, 4, 4),
     kind: "wall",
     room: 1,
+  })(scene);
+  // room 2
+  setGroundObstacleLine({
+    line: new Phaser.Geom.Line(2, 0, 2, 5),
+    kind: "wall",
+    room: 2,
+  })(scene);
+  setGroundObstacleLine({
+    line: new Phaser.Geom.Line(1, 4, 2, 4),
+    kind: "wall",
+    room: 2,
   })(scene);
 };
 

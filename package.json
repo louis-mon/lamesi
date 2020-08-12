@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "lodash": "4.17.15",
-    "phaser": "3.23.0",
+    "phaser": "3.24.1",
     "purify-ts": "^0.15.1",
     "rxjs": "^6.5.5"
   },

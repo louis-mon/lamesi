@@ -111,6 +111,10 @@ export const switches = declareGoInstances(switchClass, "switch", {
     wp: { room: 1, x: 0, y: 3 },
     offset: new Vector2(-25, 25),
   },
+  room2ToOpenDoor: {
+    wp: { room: 2, x: 1, y: 4 },
+    offset: new Vector2(25, 0),
+  },
 });
 export type SwitchCrystalDef = ValueOf<typeof switches>;
 

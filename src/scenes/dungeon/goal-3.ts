@@ -1,4 +1,8 @@
 import { PhaserNode } from "/src/helpers/phaser-flow";
+import {
+  createFlamethrower,
+  flameThrowers,
+} from "/src/scenes/dungeon/fireball";
 import * as Phaser from "phaser";
 import _ from "lodash";
 import * as Wp from "./wp";
@@ -17,6 +21,7 @@ import {
   customEvent,
   defineData,
   makeSceneDataHelper,
+  MakeObservable,
 } from "/src/helpers/component";
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
@@ -37,4 +42,21 @@ const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
   });
 });
 
-export const dungeonGoal3 = Flow.parallel(puzzleDoorRoom1);
+const playerIsOnPos = (wpId: Wp.WpId): MakeObservable<boolean> => (scene) =>
+  Def.player.data.currentPos.subject(scene).pipe(map((pos) => pos === wpId));
+
+const puzzleRoom2Amulet: PhaserNode = Flow.lazy((scene) => {
+  const switchDef = Def.switches.room2ToOpenDoor;
+  Npc.switchCrystalFactory(scene)(switchDef);
+  const flameInst = flameThrowers.room2;
+  return Flow.parallel(
+    createFlamethrower(flameInst),
+    Flow.call(flameInst.data.continuous.setValue(true)),
+    Flow.when({
+      condition: playerIsOnPos(Wp.getWpId({ room: 2, x: 0, y: 2 })),
+      action: Npc.closeDoor("door1to2"),
+    }),
+  );
+});
+
+export const dungeonGoal3 = Flow.parallel(puzzleDoorRoom1, puzzleRoom2Amulet);

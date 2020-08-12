@@ -75,8 +75,8 @@ type ArcadeCollisionObject =
   | Phaser.GameObjects.GameObject[]
   | Phaser.GameObjects.Group[];
 type ArcadeCollisionParams = {
-  object1: Phaser.GameObjects.GameObject;
-  object2: Phaser.GameObjects.GameObject;
+  object1: Phaser.Types.Physics.Arcade.GameObjectWithBody;
+  object2: Phaser.Types.Physics.Arcade.GameObjectWithBody;
   getObjects(): Phaser.GameObjects.GameObject[];
 };
 

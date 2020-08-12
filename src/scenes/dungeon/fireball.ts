@@ -1,26 +1,33 @@
 import { PhaserNode } from "/src/helpers/phaser-flow";
 import * as Phaser from "phaser";
 import _ from "lodash";
+import { boolean } from "purify-ts";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
+import {
+  createSpriteAt,
+  vecToXY,
+  createImageAt,
+  getObjectPosition,
+} from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
-import { annotate } from "/src/helpers/typing";
+import { annotate, ValueOf } from "/src/helpers/typing";
 import {
   defineGoClass,
   declareGoInstance,
   customEvent,
   defineData,
   makeSceneDataHelper,
+  declareGoInstances,
 } from "/src/helpers/component";
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
-import { map, pairwise, auditTime, first } from "rxjs/operators";
+import { map, pairwise, auditTime, first, tap } from "rxjs/operators";
 
 const fireballClass = defineGoClass({
   data: {},
@@ -31,9 +38,11 @@ const fireballClass = defineGoClass({
 export const launchFireball = ({
   targetPos,
   fromPos,
+  radius,
 }: {
   targetPos: Vector2;
   fromPos: Vector2;
+  radius: number;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const fireballDef = declareGoInstance(fireballClass, null);
@@ -43,18 +52,13 @@ export const launchFireball = ({
         .setDepth(Def.depths.floating)
         .setScale(0.1),
     ) as Phaser.Physics.Arcade.Sprite;
+    fireballObj.body.isCircle = true;
     scene.physics.moveTo(fireballObj, targetPos.x, targetPos.y, 1200);
     fireballObj.rotation =
       fireballObj.body.velocity.angle() - (Math.PI / 4) * 3;
-    const zoomTween = scene.add.tween({
-      targets: fireballObj,
-      props: { scale: 1.5 },
-      duration: 50,
-    });
-    const stopfireball: Flow.PhaserNode = Flow.sequence(
+    const stopFireball: Flow.PhaserNode = Flow.sequence(
       Flow.call(() => {
         fireballObj.body.stop();
-        zoomTween.stop();
       }),
       Flow.tween({
         targets: fireballObj,
@@ -69,9 +73,14 @@ export const launchFireball = ({
     return Flow.withBackground({
       main: Flow.sequence(
         Flow.wait(fireballDef.events.collideWall.subject),
-        stopfireball,
+        stopFireball,
       ),
       back: Flow.parallel(
+        Flow.tween({
+          targets: fireballObj,
+          props: { displayWidth: radius, displayHeight: radius },
+          duration: 50,
+        }),
         Flow.observe(
           Flow.arcadeOverlapSubject({
             object1: [
@@ -95,4 +104,65 @@ export const launchFireball = ({
         ),
       ),
     });
+  });
+
+type FlameThrowerConfig = {
+  wp: Wp.WpDef;
+  angle: number; // in radians;
+};
+
+const flameThrowerClass = defineGoClass({
+  data: {
+    continuous: annotate<boolean>(),
+  },
+  events: { fire: customEvent() },
+  kind: annotate<Phaser.GameObjects.Sprite>(),
+  config: annotate<FlameThrowerConfig>(),
+});
+
+export const flameThrowers = declareGoInstances(
+  flameThrowerClass,
+  "flameThrower",
+  {
+    room2: {
+      wp: { room: 2, x: 0, y: 3 },
+      angle: 0,
+    },
+  },
+);
+
+export const createFlamethrower = (
+  instance: ValueOf<typeof flameThrowers>,
+): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    const pos = Wp.wpPos(instance.config.wp).subtract(
+      new Vector2().setToPolar(instance.config.angle, Wp.wpHalfSize.length()),
+    );
+    const object = instance.create(
+      createSpriteAt(scene, pos, "menu", "magic-arrow").setDepth(
+        Def.depths.npc,
+      ),
+    );
+    const fire = Flow.lazy(() =>
+      launchFireball({
+        radius: 40,
+        fromPos: getObjectPosition(object),
+        targetPos: getObjectPosition(object).add(
+          new Vector2().setToPolar(instance.config.angle, 1),
+        ),
+      }),
+    );
+    instance.data.continuous.setValue(false)(scene);
+    return Flow.parallel(
+      Flow.observe(instance.events.fire.subject, () => fire),
+      Flow.taskWithSentinel({
+        condition: instance.data.continuous.dataSubject,
+        task: Flow.repeat(
+          Flow.sequence(
+            Flow.waitTimer(200),
+            Flow.call(instance.events.fire.emit({})),
+          ),
+        ),
+      }),
+    );
   });
