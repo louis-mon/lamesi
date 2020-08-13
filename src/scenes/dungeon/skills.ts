@@ -333,17 +333,23 @@ const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
   ) as Phaser.Physics.Arcade.Sprite;
   shield.body.isCircle = true;
   Def.scene.data.shieldGroup.value(scene).add(shield);
-  return Flow.when({
-    condition: Def.player.data.isMoving.subject,
-    action: deactivateAmulet,
-  });
+  return Flow.parallel(
+    Flow.when({
+      condition: Def.player.data.isMoving.subject,
+      action: deactivateAmulet,
+    }),
+    Flow.when({
+      condition: Def.player.data.isDead.subject,
+      action: deactivateAmulet,
+    }),
+  );
 });
 
 const amuletUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
   return amuletShieldInst.getObj(scene) ? deactivateAmulet : activateAmulet;
 });
 
-const amuletSkillDef: SkillDef = {
+export const amuletSkillDef: SkillDef = {
   key: "amulet-skill",
   createItem: ({ pos }) => (scene) =>
     createSpriteAt(scene, pos, "menu", "bell"),

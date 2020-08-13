@@ -1,3 +1,4 @@
+import * as Wp from "/src/scenes/dungeon/wp";
 import _ from "lodash";
 import * as Phaser from "phaser";
 import { annotate, ValueOf } from "/src/helpers/typing";
@@ -69,6 +70,13 @@ export const playerCannotActSubject: MakeObservable<boolean> = (scene) =>
     map(([isDead]) => isDead),
   );
 
+export const playerIsOnPos = (wp: Wp.WpDef): MakeObservable<boolean> => (
+  scene,
+) =>
+  player.data.currentPos
+    .subject(scene)
+    .pipe(map((pos) => pos === Wp.getWpId(wp)));
+
 export const interactableEvents = defineEvents(
   {
     hitPhysical: customEvent(),
@@ -123,5 +131,6 @@ export const depths = {
   carpet: 1,
   wp: 5,
   npc: 10,
+  npcHigh: 12,
   floating: 15,
 };

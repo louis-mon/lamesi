@@ -50,10 +50,10 @@ export const launchFireball = ({
       fireballDef
         .create(createSpriteAt(scene, fromPos, "menu", "magic-arrow"))
         .setDepth(Def.depths.floating)
-        .setScale(0.1),
+        .setScale(0.001),
     ) as Phaser.Physics.Arcade.Sprite;
     fireballObj.body.isCircle = true;
-    scene.physics.moveTo(fireballObj, targetPos.x, targetPos.y, 1200);
+    scene.physics.moveTo(fireballObj, targetPos.x, targetPos.y, 600);
     fireballObj.rotation =
       fireballObj.body.velocity.angle() - (Math.PI / 4) * 3;
     const stopFireball: Flow.PhaserNode = Flow.sequence(
@@ -79,7 +79,7 @@ export const launchFireball = ({
         Flow.tween({
           targets: fireballObj,
           props: { displayWidth: radius, displayHeight: radius },
-          duration: 50,
+          duration: 200,
         }),
         Flow.observe(
           Flow.arcadeOverlapSubject({
@@ -136,19 +136,21 @@ export const createFlamethrower = (
 ): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const pos = Wp.wpPos(instance.config.wp).subtract(
-      new Vector2().setToPolar(instance.config.angle, Wp.wpHalfSize.length()),
+      new Vector2().setToPolar(instance.config.angle, Wp.wpHalfSize.x),
     );
     const object = instance.create(
       createSpriteAt(scene, pos, "menu", "magic-arrow").setDepth(
-        Def.depths.npc,
+        Def.depths.npcHigh,
       ),
     );
     const fire = Flow.lazy(() =>
       launchFireball({
-        radius: 40,
-        fromPos: getObjectPosition(object),
+        radius: 30,
+        fromPos: getObjectPosition(object).add(
+          new Vector2().setToPolar(instance.config.angle, 2),
+        ),
         targetPos: getObjectPosition(object).add(
-          new Vector2().setToPolar(instance.config.angle, 1),
+          new Vector2().setToPolar(instance.config.angle, 10),
         ),
       }),
     );
@@ -159,7 +161,7 @@ export const createFlamethrower = (
         condition: instance.data.continuous.dataSubject,
         task: Flow.repeat(
           Flow.sequence(
-            Flow.waitTimer(200),
+            Flow.waitTimer(120),
             Flow.call(instance.events.fire.emit({})),
           ),
         ),

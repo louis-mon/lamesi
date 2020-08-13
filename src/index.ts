@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import { HubScene } from "./scenes/hub/hub";
 import { gameWidth, gameHeight } from "./scenes/common";
 
-var config: Phaser.Types.Core.GameConfig = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: gameWidth,
   height: gameHeight,

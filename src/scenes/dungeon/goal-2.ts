@@ -1,10 +1,11 @@
+import { memoryCyclicTween } from "/src/helpers/animate/tween";
 import {
   declareGoInstance,
   makeSceneDataHelper,
   spriteClassKind,
 } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
-import { createSpriteAt } from "/src/helpers/phaser";
+import { createSpriteAt, ManipulableObject } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import _ from "lodash";
 import * as Phaser from "phaser";
@@ -15,6 +16,7 @@ import * as Npc from "./npc";
 import { bellHiddenAction, bellSkillAltar } from "./skills";
 import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
+import Vector2Like = Phaser.Types.Math.Vector2Like;
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -70,31 +72,16 @@ const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
     const controlledDef = bellAlignSwitches.find(
       (def) => def.key === controlSwitchDef.control,
     )!;
-    let dir = 1;
+    const memoryTween = memoryCyclicTween({
+      getObj: () => controlledDef.getObj(scene),
+      attr1: { y: Wp.wpPos({ room: 3, x: 0, y: 2 }).y },
+      attr2: { y: Wp.wpPos({ room: 3, x: 0, y: 4 }).y },
+      speed: 75 / 1000,
+    });
     return Flow.parallel(
       Flow.taskWithSentinel({
         condition: controlSwitchDef.switchDef.data.state.dataSubject,
-        task: Flow.repeat(
-          Flow.sequence(
-            Flow.tween(() => {
-              const y =
-                dir === 1
-                  ? Wp.wpPos({ room: 3, x: 0, y: 4 }).y
-                  : Wp.wpPos({ room: 3, x: 0, y: 2 }).y;
-              const target = controlledDef.getObj(scene);
-              return {
-                targets: target,
-                props: {
-                  y,
-                },
-                duration: Math.abs(y - target.y) / (75 / 1000),
-              };
-            }),
-            Flow.call(() => {
-              dir = dir * -1;
-            }),
-          ),
-        ),
+        task: memoryTween,
       }),
     );
   });

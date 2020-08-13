@@ -1,5 +1,6 @@
 import * as Phaser from "phaser";
 import _ from "lodash";
+import { playerIsOnPos } from "./definitions";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Def from "./definitions";
@@ -138,10 +139,7 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
       action: Npc.openDoor("door4To5"),
     }),
     Flow.when({
-      condition: (scene) =>
-        Def.player.data.currentPos
-          .subject(scene)
-          .pipe(map((pos) => pos === Wp.getWpId({ room: 5, x: 0, y: 2 }))),
+      condition: playerIsOnPos({ room: 5, x: 0, y: 2 }),
       action: Npc.closeDoor("door4To5"),
     }),
   ),

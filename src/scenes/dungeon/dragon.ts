@@ -15,7 +15,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   );
   const headPos = new Vector2(0, -60).add(basePos);
   const headObj = createSpriteAt(scene, headPos, "dragon", "head").setDepth(
-    Def.depths.floating,
+    Def.depths.npcHigh,
   );
   const wingObjs = [1, -1].map((flip) =>
     createSpriteAt(
@@ -25,7 +25,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       "wing",
     )
       .setFlipX(flip === 1)
-      .setDepth(Def.depths.npc),
+      .setDepth(Def.depths.npcHigh),
   );
   const footObjs = [1, -1].map((flip) =>
     createSpriteAt(
@@ -44,7 +44,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
           .dataSubject(scene)
           .pipe(map((wpId) => Wp.getWpDef(wpId).room === 1)),
       action: Flow.sequence(
-        Flow.waitTimer(1000),
+        Flow.waitTimer(800),
         Flow.parallel(
           ..._.range(0, 14).map((i) =>
             Flow.sequence(
