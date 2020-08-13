@@ -3,6 +3,8 @@ import _ from "lodash";
 import * as Phaser from "phaser";
 import { annotate, ValueOf } from "/src/helpers/typing";
 
+import * as Flow from "/src/helpers/phaser-flow";
+
 import Vector2 = Phaser.Math.Vector2;
 import {
   defineSceneClass,
@@ -77,6 +79,12 @@ export const playerIsOnPos = (wp: Wp.WpDef): MakeObservable<boolean> => (
     .subject(scene)
     .pipe(map((pos) => pos === Wp.getWpId(wp)));
 
+export const placeCheckpoint = (wp: Wp.WpDef): Flow.PhaserNode =>
+  Flow.when({
+    condition: playerIsOnPos(wp),
+    action: Flow.call(scene.data.playerCheckpoint.setValue(Wp.getWpId(wp))),
+  });
+
 export const interactableEvents = defineEvents(
   {
     hitPhysical: customEvent(),
@@ -122,6 +130,10 @@ export const switches = declareGoInstances(switchClass, "switch", {
   room2ToOpenDoor: {
     wp: { room: 2, x: 1, y: 4 },
     offset: new Vector2(25, 0),
+  },
+  room0ToOpenDoor: {
+    wp: { room: 0, x: 0, y: 2 },
+    offset: new Vector2(-20, 0),
   },
 });
 export type SwitchCrystalDef = ValueOf<typeof switches>;
