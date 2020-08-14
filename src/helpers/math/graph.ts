@@ -1,4 +1,5 @@
 import { Maybe } from "purify-ts";
+import { tail } from "lodash";
 
 export type GraphProxy<V extends string> = {
   links(v: V): V[];
@@ -40,7 +41,9 @@ export const extractPath = <V extends string>(
     Maybe.fromNullable(path.prev)
       .map((prev) => [...rec(results.paths[prev]), prev])
       .orDefault([]);
-  return Maybe.fromNullable(results.paths[target])
-    .map((path) => [...rec(path), target])
-    .orDefault([]);
+  return tail(
+    Maybe.fromNullable(results.paths[target])
+      .map((path) => [...rec(path), target])
+      .orDefault([]),
+  );
 };

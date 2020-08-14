@@ -12,6 +12,7 @@ import {
   vecToXY,
   createImageAt,
   getObjectPosition,
+  placeAt,
 } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
@@ -122,35 +123,58 @@ const flameThrowerClass = defineGoClass({
 
 export const flameThrowers = declareGoInstances(
   flameThrowerClass,
-  "flameThrower",
+  "flame-thrower",
   {
     room2: {
       wp: { room: 2, x: 0, y: 3 },
       angle: 0,
     },
+    room0ALeft: {
+      wp: { room: 0, x: 0, y: 4 },
+      angle: 0,
+    },
+    room0ARight: {
+      wp: { room: 0, x: 4, y: 4 },
+      angle: Math.PI,
+    },
+    room0BLeft: {
+      wp: { room: 0, x: 0, y: 0 },
+      angle: 0,
+    },
+    room0BRight: {
+      wp: { room: 0, x: 4, y: 0 },
+      angle: Math.PI,
+    },
   },
 );
 
-export const createFlamethrower = (
-  instance: ValueOf<typeof flameThrowers>,
-): Flow.PhaserNode =>
+export type FlameThrower = ValueOf<typeof flameThrowers>;
+
+export const createFlameThrower = (instance: FlameThrower): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    const pos = Wp.wpPos(instance.config.wp).subtract(
-      new Vector2().setToPolar(instance.config.angle, Wp.wpHalfSize.x),
-    );
     const object = instance.create(
-      createSpriteAt(scene, pos, "menu", "magic-arrow").setDepth(
-        Def.depths.npcHigh,
+      createSpriteAt(scene, new Vector2(0, 0), "flamethrower")
+        .setDepth(Def.depths.npcHigh)
+        .setRotation(instance.config.angle),
+    );
+    const fireOffset = object.displayWidth / 2;
+    placeAt(
+      object,
+      Wp.wpPos(instance.config.wp).subtract(
+        new Vector2().setToPolar(
+          instance.config.angle,
+          Wp.wpHalfSize.x + fireOffset,
+        ),
       ),
     );
     const fire = Flow.lazy(() =>
       launchFireball({
         radius: 30,
         fromPos: getObjectPosition(object).add(
-          new Vector2().setToPolar(instance.config.angle, 2),
+          new Vector2().setToPolar(instance.config.angle, fireOffset + 2),
         ),
         targetPos: getObjectPosition(object).add(
-          new Vector2().setToPolar(instance.config.angle, 10),
+          new Vector2().setToPolar(instance.config.angle, fireOffset + 10),
         ),
       }),
     );
@@ -168,3 +192,7 @@ export const createFlamethrower = (
       }),
     );
   });
+
+export const createAllFlameThrowers: Flow.PhaserNode = Flow.parallel(
+  ...Object.values(flameThrowers).map(createFlameThrower),
+);

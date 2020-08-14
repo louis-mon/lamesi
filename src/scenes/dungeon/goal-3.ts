@@ -1,11 +1,11 @@
 import { memoryCyclicTween } from "/src/helpers/animate/tween";
+import { declareGoInstances, defineGoClass } from "/src/helpers/component";
 import { when } from "/src/helpers/flow";
+import { createSpriteAt } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { PhaserNode } from "/src/helpers/phaser-flow";
-import {
-  createFlamethrower,
-  flameThrowers,
-} from "/src/scenes/dungeon/fireball";
+import { annotate, ValueOf } from "/src/helpers/typing";
+import { flameThrowers } from "/src/scenes/dungeon/fireball";
 import * as Phaser from "phaser";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
@@ -39,7 +39,6 @@ const puzzleRoom2Amulet: PhaserNode = Flow.lazy((scene) => {
     speed: Wp.wpSize.y / 1000,
   });
   return Flow.parallel(
-    createFlamethrower(flameInst),
     Flow.call(flameInst.data.continuous.setValue(true)),
     amuletSkillAltar({ wp: altarPos }),
     Flow.when({
@@ -80,6 +79,60 @@ const room0Spikes: Line[] = [
   new Phaser.Geom.Line(1, 1, 3, 1),
 ];
 
+const groundSwitchClass = defineGoClass({
+  kind: annotate<Phaser.GameObjects.Sprite>(),
+  events: {},
+  config: annotate<{ wp: Wp.WpDef }>(),
+  data: {
+    state: annotate<boolean>(),
+  },
+});
+
+const groundSwitches = declareGoInstances(
+  groundSwitchClass,
+  "ground-switches",
+  {
+    switchA: {
+      wp: { room: 0, x: 2, y: 4 },
+    },
+    switchB: { wp: { room: 0, x: 1, y: 0 } },
+    switchC: { wp: { room: 0, x: 3, y: 0 } },
+  },
+);
+
+type GroundSwitch = ValueOf<typeof groundSwitches>;
+const createGroundSwitch = (inst: GroundSwitch): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    inst.create(
+      createSpriteAt(
+        scene,
+        Wp.wpPos(inst.config.wp),
+        "ground-switch-up",
+      ).setDepth(Def.depths.carpet),
+    );
+    inst.data.state.setValue(false)(scene);
+    return Flow.parallel(
+      Flow.observe(playerIsOnPos(inst.config.wp), (isOnSwitch) =>
+        Flow.call(inst.data.state.setValue(isOnSwitch)),
+      ),
+    );
+  });
+
+const switchesToFire = [
+  {
+    ground: groundSwitches.switchA,
+    fires: [flameThrowers.room0ALeft, flameThrowers.room0ARight],
+  },
+  {
+    ground: groundSwitches.switchB,
+    fires: [flameThrowers.room0BLeft, flameThrowers.room0BRight],
+  },
+  {
+    ground: groundSwitches.switchC,
+    fires: [flameThrowers.room0BLeft, flameThrowers.room0BRight],
+  },
+];
+
 export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
   const setSpikes = (open: boolean) =>
     room0Spikes.forEach((line) =>
@@ -93,18 +146,30 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
   Npc.switchCrystalFactory(scene)(Def.switches.room0ToOpenDoor);
 
   return Flow.parallel(
-    placeCheckpoint({ room: 0, x: 4, y: 3 }),
+    placeCheckpoint({ room: 0, x: 4, y: 2 }),
     when({
       condition: Def.switches.room0ToOpenDoor.data.state.subject,
       action: Flow.parallel(
         openDoor("door3To0"),
-        Flow.call(() => setSpikes(false)),
+        Flow.call(() => setSpikes(true)),
       ),
     }),
     bellHiddenAction({
       wp: { room: 0, x: 4, y: 0 },
       action: ({ wp }) => endGoalAltarPlaceholder({ n: 3, wp }),
     }),
+    ...switchesToFire.map((conf) =>
+      Flow.parallel(
+        createGroundSwitch(conf.ground),
+        Flow.repeatWhen({
+          condition: conf.ground.data.state.subject,
+          action: Flow.sequence(
+            Flow.waitTimer(1000),
+            ...conf.fires.map((fire) => Flow.call(fire.events.fire.emit({}))),
+          ),
+        }),
+      ),
+    ),
   );
 });
 

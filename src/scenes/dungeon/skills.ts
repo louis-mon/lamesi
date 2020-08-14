@@ -351,8 +351,7 @@ const amuletUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
 
 export const amuletSkillDef: SkillDef = {
   key: "amulet-skill",
-  createItem: ({ pos }) => (scene) =>
-    createSpriteAt(scene, pos, "menu", "bell"),
+  createItem: ({ pos }) => (scene) => createSpriteAt(scene, pos, "amulet"),
   useAction: amuletUseAction,
 };
 

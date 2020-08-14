@@ -48,8 +48,8 @@ const canPlayerDoAction = (params: {
   disabled: SceneContext<Observable<boolean>>;
 }) => (scene: Phaser.Scene) =>
   combineLatest([
-    Def.player.data.currentPos.subject(scene),
-    Def.player.data.isMoving.subject(scene),
+    Def.player.data.currentPos.dataSubject(scene),
+    Def.player.data.isMoving.dataSubject(scene),
     playerCannotActSubject(scene),
     params.disabled(scene),
   ]).pipe(
