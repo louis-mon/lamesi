@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "version": "0.6.6"
+  },
+  "savePath": "C:\\Users\\louis\\projects\\lamesi\\static\\assets\\dungeon",
+  "images": [],
+  "folders": [
+    "C:/Users/louis/projects/lamesi/raw-assets/dungeon/menu"
+  ],
+  "packOptions": {
+    "textureName": "menu",
+    "textureFormat": "png",
+    "removeFileExtension": true,
+    "prependFolderName": false,
+    "base64Export": false,
+    "tinify": false,
+    "tinifyKey": "",
+    "scale": 1,
+    "disableSmoothing": false,
+    "filter": "none",
+    "exporter": "Phaser (hash)",
+    "fileName": "pack-result",
+    "savePath": "C:\\Users\\louis\\projects\\lamesi\\static\\assets\\dungeon",
+    "width": 2048,
+    "height": 2048,
+    "fixedSize": false,
+    "powerOfTwo": false,
+    "padding": 2,
+    "extrude": 0,
+    "allowRotation": false,
+    "allowTrim": true,
+    "trimMode": "trim",
+    "alphaThreshold": "0",
+    "detectIdentical": true,
+    "packer": "MaxRectsBin",
+    "packerMethod": "BestShortSideFit"
+  }
+}
