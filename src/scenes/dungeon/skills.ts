@@ -266,13 +266,13 @@ export const bellHiddenAction = ({
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const { x, y } = Wp.wpPos(wp);
+    const zoneScale = 0.8;
     const updateAlpha: Phaser.Types.GameObjects.Particles.EmitterOpOnUpdateCallback = (
       p,
       k,
       t,
-    ) => Phaser.Math.Interpolation.Bezier([0, 1, 0], t);
+    ) => Phaser.Math.Interpolation.Bezier([0, 1, 0.5], t);
     const emitter = bellParticlesDef.getObj(scene).createEmitter({
-      speed: 10,
       scale: {
         start: 0.5,
         end: 0,
@@ -281,14 +281,14 @@ export const bellHiddenAction = ({
       alpha: updateAlpha,
       tint: { onEmit: () => new Phaser.Display.Color().random(128).color },
       quantity: 1,
-      frequency: 800,
+      frequency: 450,
       emitZone: {
         type: "random",
         source: new Phaser.Geom.Rectangle(
-          -Wp.wpHalfSize.x,
-          -Wp.wpHalfSize.y,
-          Wp.wpSize.x,
-          Wp.wpSize.y,
+          -Wp.wpHalfSize.x * zoneScale,
+          -Wp.wpHalfSize.y * zoneScale,
+          Wp.wpSize.x * zoneScale,
+          Wp.wpSize.y * zoneScale,
         ),
       },
       x,
@@ -351,7 +351,8 @@ const amuletUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
 
 export const amuletSkillDef: SkillDef = {
   key: "amulet-skill",
-  createItem: ({ pos }) => (scene) => createSpriteAt(scene, pos, "npc", "amulet"),
+  createItem: ({ pos }) => (scene) =>
+    createSpriteAt(scene, pos, "npc", "amulet"),
   useAction: amuletUseAction,
 };
 
