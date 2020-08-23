@@ -98,8 +98,8 @@
     }
   },
   "meta": {
-    "app": "http://free-tex-packer.com",
-    "version": "0.6.6",
+    "app": "http://github.com/odrick/free-tex-packer-cli",
+    "version": "0.2.8",
     "image": "dragon.png",
     "format": "RGBA8888",
     "size": {

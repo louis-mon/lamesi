@@ -2,9 +2,8 @@
   "meta": {
     "version": "0.6.6"
   },
-  "savePath": "C:\\Users\\louis\\projects\\lamesi\\static\\assets\\dungeon",
   "images": [],
-  "folders": [],
+  "folders": ["dragon"],
   "packOptions": {
     "textureName": "dragon",
     "textureFormat": "png",
@@ -18,7 +17,6 @@
     "filter": "none",
     "exporter": "Phaser (hash)",
     "fileName": "pack-result",
-    "savePath": "C:\\Users\\louis\\projects\\lamesi\\static\\assets\\dungeon",
     "width": 2048,
     "height": 2048,
     "fixedSize": false,

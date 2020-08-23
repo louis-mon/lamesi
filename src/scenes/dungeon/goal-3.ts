@@ -107,6 +107,7 @@ const createGroundSwitch = (inst: GroundSwitch): Flow.PhaserNode =>
       createSpriteAt(
         scene,
         Wp.wpPos(inst.config.wp),
+        "npc",
         "ground-switch-up",
       ).setDepth(Def.depths.carpet),
     );

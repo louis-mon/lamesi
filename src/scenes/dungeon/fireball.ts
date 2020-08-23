@@ -153,7 +153,7 @@ export type FlameThrower = ValueOf<typeof flameThrowers>;
 export const createFlameThrower = (instance: FlameThrower): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const object = instance.create(
-      createSpriteAt(scene, new Vector2(0, 0), "flamethrower")
+      createSpriteAt(scene, new Vector2(0, 0), "npc", "flamethrower")
         .setDepth(Def.depths.npcHigh)
         .setRotation(instance.config.angle),
     );

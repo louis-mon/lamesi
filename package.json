@@ -11,10 +11,11 @@
     "start": "parcel index.html --open",
     "build": "parcel build index.html",
     "check": "tsc --noEmit && prettier --write src",
-    "test": "jest"
+    "test": "jest",
+    "tex-pack": "cd raw-assets && ./pack.sh"
   },
   "dependencies": {
-    "lodash": "4.17.15",
+    "lodash": "^4.17.20",
     "phaser": "3.24.1",
     "purify-ts": "^0.15.1",
     "rxjs": "^6.5.5"
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@types/jest": "^25.2.3",
     "@types/lodash": "4.14.150",
+    "free-tex-packer-cli": "^0.2.8",
     "jest": "^26.0.1",
     "parcel-bundler": "^1.6.1",
     "parcel-plugin-static-files-copy": "^2.3.1",
