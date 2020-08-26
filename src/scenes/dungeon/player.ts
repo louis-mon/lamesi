@@ -69,7 +69,10 @@ export const createPlayer = (scene: Phaser.Scene) => {
       movePlayerCanceled.value(scene) || cannotAct.value(scene)
         ? Flow.noop
         : Flow.concurrent(
-            Flow.when({ condition: cannotAct.subject, action: Flow.noop }),
+            Flow.whenTrueDo({
+              condition: cannotAct.subject,
+              action: Flow.noop,
+            }),
             Flow.sequence(
               Flow.tween({
                 targets: player,

@@ -176,7 +176,7 @@ const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) =>
     : Flow.sequence(
         Flow.call(Def.scene.data.skillPointerActive.setValue(true)),
         Flow.concurrent(
-          Flow.when({
+          Flow.whenTrueDo({
             condition: Def.player.data.cannotAct.subject,
             action: Flow.noop,
           }),
@@ -334,11 +334,11 @@ const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
   shield.body.isCircle = true;
   Def.scene.data.shieldGroup.value(scene).add(shield);
   return Flow.parallel(
-    Flow.when({
+    Flow.whenTrueDo({
       condition: Def.player.data.isMoving.subject,
       action: deactivateAmulet,
     }),
-    Flow.when({
+    Flow.whenTrueDo({
       condition: Def.player.data.isDead.subject,
       action: deactivateAmulet,
     }),
@@ -373,6 +373,7 @@ export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     Flow.observe(Def.scene.events.sendMagicArrow.subject, fireArrow),
     ...skillDefs.map((skillDef) =>
       bindSkillButton(hasThisSkill(skillDef.key)(scene), {
+        hintKey: "dungeonSkillHint",
         key: skillDef.key,
         create: skillDef.createItem,
         action: skillDef.useAction,

@@ -96,7 +96,7 @@ const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
     }),
   );
 
-  const solved = Flow.when({
+  const solved = Flow.whenTrueDo({
     condition: combineLatest(
       bellAlignSwitches.map((def) => def.data.state.dataSubject(scene)),
     ).pipe(map((states) => states.every(_.identity))),

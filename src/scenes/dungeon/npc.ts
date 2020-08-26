@@ -103,6 +103,7 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
               : stateData.dataSubject,
           })(scene),
           {
+            hintKey: "dungeonActivateHint",
             action: Flow.call(() =>
               (stateData.value(scene)
                 ? def.events.deactivateSwitch.emit({})
@@ -289,6 +290,7 @@ export const altarComponent = (
               disabled: itemDef.data.isEmpty.dataSubject,
             })(scene),
             {
+              hintKey: "dungeonTakeHint",
               key: "action-take-item",
               create: ({ pos }) => (scene) =>
                 createImageAt(scene, pos, "menu", "action-take"),

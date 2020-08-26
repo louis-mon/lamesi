@@ -100,7 +100,7 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
       }),
     );
   });
-  const solvePuzzle = Flow.when({
+  const solvePuzzle = Flow.whenTrueDo({
     condition: combineLatest(
       mechanisms.map(({ switchDef }) => {
         const rotateDef = getRotateMechDef(switchDef.key);
@@ -130,15 +130,15 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
     })(scene);
   }),
   Flow.parallel(
-    Flow.when({
+    Flow.whenTrueDo({
       condition: Def.switches.room4ForRoom5Door.data.state.subject,
       action: Npc.openDoor("door4To5"),
     }),
-    Flow.when({
+    Flow.whenTrueDo({
       condition: Def.switches.room5ForRoom4Door.data.state.subject,
       action: Npc.openDoor("door4To5"),
     }),
-    Flow.when({
+    Flow.whenTrueDo({
       condition: playerIsOnPos({ room: 5, x: 0, y: 2 }),
       action: Npc.closeDoor("door4To5"),
     }),
@@ -177,7 +177,7 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
   setGoalSpikes(false)(scene);
   return Flow.parallel(
     goalAltar,
-    Flow.when({
+    Flow.whenTrueDo({
       condition: combineLatest(
         switches.map((switchDef) => switchDef.data.state.subject(scene)),
       ).pipe(map((states) => states.every(_.identity))),

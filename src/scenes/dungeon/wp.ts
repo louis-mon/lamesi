@@ -398,7 +398,7 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
     (wpId) => {
       return Flow.sequence(
         Flow.call(Def.scene.data.movePlayerCanceled.setValue(true)),
-        Flow.when({
+        Flow.whenTrueDo({
           condition: Def.player.data.isMoving
             .dataSubject(scene)
             .pipe(map((x) => !x)),

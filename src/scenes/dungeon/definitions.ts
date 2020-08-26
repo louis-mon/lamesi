@@ -80,7 +80,7 @@ export const playerIsOnPos = (wp: Wp.WpDef): MakeObservable<boolean> => (
     .pipe(map((pos) => pos === Wp.getWpId(wp)));
 
 export const placeCheckpoint = (wp: Wp.WpDef): Flow.PhaserNode =>
-  Flow.when({
+  Flow.whenTrueDo({
     condition: playerIsOnPos(wp),
     action: Flow.call(scene.data.playerCheckpoint.setValue(Wp.getWpId(wp))),
   });

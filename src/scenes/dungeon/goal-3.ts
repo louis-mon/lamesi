@@ -1,6 +1,6 @@
 import { memoryCyclicTween } from "/src/helpers/animate/tween";
 import { declareGoInstances, defineGoClass } from "/src/helpers/component";
-import { when } from "/src/helpers/flow";
+import { whenTrueDo } from "/src/helpers/flow";
 import { createSpriteAt } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { PhaserNode } from "/src/helpers/phaser-flow";
@@ -21,7 +21,7 @@ import Line = Phaser.Geom.Line;
 const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
   const switchDef = Def.switches.room1ForRoom2Door;
   Npc.switchCrystalFactory(scene)(switchDef);
-  return Flow.when({
+  return Flow.whenTrueDo({
     condition: switchDef.data.state.subject(scene),
     action: Npc.openDoor("door1to2"),
   });
@@ -41,7 +41,7 @@ const puzzleRoom2Amulet: PhaserNode = Flow.lazy((scene) => {
   return Flow.parallel(
     Flow.call(flameInst.data.continuous.setValue(true)),
     amuletSkillAltar({ wp: altarPos }),
-    Flow.when({
+    Flow.whenTrueDo({
       condition: playerIsOnPos({ room: 2, x: 0, y: 2 }),
       action: Flow.parallel(
         Npc.closeDoor("door1to2"),
@@ -52,11 +52,11 @@ const puzzleRoom2Amulet: PhaserNode = Flow.lazy((scene) => {
         ),
       ),
     }),
-    Flow.when({
+    Flow.whenTrueDo({
       condition: switchDef.data.state.subject,
       action: openDoor("door1to2"),
     }),
-    Flow.when({
+    Flow.whenTrueDo({
       condition: combineLatest([
         Def.scene.data.currentSkill.subject(scene),
         playerIsOnPos(altarPos)(scene),
@@ -148,7 +148,7 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
 
   return Flow.parallel(
     placeCheckpoint({ room: 0, x: 4, y: 2 }),
-    when({
+    whenTrueDo({
       condition: Def.switches.room0ToOpenDoor.data.state.subject,
       action: Flow.parallel(
         openDoor("door3To0"),
