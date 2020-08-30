@@ -82,6 +82,7 @@ const skillAltar = (skillDef: SkillDef) => ({
 
 const arrowDef = declareGoInstance(arrowClass, "player-arrow");
 
+const arrowParticleTint = 0xffef42;
 const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const arrowObj = scene.physics.add.existing(
@@ -119,7 +120,7 @@ const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
       lifespan: 400,
       scale: { start: 0.6, end: 0.1, ease: "Cubic.In" },
       alpha: { start: 0.6, end: 0 },
-      tint: 0xffef42,
+      tint: arrowParticleTint,
     });
     const explodeArrow: Flow.PhaserNode = Flow.sequence(
       Flow.call(() => {
@@ -170,32 +171,54 @@ const fireArrow = (targetPos: Vector2): Flow.PhaserNode =>
     });
   });
 
-const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) =>
-  arrowDef.getObj(scene)
-    ? Flow.noop
-    : Flow.sequence(
-        Flow.call(Def.scene.data.skillPointerActive.setValue(true)),
-        Flow.concurrent(
-          Flow.whenTrueDo({
-            condition: Def.player.data.cannotAct.subject,
-            action: Flow.noop,
-          }),
-          Flow.observe(
-            commonInputEvents.pointerdown.subject(scene).pipe(
-              first(),
-              map(({ pointer }) =>
-                Flow.call(
-                  Def.scene.events.sendMagicArrow.emit(
-                    new Vector2(pointer.worldX, pointer.worldY),
-                  ),
-                ),
+const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
+  if (arrowDef.getObj(scene)) return Flow.noop;
+  const lightParticles = arrowLightParticleDef.getObj(scene);
+  const playerPos = getObjectPosition(Def.player.getObj(scene));
+  const emitter = lightParticles
+    .createEmitter({
+      emitZone: {
+        type: "random",
+        source: {
+          getRandomPoint(point: Vector2) {
+            Phaser.Math.RandomXY(point, 80);
+          },
+        },
+      },
+      tint: arrowParticleTint,
+      moveToX: playerPos.x,
+      moveToY: playerPos.y,
+      scale: { start: 0, end: 1 },
+      alpha: { start: 0.6, end: 0.2 },
+      frequency: 30,
+    })
+    .setPosition(playerPos.x, playerPos.y);
+  return Flow.sequence(
+    Flow.call(Def.scene.data.skillPointerActive.setValue(true)),
+    Flow.concurrent(
+      Flow.whenTrueDo({
+        condition: Def.player.data.cannotAct.subject,
+        action: Flow.noop,
+      }),
+      Flow.observe(
+        commonInputEvents.pointerdown.subject(scene).pipe(
+          first(),
+          map(({ pointer }) =>
+            Flow.call(
+              Def.scene.events.sendMagicArrow.emit(
+                new Vector2(pointer.worldX, pointer.worldY),
               ),
             ),
           ),
         ),
-        Flow.call(Def.scene.data.skillPointerActive.setValue(false)),
       ),
-);
+    ),
+    Flow.call(() => {
+      emitter.stop();
+    }),
+    Flow.call(Def.scene.data.skillPointerActive.setValue(false)),
+  );
+});
 
 const arrowSkillDef: SkillDef = {
   key: "arrow-skill",

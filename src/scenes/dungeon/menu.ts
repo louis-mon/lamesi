@@ -134,7 +134,9 @@ export const makeMenu = (scene: Phaser.Scene) => {
       buttonDisabled
         ? Flow.noop
         : Flow.sequence(
-            Flow.call(menuSceneClass.events.removeShadow.emit({ activated: true })),
+            Flow.call(
+              menuSceneClass.events.removeShadow.emit({ activated: true }),
+            ),
             Flow.withContext(
               () => scene,
               button.data.action.value(menuScene).action,
@@ -181,20 +183,24 @@ export const makeMenu = (scene: Phaser.Scene) => {
                 button.data.action.setValue({ action, key, disabled }),
               ),
             ),
-            Flow.tween(() => ({
-              targets: getButtonActionObj(key),
-              props: { scale: 1 },
-              duration: 500,
-            })),
-            showShadowRect({
-              hintKey,
-              targetPos: getObjectPosition(buttonObj),
-            }),
+            Flow.parallel(
+              Flow.tween(() => ({
+                targets: getButtonActionObj(key),
+                props: { scale: 1 },
+                duration: 500,
+              })),
+              showShadowRect({
+                hintKey,
+                targetPos: getObjectPosition(buttonObj),
+              }),
+            ),
           ),
       ),
       Flow.observe(button.events.unbindAction.subject, ({ key }) =>
         Flow.sequence(
-          Flow.call(menuSceneClass.events.removeShadow.emit({ activated: false })),
+          Flow.call(
+            menuSceneClass.events.removeShadow.emit({ activated: false }),
+          ),
           Flow.call(
             combineContext(
               () => getButtonActionObj(key)!.destroy(),
