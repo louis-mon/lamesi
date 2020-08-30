@@ -49,14 +49,14 @@ export const launchFireball = ({
     const fireballDef = declareGoInstance(fireballClass, null);
     const fireballObj = scene.physics.add.existing(
       fireballDef
-        .create(createSpriteAt(scene, fromPos, "menu", "magic-arrow"))
+        .create(createSpriteAt(scene, fromPos, "npc", "fireball"))
         .setDepth(Def.depths.floating)
+        .setAlpha(0.7)
         .setScale(0.001),
     ) as Phaser.Physics.Arcade.Sprite;
     fireballObj.body.isCircle = true;
     scene.physics.moveTo(fireballObj, targetPos.x, targetPos.y, 600);
-    fireballObj.rotation =
-      fireballObj.body.velocity.angle() - (Math.PI / 4) * 3;
+    fireballObj.rotation = fireballObj.body.velocity.angle();
     const stopFireball: Flow.PhaserNode = Flow.sequence(
       Flow.call(() => {
         fireballObj.body.stop();
@@ -65,7 +65,7 @@ export const launchFireball = ({
         targets: fireballObj,
         props: { scale: 0 },
         delay: 100,
-        duration: 200,
+        duration: radius * 2,
       }),
       Flow.call(() => {
         fireballObj.destroy();
