@@ -237,12 +237,12 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
     x: player.x,
     y: player.y,
     scale: {
-      start: 0.5,
+      start: 0.9,
       end: 0,
     },
     alpha: { start: 0.8, end: 0 },
     tint: { onEmit: () => new Phaser.Display.Color().random(128).color },
-    quantity: 15,
+    quantity: 3,
     emitZone: {
       type: "random",
       source: {
@@ -297,14 +297,14 @@ export const bellHiddenAction = ({
     ) => Phaser.Math.Interpolation.Bezier([0, 1, 0.5], t);
     const emitter = bellParticlesDef.getObj(scene).createEmitter({
       scale: {
-        start: 0.5,
+        start: 1,
         end: 0,
       },
-      lifespan: 3000,
+      lifespan: 4000,
       alpha: updateAlpha,
       tint: { onEmit: () => new Phaser.Display.Color().random(128).color },
       quantity: 1,
-      frequency: 450,
+      frequency: 600,
       emitZone: {
         type: "random",
         source: new Phaser.Geom.Rectangle(
