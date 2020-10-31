@@ -171,7 +171,7 @@ export const whenTrueDo = <C>(params: {
   )(c);
 
 /**
- * Run the action when the condition is true and completes after
+ * Run the action when there is a value and completes after
  */
 export const whenValueDo = <C, T>(params: {
   condition: ObservableFactory<C, T>;
@@ -223,16 +223,18 @@ export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
 export const taskWithSentinel = <C>({
   condition,
   task,
+  endTask = noop,
 }: {
   condition: ObservableFactory<C, boolean>;
   task: ActionNode<C>;
+  endTask: ActionNode<C>;
 }) =>
   repeatWhen({
     condition,
     action: withBackground({
       main: whenTrueDo({
         condition: composeObservable(condition, (o) => o.pipe(map((x) => !x))),
-        action: noop,
+        action: endTask,
       }),
       back: task,
     }),
