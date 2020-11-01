@@ -24,68 +24,20 @@
         "y": 0.5
       }
     },
-    "foot-long": {
-      "frame": {
-        "x": 152,
-        "y": 2,
-        "w": 104,
-        "h": 80
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 2,
-        "y": 0,
-        "w": 104,
-        "h": 80
-      },
-      "sourceSize": {
-        "w": 112,
-        "h": 80
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "wing": {
       "frame": {
-        "x": 260,
-        "y": 2,
-        "w": 92,
-        "h": 77
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 1,
-        "y": 14,
-        "w": 92,
-        "h": 77
-      },
-      "sourceSize": {
-        "w": 100,
-        "h": 100
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "head": {
-      "frame": {
-        "x": 356,
-        "y": 2,
-        "w": 88,
-        "h": 73
+        "x": 2,
+        "y": 162,
+        "w": 87,
+        "h": 80
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
         "x": 6,
-        "y": 18,
-        "w": 88,
-        "h": 73
+        "y": 7,
+        "w": 87,
+        "h": 80
       },
       "sourceSize": {
         "w": 100,
@@ -98,8 +50,8 @@
     },
     "foot": {
       "frame": {
-        "x": 448,
-        "y": 2,
+        "x": 2,
+        "y": 246,
         "w": 87,
         "h": 78
       },
@@ -120,10 +72,34 @@
         "y": 0.5
       }
     },
+    "head": {
+      "frame": {
+        "x": 2,
+        "y": 328,
+        "w": 88,
+        "h": 77
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 6,
+        "y": 18,
+        "w": 88,
+        "h": 77
+      },
+      "sourceSize": {
+        "w": 100,
+        "h": 100
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
     "eye-closed": {
       "frame": {
-        "x": 356,
-        "y": 79,
+        "x": 93,
+        "y": 162,
         "w": 12,
         "h": 17
       },
@@ -146,8 +122,8 @@
     },
     "eye-open": {
       "frame": {
-        "x": 372,
-        "y": 79,
+        "x": 93,
+        "y": 183,
         "w": 12,
         "h": 17
       },
@@ -175,8 +151,8 @@
     "image": "dragon.png",
     "format": "RGBA8888",
     "size": {
-      "w": 537,
-      "h": 160
+      "w": 150,
+      "h": 407
     },
     "scale": 1
   }

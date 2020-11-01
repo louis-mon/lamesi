@@ -40,10 +40,12 @@ export const launchFireball = ({
   targetPos,
   fromPos,
   radius,
+  startScale = 0.001,
 }: {
   targetPos: Vector2;
   fromPos: Vector2;
   radius: number;
+  startScale?: number;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const fireballDef = declareGoInstance(fireballClass, null);
@@ -52,7 +54,7 @@ export const launchFireball = ({
         .create(createSpriteAt(scene, fromPos, "npc", "fireball"))
         .setDepth(Def.depths.floating)
         .setAlpha(0.7)
-        .setScale(0.001),
+        .setScale(startScale),
     ) as Phaser.Physics.Arcade.Sprite;
     fireballObj.body.isCircle = true;
     scene.physics.moveTo(fireballObj, targetPos.x, targetPos.y, 600);

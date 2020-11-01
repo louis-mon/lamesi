@@ -119,7 +119,8 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
                   ..._.range(-2, 3).map((i) =>
                     launchFireball({
                       radius: 75,
-                      fromPos: headPos,
+                      startScale: 0.2,
+                      fromPos: headObj.getBottomCenter(),
                       targetPos: Phaser.Math.RotateAround(
                         getObjectPosition(Def.player.getObj(scene)).clone(),
                         headPos.x,
