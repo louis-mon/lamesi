@@ -48,6 +48,10 @@ export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   };
 }
 
+/**
+ * Completes whenever 'main' completes
+ * run 'back' in parallel and abort when 'main' completes
+ */
 export const withBackground = <C>(params: {
   main: ActionNode<C>;
   back: ActionNode<C>;
@@ -223,26 +227,31 @@ export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
 export const taskWithSentinel = <C>({
   condition,
   task,
-  endTask = noop,
+  afterTask = noop,
 }: {
   condition: ObservableFactory<C, boolean>;
   task: ActionNode<C>;
-  endTask: ActionNode<C>;
+  afterTask?: ActionNode<C>;
 }) =>
   repeatWhen({
     condition,
-    action: withBackground({
-      main: whenTrueDo({
-        condition: composeObservable(condition, (o) => o.pipe(map((x) => !x))),
-        action: endTask,
+    action: sequence(
+      withBackground({
+        main: whenTrueDo({
+          condition: composeObservable(condition, (o) =>
+            o.pipe(map((x) => !x)),
+          ),
+          action: noop,
+        }),
+        back: task,
       }),
-      back: task,
-    }),
+      afterTask,
+    ),
   });
 
 /** Run an action whenever an event is observed like {@link observe},
  * but terminates the previous action
- * when a new one is ran
+ * when a new one is run
  */
 export const observeSentinel = <C, T>(
   condition: ObservableFactory<C, T>,
