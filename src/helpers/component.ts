@@ -191,6 +191,9 @@ const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() =>
   defineGoClass({ events: {}, data: {}, kind: annotate<Cl>() });
 
 export const spriteClassKind = defineGoClassKind<Phaser.GameObjects.Sprite>();
+export const physicsImageClassKind = defineGoClassKind<
+  Phaser.Physics.Arcade.Image
+>();
 export const particleEmitterManagerClassKind = defineGoClassKind<
   Phaser.GameObjects.Particles.ParticleEmitterManager
 >();

@@ -17,6 +17,7 @@ import * as Npc from "./npc";
 import Vector2 = Phaser.Math.Vector2;
 import { getProp } from "/src/helpers/functional";
 import { followObject } from "/src/helpers/animate/composite";
+import { createShield } from "./skills";
 
 export const iceArmorAltar = Npc.altarComponent({
   wp: { room: 4, x: 2, y: 3 },
@@ -24,13 +25,22 @@ export const iceArmorAltar = Npc.altarComponent({
     createSpriteAt(scene, p.pos, "menu", "ice-armor"),
   key: "ice-armor-altar",
   action: Flow.lazy((scene) => {
-    const armor = createSpriteAt(scene, new Vector2(), "menu", "ice-armor")
+    const armor = scene.add
+      .image(0, 0, "menu", "ice-armor")
       .setDepth(Def.depths.npcHigh)
       .setScale(0.3);
-    return followObject({
-      source: Def.player.getObj,
-      target: () => armor,
-      offset: new Vector2(),
-    });
+    const shield = createShield(scene);
+    return Flow.parallel(
+      followObject({
+        source: Def.player.getObj,
+        target: () => armor,
+        offset: new Vector2(),
+      }),
+      followObject({
+        source: Def.player.getObj,
+        target: () => shield,
+        offset: new Vector2(),
+      }),
+    );
   }),
 });

@@ -19,7 +19,7 @@ import {
   commonInputEvents,
   customEvent,
   particleEmitterManagerClassKind,
-  spriteClassKind,
+  physicsImageClassKind,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { take, map, tap, first } from "rxjs/operators";
@@ -331,7 +331,10 @@ const bellSkillDef: SkillDef = {
   useAction: bellUseAction,
 };
 
-const amuletShieldInst = declareGoInstance(spriteClassKind, "amulet-shield");
+const amuletShieldInst = declareGoInstance(
+  physicsImageClassKind,
+  "amulet-shield",
+);
 
 const deactivateAmulet: Flow.PhaserNode = Flow.call((scene) => {
   Maybe.fromNullable(amuletShieldInst.getObj(scene)).ifJust((shield) =>
@@ -339,23 +342,19 @@ const deactivateAmulet: Flow.PhaserNode = Flow.call((scene) => {
   );
 });
 
-const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
+export const createShield = (scene: Phaser.Scene) => {
   const playerObj = Def.player.getObj(scene);
-  const shield = scene.physics.add.existing(
-    amuletShieldInst
-      .create(
-        createSpriteAt(
-          scene,
-          getObjectPosition(playerObj),
-          "npc",
-          "symbol-circle-1",
-        ),
-      )
-      .setDepth(Def.depths.floating)
-      .setScale(0.5),
-  ) as Phaser.Physics.Arcade.Sprite;
+  const shield = scene.physics.add
+    .image(playerObj.x, playerObj.y, "npc", "symbol-circle-1")
+    .setDepth(Def.depths.floating)
+    .setScale(0.5);
   shield.body.isCircle = true;
   Def.scene.data.shieldGroup.value(scene).add(shield);
+  return shield;
+};
+
+const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
+  amuletShieldInst.create(createShield(scene));
   return Flow.parallel(
     Flow.whenTrueDo({
       condition: Def.player.data.isMoving.subject,
