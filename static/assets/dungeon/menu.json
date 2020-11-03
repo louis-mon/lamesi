@@ -96,10 +96,34 @@
         "y": 0.5
       }
     },
-    "action-take": {
+    "ice-armor": {
       "frame": {
         "x": 130,
         "y": 37,
+        "w": 54,
+        "h": 53
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 3,
+        "y": 5,
+        "w": 54,
+        "h": 53
+      },
+      "sourceSize": {
+        "w": 60,
+        "h": 60
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "action-take": {
+      "frame": {
+        "x": 66,
+        "y": 64,
         "w": 47,
         "h": 50
       },
@@ -122,8 +146,8 @@
     },
     "action-attack": {
       "frame": {
-        "x": 66,
-        "y": 64,
+        "x": 2,
+        "y": 66,
         "w": 41,
         "h": 52
       },
@@ -146,8 +170,8 @@
     },
     "goal-1": {
       "frame": {
-        "x": 2,
-        "y": 66,
+        "x": 252,
+        "y": 2,
         "w": 35,
         "h": 58
       },
@@ -175,8 +199,8 @@
     "image": "menu.png",
     "format": "RGBA8888",
     "size": {
-      "w": 250,
-      "h": 126
+      "w": 289,
+      "h": 120
     },
     "scale": 1
   }

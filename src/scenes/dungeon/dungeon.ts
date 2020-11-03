@@ -40,6 +40,7 @@ import {
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
 import { dragon } from "./dragon";
+import { dungeonGoal4 } from "./goal-4";
 
 export class DungeonScene extends Phaser.Scene {
   constructor() {
@@ -71,9 +72,9 @@ export class DungeonScene extends Phaser.Scene {
       Npc.openDoor("door4To3"),
       Npc.openDoor("door5To2"),
       Npc.openDoor("door4To1"),
-      arrowSkillAltar({ wp: { room: 4, x: 1, y: 4 } }),
-      bellSkillAltar({ wp: { room: 4, x: 3, y: 4 } }),
-      amuletSkillAltar({ wp: { room: 4, x: 2, y: 3 } }),
+      arrowSkillAltar({ wp: { room: 4, x: 0, y: 4 } }),
+      bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),
+      amuletSkillAltar({ wp: { room: 4, x: 4, y: 4 } }),
     );
 
     const ambientActions = Flow.parallel(
@@ -85,6 +86,7 @@ export class DungeonScene extends Phaser.Scene {
       dungeonGoal1,
       dungeonGoal2,
       dungeonGoal3,
+      dungeonGoal4,
       debugActions,
     );
     Flow.run(this, Flow.sequence(initActions, ambientActions));

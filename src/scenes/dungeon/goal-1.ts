@@ -164,13 +164,13 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
     kind: "spike",
   })(scene);
   const goalAltar = Npc.endGoalAltarPlaceholder({
-    wp: { room: 4, x: 2, y: 2 },
+    wp: { room: 4, x: 2, y: 1 },
     n: 1,
   });
   const setGoalSpikes = (open: boolean) =>
     Wp.setGroundObstacleRect({
-      wp1: { x: 2, y: 2 },
-      wp2: { x: 3, y: 3 },
+      wp1: { x: 2, y: 1 },
+      wp2: { x: 3, y: 2 },
       room: 4,
       kind: open ? "none" : "spike",
     });

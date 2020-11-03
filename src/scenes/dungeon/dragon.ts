@@ -1,7 +1,9 @@
 import {
   createSpriteAt,
   getObjectPosition,
+  ManipulableObject,
   placeAt,
+  SceneContext,
   vecToXY,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -13,6 +15,7 @@ import * as Def from "./definitions";
 import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
 import { getProp } from "/src/helpers/functional";
+import { followObject } from "/src/helpers/animate/composite";
 
 export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   const basePos = new Vector2(0, -25.0).add(Wp.wpPos({ room: 1, x: 2, y: 1 }));
@@ -112,17 +115,11 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       .setDepth(Def.depths.npcHigh + 1);
     return {
       eye,
-      flow: Flow.repeat(
-        Flow.parallel(
-          Flow.call(() => {
-            placeAt(
-              eye,
-              getObjectPosition(headObj).add(new Vector2(flip * 15, 0)),
-            );
-          }),
-          Flow.waitTimer(0),
-        ),
-      ),
+      flow: followObject({
+        source: () => headObj,
+        target: () => eye,
+        offset: new Vector2(flip * 15, 0),
+      }),
     };
   });
   const eyeObjs = eyeFlows.map(getProp("eye"));
