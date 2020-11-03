@@ -23,7 +23,7 @@ import { map } from "rxjs/operators";
 
 export type WpId = string & { __wpIdTag: null };
 export type WpDef = { room: number; x: number; y: number };
-export type WpGraph = { [key: string]: { links: WpId[] } };
+export type WpGraph = { [key: string]: { links: WpId[]; disabled: boolean } };
 
 export const scene = defineSceneClass({
   data: {

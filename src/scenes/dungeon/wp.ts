@@ -105,6 +105,7 @@ export const getWpLink = (room1: number, room2: number): WpLink => {
 
 const initialWpGraph = (): WpGraph => {
   return _.mapValues(allWpById, (wp, id) => ({
+    disabled: false,
     links: Geom.pointsAround(new Vector2(wp), 1)
       .filter(({ x, y }) => RoomRectangle.contains(x, y))
       .map(({ x, y }) => getWpId({ room: wp.room, x, y })),
@@ -138,6 +139,18 @@ const setGraphLinkData = ({
   Def.scene.data.wpGraph.updateValue((graph) =>
     setGraphLink(graph, wp1, wp2, open),
   );
+
+const setGraphWpDisabled = ({
+  wpId,
+  disabled,
+}: {
+  wpId: WpId;
+  disabled: boolean;
+}): SceneContext<void> =>
+  Def.scene.data.wpGraph.updateValue((graph) => ({
+    ...graph,
+    [wpId]: { ...graph[wpId], disabled },
+  }));
 
 type ObstacleKind = "none" | "wall" | "spike";
 export const setGroundObstacleLink = ({
@@ -258,6 +271,7 @@ const initWalls: SceneContext<void> = (scene) => {
       .setOrigin(0, 0);
     Def.scene.data.wallGroup.value(scene).add(wall);
   };
+  // walls between rooms
   [
     new Phaser.Geom.Rectangle(0, 0, scenePos.x, gameHeight),
     new Phaser.Geom.Rectangle(bounds.x, 0, gameWidth - bounds.x, gameHeight),
@@ -268,7 +282,8 @@ const initWalls: SceneContext<void> = (scene) => {
       bounds.x - scenePos.x,
       gameHeight - bounds.y,
     ),
-  ].map(addBoundWall);
+  ].forEach(addBoundWall);
+  // vertical links between rooms
   _.range(nbRooms / 2).forEach((room) => {
     _.range(wpPerSide).forEach((x) => {
       setGroundObstacleLink({
@@ -278,6 +293,7 @@ const initWalls: SceneContext<void> = (scene) => {
       })(scene);
     });
   });
+  // horzontal links between rooms
   [0, 1, 3, 4].forEach((room) => {
     _.range(wpPerSide).forEach((y) => {
       setGroundObstacleLink({
@@ -287,6 +303,21 @@ const initWalls: SceneContext<void> = (scene) => {
       })(scene);
     });
   });
+  // dragon position
+  setGraphWpDisabled({
+    wpId: getWpId({ room: 1, x: 2, y: 1 }),
+    disabled: true,
+  })(scene);
+  // rotating symbol position
+  [
+    { x: 2, y: 2 },
+    ...Geom.pointsAround(new Vector2({ x: 2, y: 2 }), 1),
+  ].forEach(({ x, y }) =>
+    setGraphWpDisabled({
+      wpId: getWpId({ room: 5, x, y }),
+      disabled: true,
+    })(scene),
+  );
   // room 1
   setGroundObstacleLine({
     line: new Phaser.Geom.Line(4, 2, 4, 4),
@@ -336,7 +367,12 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const performBfs = () =>
     Graph.bfs({
-      graph: { links: (v) => wpGraphData.value(scene)[v].links },
+      graph: {
+        links: (v) => {
+          const graph = wpGraphData.value(scene);
+          return graph[v].links.filter((toId) => !graph[toId].disabled);
+        },
+      },
       startPoint: currentPosData.value(scene),
     });
 
