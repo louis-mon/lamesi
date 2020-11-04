@@ -27,6 +27,13 @@ export const createSpriteAt = (
   frame?: string | number | undefined,
 ) => scene.add.sprite(pos.x, pos.y, texture, frame);
 
+export const createSpriteWithPhysicsAt = (
+  scene: Phaser.Scene,
+  pos: Vector2,
+  texture: string,
+  frame?: string | number | undefined,
+) => scene.physics.add.sprite(pos.x, pos.y, texture, frame);
+
 export const createImageAt = (
   scene: Phaser.Scene,
   pos: Vector2,
@@ -40,3 +47,9 @@ export const addPhysicsFromSprite = (
   scene: Phaser.Scene,
   obj: Phaser.GameObjects.Sprite,
 ) => scene.physics.add.existing(obj) as Phaser.Physics.Arcade.Sprite;
+
+export const makeAnimFrames = (
+  key: string,
+  frames: string[],
+): Phaser.Types.Animations.AnimationFrame[] =>
+  frames.map((frame) => ({ frame, key }));

@@ -49,6 +49,34 @@ export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
 }
 
 /**
+ * Executes a cleanup action even when the flow aborts
+ */
+export const withCleanup = <C>(params: {
+  flow: ActionNode<C>;
+  cleanup: (c: C) => void;
+}): ActionNode<C> => (c) => (p) => {
+  sequence(params.flow, call(params.cleanup))(c)(p);
+  p.registerAbort(() => params.cleanup(c));
+};
+
+const makeAborter = (
+  p: ActionRunParams,
+): { childParams: ActionRunParams; emit: () => void } => {
+  const emitter = new Phaser.Events.EventEmitter();
+  const abortEvent = "abort";
+  const abort = () => emitter.emit(abortEvent);
+  p.registerAbort(abort);
+  return {
+    childParams: {
+      registerAbort: (f) => emitter.on(abortEvent, f),
+      unregisterAbort: (f) => emitter.off(abortEvent, f),
+      onComplete: () => p.unregisterAbort(abort),
+    },
+    emit: () => emitter.emit(abortEvent),
+  };
+};
+
+/**
  * Completes whenever 'main' completes
  * run 'back' in parallel and abort when 'main' completes
  */
@@ -56,17 +84,12 @@ export const withBackground = <C>(params: {
   main: ActionNode<C>;
   back: ActionNode<C>;
 }): ActionNode<C> => (c) => (p) => {
-  const emitter = new Phaser.Events.EventEmitter();
-  const eventName = "abort";
-  params.back(c)({
-    onComplete: _.noop,
-    registerAbort: (f) => emitter.on(eventName, f),
-    unregisterAbort: (f) => emitter.off(eventName, f),
-  });
+  const aborter = makeAborter(p);
+  params.back(c)(aborter.childParams);
   params.main(c)({
     ...p,
     onComplete: () => {
-      emitter.emit(eventName);
+      aborter.emit();
       p.onComplete();
     },
   });
@@ -76,20 +99,19 @@ export const withBackground = <C>(params: {
 export const concurrent = <C>(...actions: ActionNode<C>[]): ActionNode<C> => (
   c,
 ) => (p) => {
-  const emitter = new Phaser.Events.EventEmitter();
-  const eventName = "abort";
+  const aborter = makeAborter(p);
   let completed = false;
   actions.forEach((action) =>
     action(c)({
+      ...aborter.childParams,
       onComplete: () => {
         if (!completed) {
           completed = true;
-          emitter.emit(eventName);
+          aborter.emit();
+          aborter.childParams.onComplete();
           p.onComplete();
         }
       },
-      registerAbort: (f) => emitter.on(eventName, f),
-      unregisterAbort: (f) => emitter.off(eventName, f),
     }),
   );
 };
@@ -105,6 +127,11 @@ export const call = <C>(f: (context: C) => void): ActionNode<C> => (
 };
 
 export const noop = call(() => {});
+
+/**
+ * Never completes
+ */
+export const infinite: ActionNode<unknown> = (c) => (p) => {};
 
 type ObservableFactory<C, T> = FuncOrConst<C, Observable<T>>;
 export const composeObservable = <C, T, U>(
@@ -219,6 +246,12 @@ export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
   });
   rec();
 };
+
+/**
+ * Executes sequentially a sequence of flows
+ */
+export const repeatSequence = <C>(...flows: ActionNode<C>[]) =>
+  repeat(sequence(...flows));
 
 /**
  * Perform the given task whenever the condition is true,

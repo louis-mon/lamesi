@@ -96,10 +96,58 @@
         "y": 0.5
       }
     },
-    "eye-closed": {
+    "stunned": {
       "frame": {
         "x": 93,
         "y": 162,
+        "w": 39,
+        "h": 37
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 1,
+        "w": 39,
+        "h": 37
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "eye-closed": {
+      "frame": {
+        "x": 93,
+        "y": 203,
+        "w": 12,
+        "h": 17
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 17
+      },
+      "sourceSize": {
+        "w": 12,
+        "h": 17
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "eye-closing": {
+      "frame": {
+        "x": 93,
+        "y": 224,
         "w": 12,
         "h": 17
       },
@@ -123,7 +171,7 @@
     "eye-open": {
       "frame": {
         "x": 93,
-        "y": 183,
+        "y": 245,
         "w": 12,
         "h": 17
       },
