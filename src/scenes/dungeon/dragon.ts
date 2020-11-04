@@ -2,7 +2,6 @@ import {
   createImageAt,
   createSpriteAt,
   createSpriteWithPhysicsAt,
-  getObjectPosition,
   makeAnimFrames,
   ManipulableObject,
   placeAt,
@@ -104,7 +103,7 @@ const stunEffect = ({
         }),
         ...stuns.map((stun) =>
           followObject({
-            offset: getObjectPosition(stun).subtract(getObjectPosition(target)),
+            offset: stun.getCenter().subtract(target.getCenter()),
             source: () => target,
             target: () => stun,
           }),
@@ -187,6 +186,30 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   Def.scene.data.interactableGroup.value(scene).add(headObj);
   const initHp = headInst.data.hp.setValue(3);
   initHp(scene);
+
+  const eatPlayerCondition = () =>
+    Def.player.data.currentPos.dataSubject(scene).pipe(
+      map(Wp.getWpDef),
+      map((pos) => pos.x >= 1 && pos.x <= 3 && pos.y >= 2 && pos.y <= 3),
+    );
+
+  const eatPlayer = Flow.lazy(() =>
+    Flow.sequence(
+      Flow.tween({
+        targets: headObj,
+        props: vecToXY(Def.player.getObj(scene).getCenter()),
+        duration: 200,
+      }),
+      Flow.call(Def.scene.events.killPlayer.emit({})),
+      Flow.waitTimer(300),
+      Flow.tween({
+        targets: headObj,
+        props: vecToXY(headPosAwaken),
+        duration: 200,
+      }),
+    ),
+  );
+
   const awakenHead = Flow.sequence(
     Flow.call(initHp),
     Flow.tween({
@@ -194,16 +217,19 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       duration: timeAwaken,
       props: vecToXY(headPosAwaken),
     }),
-    Flow.repeatWhen({
-      condition: Def.interactableEvents.hitPhysical(headInst.key).subject,
-      action: Flow.lazy(() => {
-        headInst.data.hp.updateValue((hp) => hp - 1)(scene);
-        return stunEffect({
-          target: headObj,
-          infinite: headInst.data.hp.value(scene) === 0,
-        });
+    Flow.parallel(
+      Flow.whenTrueDo({ condition: eatPlayerCondition, action: eatPlayer }),
+      Flow.repeatWhen({
+        condition: Def.interactableEvents.hitPhysical(headInst.key).subject,
+        action: Flow.lazy(() => {
+          headInst.data.hp.updateValue((hp) => hp - 1)(scene);
+          return stunEffect({
+            target: headObj,
+            infinite: headInst.data.hp.value(scene) === 0,
+          });
+        }),
       }),
-    }),
+    ),
   );
   const sleepHead = Flow.tween({
     targets: headObj,
@@ -295,7 +321,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
                       startScale: 0.2,
                       fromPos: headObj.getBottomCenter(),
                       targetPos: Phaser.Math.RotateAround(
-                        getObjectPosition(Def.player.getObj(scene)).clone(),
+                        Def.player.getObj(scene).getCenter(),
                         headObj.x,
                         headObj.y,
                         (i * Math.PI) / 15,
