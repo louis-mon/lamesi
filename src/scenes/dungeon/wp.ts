@@ -140,7 +140,7 @@ const setGraphLinkData = ({
     setGraphLink(graph, wp1, wp2, open),
   );
 
-const setGraphWpDisabled = ({
+export const setGraphWpDisabled = ({
   wpId,
   disabled,
 }: {
@@ -303,11 +303,6 @@ const initWalls: SceneContext<void> = (scene) => {
       })(scene);
     });
   });
-  // dragon position
-  setGraphWpDisabled({
-    wpId: getWpId({ room: 1, x: 2, y: 1 }),
-    disabled: true,
-  })(scene);
   // rotating symbol position
   [
     { x: 2, y: 2 },

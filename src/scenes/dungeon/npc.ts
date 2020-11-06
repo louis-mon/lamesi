@@ -76,7 +76,7 @@ export const bindAttackButton = ({
       {
         hintKey: "dungeonActivateHint",
         action: action,
-        key: "activate-switch",
+        key: `activate-attack-${pos}`,
         create: ({ pos }) => (scene) =>
           createSpriteAt(scene, pos, "menu", "action-attack"),
       },

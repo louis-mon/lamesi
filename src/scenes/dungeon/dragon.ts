@@ -25,7 +25,7 @@ import {
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { combineLatest } from "rxjs";
-import { bindAttackButton } from "./npc";
+import { bindAttackButton, endGoalAltarPlaceholder } from "./npc";
 
 const dragonHeadClass = defineGoClass({
   events: {
@@ -37,6 +37,13 @@ const dragonHeadClass = defineGoClass({
   },
   kind: annotate<Phaser.Physics.Arcade.Sprite>(),
 });
+
+const goalPos = { room: 1, x: 2, y: 1 };
+const toggleForbiddenPos = (disabled: boolean) =>
+  Wp.setGraphWpDisabled({
+    wpId: Wp.getWpId(goalPos),
+    disabled,
+  });
 
 const stunEffect = ({
   target,
@@ -288,8 +295,55 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   const emitNewState = (state: Flow.PhaserNode): Flow.PhaserNode =>
     Flow.call(headInst.events.newState.emit(state));
 
+  const killingState = (): Flow.PhaserNode =>
+    Flow.sequence(
+      Flow.tween({
+        targets: [
+          ...eyeObjs,
+          headObj,
+          ...wingDefs.map(getProp("wing")),
+          ...footInsts.map((inst) => inst.getObj(scene)),
+          bodyObj,
+        ],
+        props: { alpha: 0 },
+      }),
+      Flow.call(toggleForbiddenPos(false)),
+      endGoalAltarPlaceholder({ n: 4, wp: goalPos }),
+    );
+
+  const downBody = (): Flow.PhaserNode =>
+    Flow.parallel(...wingDefs.map(getProp("sleep")), sleepBody, sleepHead);
+
+  const stunnedDownState = (): Flow.PhaserNode =>
+    Flow.sequence(
+      Flow.parallel(
+        downBody(),
+        ...footInsts.map((footInst) =>
+          Flow.parallel(
+            Flow.tween(() => ({
+              targets: footInst.getObj(scene),
+              props: { angle: -footInst.config.flip * 20 },
+              duration: 150,
+            })),
+          ),
+        ),
+      ),
+      Flow.parallel(
+        bindAttackButton({
+          pos: Wp.getWpId({ room: 1, x: 2, y: 2 }),
+          action: emitNewState(killingState()),
+        }),
+      ),
+    );
+
   const stunnedState = Flow.parallel(
     stunEffect({ target: headObj, infinite: true }),
+    Flow.whenTrueDo({
+      condition: combineLatest(
+        footInsts.map((inst) => inst.data.hit.dataSubject(scene)),
+      ).pipe(map((values) => values.every(identity))),
+      action: Flow.sequence(Flow.waitTimer(1000), emitNewState(stunnedDownState())),
+    }),
     ...footInsts.map((footInst) =>
       Flow.parallel(
         Flow.call(footInst.data.hit.setValue(false)),
@@ -360,9 +414,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
                 eye.anims.playReverse("dragon-eye", false),
               ),
             ),
-            ...wingDefs.map(getProp("sleep")),
-            sleepBody,
-            sleepHead,
+            downBody(),
           ),
         ),
         emitNewState(sleepState()),
@@ -387,6 +439,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
     });
 
   return Flow.parallel(
+    Flow.call(toggleForbiddenPos(true)),
     ...eyeFlows.map(getProp("flow")),
     Flow.observeSentinel(headInst.events.newState.subject, identity),
     emitNewState(sleepState()),

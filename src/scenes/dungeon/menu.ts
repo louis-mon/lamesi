@@ -203,7 +203,10 @@ export const makeMenu = (scene: Phaser.Scene) => {
           ),
           Flow.call(
             combineContext(
-              () => getButtonActionObj(key)!.destroy(),
+              () =>
+                Maybe.fromNullable(getButtonActionObj(key)).ifJust((button) =>
+                  button.destroy(),
+                ),
               button.data.action.updateValue((oldAction) =>
                 oldAction.key === key ? emptyAction : oldAction,
               ),
@@ -224,21 +227,25 @@ export const makeMenu = (scene: Phaser.Scene) => {
 const bindMenuButton = (button: ValueOf<typeof buttons>) => (
   condition: Observable<boolean>,
   params: BindActionParams,
-) =>
-  Flow.observe(
-    condition.pipe(startWith(false), pairwise()),
-    ([previous, value]) => {
-      if (previous === value) return Flow.noop;
-      return Flow.withContext(
-        menuHelpers.getMenuScene,
-        Flow.call(
-          value
-            ? button.events.bindAction.emit(params)
-            : button.events.unbindAction.emit(params),
-        ),
-      );
-    },
-  );
+): Flow.PhaserNode =>
+  Flow.withCleanup({
+    flow: Flow.observe(
+      condition.pipe(startWith(false), pairwise()),
+      ([previous, value]) => {
+        if (previous === value) return Flow.noop;
+        return Flow.withContext(
+          menuHelpers.getMenuScene,
+          Flow.call(
+            value
+              ? button.events.bindAction.emit(params)
+              : button.events.unbindAction.emit(params),
+          ),
+        );
+      },
+    ),
+    cleanup: (scene) =>
+      button.events.unbindAction.emit(params)(menuHelpers.getMenuScene(scene)),
+  });
 
 export const bindActionButton = bindMenuButton(buttons.action);
 export const bindSkillButton = bindMenuButton(buttons.skill);
