@@ -58,6 +58,30 @@ const canPlayerDoAction = (params: {
         !disabled && !isMoving && !cannotAct && pos === params.pos,
     ),
   );
+export const bindAttackButton = ({
+  pos,
+  disabled = () => of(false),
+  action,
+}: {
+  pos: Def.WpId;
+  disabled?: SceneContext<Observable<boolean>>;
+  action: Flow.PhaserNode;
+}): Flow.PhaserNode =>
+  Flow.lazy((scene) =>
+    bindActionButton(
+      canPlayerDoAction({
+        pos,
+        disabled,
+      })(scene),
+      {
+        hintKey: "dungeonActivateHint",
+        action: action,
+        key: "activate-switch",
+        create: ({ pos }) => (scene) =>
+          createSpriteAt(scene, pos, "menu", "action-attack"),
+      },
+    ),
+  );
 
 export const switchCrystalFactory = (scene: Phaser.Scene) => {
   return (def: Def.SwitchCrystalDef) => {
@@ -95,25 +119,15 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
     Flow.run(
       scene,
       Flow.parallel(
-        bindActionButton(
-          canPlayerDoAction({
-            pos: Wp.getWpId(def.config.wp),
-            disabled: def.config.deactivable
-              ? () => of(false)
-              : stateData.dataSubject,
-          })(scene),
-          {
-            hintKey: "dungeonActivateHint",
-            action: Flow.call(() =>
-              (stateData.value(scene)
-                ? def.events.deactivateSwitch.emit({})
-                : def.events.activateSwitch.emit({}))(scene),
-            ),
-            key: "activate-switch",
-            create: ({ pos }) => (scene) =>
-              createSpriteAt(scene, pos, "menu", "action-attack"),
-          },
-        ),
+        bindAttackButton({
+          pos: Wp.getWpId(def.config.wp),
+          disabled: def.config.deactivable ? undefined : stateData.dataSubject,
+          action: Flow.call(() =>
+            (stateData.value(scene)
+              ? def.events.deactivateSwitch.emit({})
+              : def.events.activateSwitch.emit({}))(scene),
+          ),
+        }),
         Flow.observe(Def.interactableEvents.hitPhysical(obj.name).subject, () =>
           Flow.call(def.events.activateSwitch.emit({})),
         ),

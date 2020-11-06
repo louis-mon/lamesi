@@ -10,7 +10,7 @@ import {
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { launchFireball } from "/src/scenes/dungeon/fireball";
-import _ from "lodash";
+import _, { identity } from "lodash";
 import * as Phaser from "phaser";
 import { map } from "rxjs/operators";
 import * as Def from "./definitions";
@@ -18,12 +18,20 @@ import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
 import { getProp } from "/src/helpers/functional";
 import { followObject } from "/src/helpers/animate/composite";
-import { declareGoInstance, defineGoClass } from "/src/helpers/component";
+import {
+  customEvent,
+  declareGoInstance,
+  defineGoClass,
+} from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { combineLatest } from "rxjs";
+import { bindAttackButton } from "./npc";
 
 const dragonHeadClass = defineGoClass({
-  events: {},
+  events: {
+    newState: customEvent<Flow.PhaserNode>(),
+    throwFireball: customEvent(),
+  },
   data: {
     hp: annotate<number>(),
   },
@@ -127,22 +135,20 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       .setOrigin(1, 0.3);
     return {
       wing,
-      awaken: Flow.sequence(
-        Flow.tween({
-          targets: wing,
-          props: vecToXY(posAwaken),
-          duration: timeAwaken,
-        }),
-        Flow.tween({
-          targets: wing,
-          props: {
-            angle: flip * 20,
-          },
-          duration: 700,
-          yoyo: true,
-          repeat: -1,
-        }),
-      ),
+      awaken: Flow.tween({
+        targets: wing,
+        props: vecToXY(posAwaken),
+        duration: timeAwaken,
+      }),
+      awake: Flow.tween({
+        targets: wing,
+        props: {
+          angle: flip * 20,
+        },
+        duration: 700,
+        yoyo: true,
+        repeat: -1,
+      }),
       calm: Flow.tween({
         targets: wing,
         props: {
@@ -193,7 +199,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       map((pos) => pos.x >= 1 && pos.x <= 3 && pos.y >= 2 && pos.y <= 3),
     );
 
-  const eatPlayer = Flow.lazy(() =>
+  const eatPlayerState = Flow.lazy(() =>
     Flow.sequence(
       Flow.tween({
         targets: headObj,
@@ -207,6 +213,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         props: vecToXY(headPosAwaken),
         duration: 200,
       }),
+      emitNewState(goToSleepState()),
     ),
   );
 
@@ -217,19 +224,6 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       duration: timeAwaken,
       props: vecToXY(headPosAwaken),
     }),
-    Flow.parallel(
-      Flow.whenTrueDo({ condition: eatPlayerCondition, action: eatPlayer }),
-      Flow.repeatWhen({
-        condition: Def.interactableEvents.hitPhysical(headInst.key).subject,
-        action: Flow.lazy(() => {
-          headInst.data.hp.updateValue((hp) => hp - 1)(scene);
-          return stunEffect({
-            target: headObj,
-            infinite: headInst.data.hp.value(scene) === 0,
-          });
-        }),
-      }),
-    ),
   );
   const sleepHead = Flow.tween({
     targets: headObj,
@@ -237,16 +231,30 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
     props: vecToXY(headPosSleep),
   });
 
-  const footObjs = [1, -1].map((flip) =>
-    createSpriteAt(
-      scene,
-      new Vector2(flip * 50, 60).add(basePos),
-      "dragon",
-      "foot",
-    )
-      .setFlipX(flip === 1)
-      .setDepth(Def.depths.npc),
-  );
+  const footClass = defineGoClass({
+    events: {},
+    data: { hit: annotate<boolean>() },
+    kind: annotate<Phaser.GameObjects.Sprite>(),
+    config: annotate<{ pos: Wp.WpDef; flip: number }>(),
+  });
+  const footInsts = [1, -1].map((flip) => {
+    const inst = declareGoInstance(footClass, null, {
+      pos: { room: 1, x: flip + 2, y: 2 },
+      flip,
+    });
+    inst.create(
+      createSpriteAt(
+        scene,
+        new Vector2(-flip * 10, 20).add(basePos),
+        "dragon",
+        "foot",
+      )
+        .setOrigin(1, 0)
+        .setFlipX(flip === 1)
+        .setDepth(Def.depths.npc),
+    );
+    return inst;
+  });
 
   const eyeAnim = "dragon-eye";
   scene.anims.create({
@@ -277,63 +285,129 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       .dataSubject(scene)
       .pipe(map((wpId) => Wp.getWpDef(wpId).room === 1));
 
-  return Flow.parallel(
-    ...eyeFlows.map(getProp("flow")),
-    Flow.taskWithSentinel({
-      condition: playerInRoom,
-      task: Flow.parallel(
+  const emitNewState = (state: Flow.PhaserNode): Flow.PhaserNode =>
+    Flow.call(headInst.events.newState.emit(state));
+
+  const stunnedState = Flow.parallel(
+    stunEffect({ target: headObj, infinite: true }),
+    ...footInsts.map((footInst) =>
+      Flow.parallel(
+        Flow.call(footInst.data.hit.setValue(false)),
+        Flow.whenTrueDo({
+          condition: footInst.data.hit.subject,
+          action: Flow.tween(() => ({
+            targets: footInst.getObj(scene),
+            props: { angle: -footInst.config.flip * 20 },
+            yoyo: true,
+            repeat: -1,
+            duration: 280,
+          })),
+        }),
+        bindAttackButton({
+          pos: Wp.getWpId(footInst.config.pos),
+          disabled: footInst.data.hit.dataSubject,
+          action: Flow.call(footInst.data.hit.setValue(true)),
+        }),
+      ),
+    ),
+  );
+
+  const awakeState = (): Flow.PhaserNode =>
+    Flow.parallel(
+      ...wingDefs.map(getProp("awake")),
+      Flow.observe(playerInRoom, (inRoom) =>
+        inRoom ? Flow.noop : emitNewState(goToSleepState()),
+      ),
+      Flow.whenTrueDo({
+        condition: eatPlayerCondition,
+        action: emitNewState(eatPlayerState),
+      }),
+      Flow.observe(headInst.data.hp.subject, (hp) =>
+        hp > 0
+          ? stunEffect({
+              target: headObj,
+              infinite: false,
+            })
+          : emitNewState(stunnedState),
+      ),
+      Flow.repeatWhen({
+        condition: Def.interactableEvents.hitPhysical(headInst.key).subject,
+        action: Flow.sequence(
+          Flow.call(headInst.data.hp.updateValue((hp) => hp - 1)),
+          Flow.waitTimer(1000),
+        ),
+      }),
+      Flow.repeatSequence(
+        ..._.range(0, 14).map((i) =>
+          Flow.sequence(
+            Flow.call(headInst.events.throwFireball.emit({})),
+            Flow.waitTimer(70),
+          ),
+        ),
+        Flow.waitTimer(1200),
+      ),
+    );
+
+  const goToSleepState = (): Flow.PhaserNode =>
+    Flow.parallel(
+      sleepState(),
+      Flow.sequence(
+        Flow.sequence(
+          Flow.parallel(...wingDefs.map(getProp("calm"))),
+          Flow.parallel(
+            Flow.call(() =>
+              eyeObjs.forEach((eye) =>
+                eye.anims.playReverse("dragon-eye", false),
+              ),
+            ),
+            ...wingDefs.map(getProp("sleep")),
+            sleepBody,
+            sleepHead,
+          ),
+        ),
+        emitNewState(sleepState()),
+      ),
+    );
+
+  const awakeningState = (): Flow.PhaserNode =>
+    Flow.sequence(
+      Flow.parallel(
         ...wingDefs.map(getProp("awaken")),
         ...eyeFlows.map(getProp("awaken")),
         awakenBody,
         awakenHead,
       ),
-      afterTask: Flow.sequence(
-        Flow.parallel(...wingDefs.map(getProp("calm"))),
+      emitNewState(awakeState()),
+    );
+
+  const sleepState = (): Flow.PhaserNode =>
+    Flow.whenTrueDo({
+      condition: playerInRoom,
+      action: emitNewState(awakeningState()),
+    });
+
+  return Flow.parallel(
+    ...eyeFlows.map(getProp("flow")),
+    Flow.observeSentinel(headInst.events.newState.subject, identity),
+    emitNewState(sleepState()),
+    Flow.observe(headInst.events.throwFireball.subject, () =>
+      Flow.lazy(() =>
         Flow.parallel(
-          Flow.call(() =>
-            eyeObjs.forEach((eye) =>
-              eye.anims.playReverse("dragon-eye", false),
-            ),
-          ),
-          ...wingDefs.map(getProp("sleep")),
-          sleepBody,
-          sleepHead,
-        ),
-      ),
-    }),
-    Flow.repeatWhen({
-      condition: () =>
-        combineLatest([
-          playerInRoom(),
-          headInst.data.hp.dataSubject(scene),
-        ]).pipe(map(([inRoom, hp]) => inRoom && hp > 0)),
-      action: Flow.sequence(
-        Flow.waitTimer(800),
-        Flow.parallel(
-          ..._.range(0, 14).map((i) =>
-            Flow.sequence(
-              Flow.waitTimer(i * 70),
-              Flow.lazy(() =>
-                Flow.parallel(
-                  ..._.range(-2, 3).map((i) =>
-                    launchFireball({
-                      radius: 75,
-                      startScale: 0.2,
-                      fromPos: headObj.getBottomCenter(),
-                      targetPos: Phaser.Math.RotateAround(
-                        Def.player.getObj(scene).getCenter(),
-                        headObj.x,
-                        headObj.y,
-                        (i * Math.PI) / 15,
-                      ),
-                    }),
-                  ),
-                ),
+          ..._.range(-2, 3).map((i) =>
+            launchFireball({
+              radius: 75,
+              startScale: 0.2,
+              fromPos: headObj.getBottomCenter(),
+              targetPos: Phaser.Math.RotateAround(
+                Def.player.getObj(scene).getCenter(),
+                headObj.x,
+                headObj.y,
+                (i * Math.PI) / 15,
               ),
-            ),
+            }),
           ),
         ),
       ),
-    }),
+    ),
   );
 });
