@@ -342,7 +342,10 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       condition: combineLatest(
         footInsts.map((inst) => inst.data.hit.dataSubject(scene)),
       ).pipe(map((values) => values.every(identity))),
-      action: Flow.sequence(Flow.waitTimer(1000), emitNewState(stunnedDownState())),
+      action: Flow.sequence(
+        Flow.waitTimer(1000),
+        emitNewState(stunnedDownState()),
+      ),
     }),
     ...footInsts.map((footInst) =>
       Flow.parallel(

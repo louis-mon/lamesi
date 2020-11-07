@@ -13,10 +13,11 @@ import { combineLatest } from "rxjs";
 import { auditTime, first, map } from "rxjs/operators";
 import * as Def from "./definitions";
 import * as Npc from "./npc";
-import { bellHiddenAction, bellSkillAltar } from "./skills";
+import { arrowSkillAltar, bellHiddenAction, bellSkillAltar } from "./skills";
 import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
 import Vector2Like = Phaser.Types.Math.Vector2Like;
+import * as globalEvents from "/src/scenes/global-events";
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -189,7 +190,17 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
   return Flow.parallel(bellEvents, checkSolve);
 });
 
+const enableGoal2 = Flow.whenTrueDo({
+  condition: globalEvents.events.dungeonPhase1.dataSubject,
+  action: Flow.parallel(
+    Npc.openDoor("door4To3"),
+    Npc.openDoor("door5To2"),
+    arrowSkillAltar({ wp: { room: 4, x: 0, y: 4 } }),
+  ),
+});
+
 export const dungeonGoal2 = Flow.parallel(
+  enableGoal2,
   puzzleForBellAltar,
   hintSymbol,
   room2GoalPuzzle,

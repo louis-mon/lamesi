@@ -1,7 +1,7 @@
 import { createAllFlameThrowers } from "/src/scenes/dungeon/fireball";
 import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
 import { createPlayer } from "/src/scenes/dungeon/player";
-import { eventsHelpers } from "/src/scenes/global-events";
+import { events, eventsHelpers } from "/src/scenes/global-events";
 import * as Phaser from "phaser";
 import _ from "lodash";
 import { playerCannotActSubject } from "./definitions";
@@ -28,7 +28,7 @@ import {
   customEvent,
 } from "/src/helpers/component";
 import { combineContext } from "/src/helpers/functional";
-import { combineLatest } from "rxjs";
+import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
 import {
   initSkills,
@@ -68,14 +68,24 @@ export class DungeonScene extends Phaser.Scene {
 
     const initActions = Flow.sequence(initSkills);
 
-    const debugActions = Flow.parallel(
-      Npc.openDoor("door4To3"),
-      Npc.openDoor("door5To2"),
-      Npc.openDoor("door4To1"),
-      arrowSkillAltar({ wp: { room: 4, x: 0, y: 4 } }),
-      bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),
-      amuletSkillAltar({ wp: { room: 4, x: 4, y: 4 } }),
-    );
+    const cheatCodeAction: Flow.PhaserNode = Flow.whenTrueDo({
+      condition: events.cheatCodes.dataSubject,
+      action: Flow.lazy(() => {
+        const activateAllKey = this.input.keyboard.addKey(
+          Phaser.Input.Keyboard.KeyCodes.PLUS,
+        );
+        return Flow.whenTrueDo({
+          condition: fromEvent(activateAllKey, "down"),
+          action: Flow.call(() =>
+            [
+              events.dungeonPhase1,
+              events.dungeonPhase2,
+              events.dungeonPhase3,
+            ].forEach((trigger) => trigger.setValue(true)(this)),
+          ),
+        });
+      }),
+    });
 
     const ambientActions = Flow.parallel(
       playerFlow,
@@ -87,7 +97,7 @@ export class DungeonScene extends Phaser.Scene {
       dungeonGoal2,
       dungeonGoal3,
       dungeonGoal4,
-      debugActions,
+      cheatCodeAction,
     );
     Flow.run(this, Flow.sequence(initActions, ambientActions));
     this.events.once(subWordGameBeginEvent, () => {

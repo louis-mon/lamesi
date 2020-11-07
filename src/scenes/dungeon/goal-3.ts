@@ -13,10 +13,16 @@ import * as Def from "./definitions";
 import { placeCheckpoint, playerIsOnPos } from "./definitions";
 import * as Npc from "./npc";
 import { endGoalAltarPlaceholder, openDoor } from "./npc";
-import { amuletSkillAltar, amuletSkillDef, bellHiddenAction } from "./skills";
+import {
+  amuletSkillAltar,
+  amuletSkillDef,
+  bellHiddenAction,
+  bellSkillAltar,
+} from "./skills";
 import * as Wp from "./wp";
 import { setGroundObstacleLine } from "./wp";
 import Line = Phaser.Geom.Line;
+import { events } from "../global-events";
 
 const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
   const switchDef = Def.switches.room1ForRoom2Door;
@@ -174,7 +180,16 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
+const enableGoal3 = Flow.whenTrueDo({
+  condition: events.dungeonPhase2.dataSubject,
+  action: Flow.parallel(
+    Npc.openDoor("door4To1"),
+    bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),
+  ),
+});
+
 export const dungeonGoal3 = Flow.parallel(
+  enableGoal3,
   puzzleDoorRoom1,
   puzzleRoom2Amulet,
   puzzleRoom0,

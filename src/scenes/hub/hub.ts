@@ -4,6 +4,7 @@ import { eventsHelpers } from "../global-events";
 import { LightScene } from "../lights/lights";
 import { DungeonScene } from "../dungeon/dungeon";
 import { MenuScene } from "../menu";
+import _ from "lodash";
 
 export class HubScene extends Phaser.Scene {
   constructor() {
@@ -13,7 +14,9 @@ export class HubScene extends Phaser.Scene {
   }
 
   create() {
-    eventsHelpers.startupEvents.forEach((ev) => this.registry.set(ev, true));
+    _.mapValues(eventsHelpers.startupEvents, (value, key) =>
+      this.registry.set(key, value),
+    );
     const scenes = [
       {
         create: () => new LightScene(),

@@ -90,6 +90,10 @@ type DataMappingDef<
   Kind extends ObjectKind
 > = { [Key in keyof O]: HelperFactory<Kind, DataHelper<O[Key]>> };
 
+export type DataMappingDefValues<
+  T extends DataMappingDef<any, any>
+> = T extends DataMappingDef<infer O, any> ? O : never;
+
 const makeDataHelper = (
   emitterFactory: SceneContext<Maybe<Phaser.Events.EventEmitter>>,
   managerFactory: SceneContext<Maybe<Phaser.Data.DataManager>>,

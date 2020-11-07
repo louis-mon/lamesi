@@ -1,4 +1,4 @@
-export const annotate = <T>() => (null as unknown) as T;
+export const annotate = <T>() => (undefined as unknown) as T;
 
 export type ValueOf<T> = T[keyof T];
 
