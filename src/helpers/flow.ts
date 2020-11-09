@@ -61,7 +61,7 @@ export const withCleanup = <C>(params: {
 
 const makeAborter = (
   p: ActionRunParams,
-): { childParams: ActionRunParams; emit: () => void } => {
+): { childParams: ActionRunParams; abort: () => void } => {
   const emitter = new Phaser.Events.EventEmitter();
   const abortEvent = "abort";
   const abort = () => emitter.emit(abortEvent);
@@ -72,7 +72,7 @@ const makeAborter = (
       unregisterAbort: (f) => emitter.off(abortEvent, f),
       onComplete: () => p.unregisterAbort(abort),
     },
-    emit: () => emitter.emit(abortEvent),
+    abort,
   };
 };
 
@@ -89,13 +89,13 @@ export const withBackground = <C>(params: {
   params.main(c)({
     ...p,
     onComplete: () => {
-      aborter.emit();
+      aborter.abort();
       p.onComplete();
     },
   });
 };
 
-/** Completes whenever any of the actions complete, cancelling the others */
+/** Completes whenever any of the actions complete, aborting the others */
 export const concurrent = <C>(...actions: ActionNode<C>[]): ActionNode<C> => (
   c,
 ) => (p) => {
@@ -107,7 +107,7 @@ export const concurrent = <C>(...actions: ActionNode<C>[]): ActionNode<C> => (
       onComplete: () => {
         if (!completed) {
           completed = true;
-          aborter.emit();
+          aborter.abort();
           aborter.childParams.onComplete();
           p.onComplete();
         }
@@ -220,11 +220,20 @@ export const repeatWhen = <C>(params: {
   action: ActionNode<C>;
 }): ActionNode<C> => repeat(whenTrueDo(params));
 
+/**
+ * Wait for an observable to produce a value
+ */
 export const wait = <C>(observable: ObservableFactory<C, unknown>) =>
   whenValueDo({
     condition: observable,
     action: () => noop,
   });
+
+/**
+ * Wait for an observable to produce a true value
+ */
+export const waitTrue = <C>(observable: ObservableFactory<C, boolean>) =>
+  wait(composeObservable(observable, (obs) => obs.pipe(first(_.identity))));
 
 /**
  * Execute sequentially the same flow again and again
@@ -260,11 +269,9 @@ export const repeatSequence = <C>(...flows: ActionNode<C>[]) =>
 export const taskWithSentinel = <C>({
   condition,
   task,
-  afterTask = noop,
 }: {
   condition: ObservableFactory<C, boolean>;
   task: ActionNode<C>;
-  afterTask?: ActionNode<C>;
 }) =>
   repeatWhen({
     condition,
@@ -278,7 +285,6 @@ export const taskWithSentinel = <C>({
         }),
         back: task,
       }),
-      afterTask,
     ),
   });
 
