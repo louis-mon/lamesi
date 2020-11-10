@@ -11,35 +11,37 @@ import { events } from "../../global-events";
 import { amuletSkillAltar } from "../skills";
 import { createSpriteAt } from "/src/helpers/phaser";
 import { declareGoInstance, spriteClassKind } from "/src/helpers/component";
-import {
-  goal4Class,
-  hintFlameRoom2,
-  moveFlameTo,
-  playerIsOnFlame,
-} from "./goal-4-defs";
+import { makeGreenFlame, moveFlameTo, playerIsOnFlame } from "./goal-4-defs";
 import {
   checkSolveSwappingTiles,
   secondSwappingTiles,
   swappingTileBellActions,
 } from "../goal-2";
 
-const flameInst = hintFlameRoom2.instance;
-
-const puzzleRoom2: Flow.PhaserNode = Flow.lazy((scene) => {
-  return Flow.sequence(
-    Flow.waitTrue(playerIsOnFlame(flameInst)),
-    moveFlameTo({ instance: flameInst, newPos: { room: 2, x: 4, y: 0 } }),
-    Flow.parallel(
-      swappingTileBellActions(secondSwappingTiles),
-      Flow.observe(
-        checkSolveSwappingTiles([0, 1, 2, 3, 5, 7, 9, 11, 12, 13, 14]),
-        () => Flow.call(flameInst.data.solved.setValue(true)),
-      ),
-    ),
-  );
+export const greenFlame = makeGreenFlame({
+  pos: { room: 4, x: 3, y: 3 },
+  hintFrame: "hint-hourglass",
+  nextPos: { room: 2, x: 2, y: 0 },
 });
+const flameInst = greenFlame.instance;
+
+const puzzleRoom2: Flow.PhaserNode = Flow.sequence(
+  Flow.waitTrue(playerIsOnFlame(flameInst)),
+  moveFlameTo({ instance: flameInst, newPos: { room: 2, x: 4, y: 0 } }),
+  Flow.parallel(
+    Flow.tween((scene) => ({
+      targets: flameInst.getObj(scene),
+      props: { scale: 0 },
+    })),
+    swappingTileBellActions(secondSwappingTiles),
+    Flow.observe(
+      checkSolveSwappingTiles([0, 1, 2, 3, 5, 7, 9, 11, 12, 13, 14]),
+      () => Flow.call(flameInst.data.solved.setValue(true)),
+    ),
+  ),
+);
 
 export const puzzleRoom2Config = {
-  instance: hintFlameRoom2,
+  instance: greenFlame,
   flow: puzzleRoom2,
 };

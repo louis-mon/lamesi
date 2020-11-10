@@ -6,6 +6,34 @@ import Vector2Like = Phaser.Types.Math.Vector2Like;
 import * as Flow from "/src/helpers/phaser-flow";
 import Vector2 = Phaser.Math.Vector2;
 
+export const tintProxy = (source: Phaser.GameObjects.Components.Tint) =>
+  new Proxy(source, {
+    get(target, prop) {
+      if (prop.toString().match(/^r|g|b$/)) {
+        return (Phaser.Display.Color.ColorToRGBA(target.tintBottomLeft) as any)[
+          prop.toString()
+        ];
+      }
+      return (target as any)[prop];
+    },
+    set(target, prop, value) {
+      if (prop.toString().match(/^r|g|b$/)) {
+        const oldColor = Phaser.Display.Color.ColorToRGBA(
+          target.tintBottomLeft,
+        );
+        console.log(prop, value);
+        target.tint = Phaser.Display.Color.GetColor(
+          prop === "r" ? value : oldColor.r,
+          prop === "g" ? value : oldColor.g,
+          prop === "b" ? value : oldColor.b,
+        );
+      } else {
+        (target as any)[prop.toString()] = value;
+      }
+      return true;
+    },
+  });
+
 export const memoryCyclicTween = ({
   getObj,
   attr1,

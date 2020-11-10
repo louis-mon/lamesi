@@ -6,7 +6,12 @@ import * as Flow from "/src/helpers/phaser-flow";
 import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import { createSpriteAt, vecToXY, createImageAt } from "/src/helpers/phaser";
+import {
+  createSpriteAt,
+  vecToXY,
+  createImageAt,
+  placeAt,
+} from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
@@ -18,9 +23,13 @@ import {
 } from "/src/helpers/component";
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
 import { arrowSkillAltar } from "./skills";
 import { menuHelpers } from "../menu";
+import { tintProxy } from "/src/helpers/animate/tween";
+import { Maybe } from "purify-ts";
+import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
+import { events } from "../global-events";
 
 const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
   const mechanisms = [
@@ -42,6 +51,7 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
     events: { turn: customEvent() },
     data: {
       turn: annotate<number>(),
+      alt: annotate<boolean>(),
     },
     kind: annotate<Phaser.GameObjects.Image>(),
   });
@@ -60,6 +70,9 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
     .setDepth(Def.depths.carpet)
     .setScale(0.5);
 
+  const mechTextureFrame = (i: number, alt: boolean) =>
+    `symbol-circle-${i + 1}${alt ? "-alt" : ""}`;
+
   const switchFlows = mechanisms.map(({ switchDef, startTurn }, i) => {
     Npc.switchCrystalFactory(scene)(switchDef);
     const rotateDef = getRotateMechDef(switchDef.key);
@@ -68,13 +81,15 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
         scene,
         Wp.wpPos({ room: 5, x: 2, y: 2 }),
         "npc",
-        `symbol-circle-${i + 1}`,
+        mechTextureFrame(i, false),
       )
         .setDepth(Def.depths.carpet)
         .setAngle(getRotateMechAngle(startTurn)),
     );
+    rotateObj.tintFill = false;
     const turnData = rotateDef.data.turn;
     turnData.setValue(startTurn)(scene);
+    rotateDef.data.alt.setValue(false)(scene);
     const state = switchDef.data.state;
 
     return Flow.parallel(
@@ -100,23 +115,97 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
       }),
     );
   });
-  const solvePuzzle = Flow.whenTrueDo({
-    condition: combineLatest(
-      mechanisms.map(({ switchDef }) => {
-        const rotateDef = getRotateMechDef(switchDef.key);
-        return rotateDef.data.turn
-          .dataSubject(scene)
-          .pipe(map((turn) => turn === 0));
+
+  const altSwitchFlow = Flow.sequence(
+    Flow.wait(Def.scene.events.showAltSwitchInRoom5.subject),
+    Flow.call(() =>
+      Npc.switchCrystalFactory(scene)(Def.switches.room5AltPanel),
+    ),
+    Flow.repeatWhen({
+      condition: Def.switches.room5AltPanel.data.state.subject,
+      action: Flow.lazy(() => {
+        const altIndex = [1, 2].find((i) =>
+          getRotateMechDef(mechanisms[i].switchDef.key).data.alt.value(scene),
+        );
+        return Flow.sequence(
+          Flow.parallel(
+            ...Maybe.fromNullable(altIndex)
+              .map((i) => (mechanisms[i + 1] ? [i, i + 1] : [i]))
+              .orDefault([1])
+              .map((i) => {
+                const mech = getRotateMechDef(mechanisms[i].switchDef.key);
+                const mechObj = mech.getObj(scene);
+                const duration = 520;
+
+                return Flow.sequence(
+                  Flow.tween({
+                    targets: mechObj,
+                    props: { alpha: 0 },
+                    duration,
+                  }),
+                  Flow.call(mech.data.alt.updateValue((value) => !value)),
+                  Flow.call(() =>
+                    mechObj.setFrame(
+                      mechTextureFrame(i, mech.data.alt.value(scene)),
+                    ),
+                  ),
+                  Flow.tween(() => ({
+                    targets: mechObj,
+                    props: { alpha: 1 },
+                    duration,
+                  })),
+                );
+              }),
+          ),
+          Flow.call(
+            Def.switches.room5AltPanel.events.deactivateSwitch.emit({}),
+          ),
+        );
       }),
-    ).pipe(map((rightPos) => rightPos.every((p) => p))),
+    }),
+  );
+
+  const checkSolvePuzzle = (solution: Array<[number, boolean]>) =>
+    combineLatest(
+      mechanisms.map(({ switchDef }, i) => {
+        const rotateDef = getRotateMechDef(switchDef.key);
+        return combineLatest([
+          rotateDef.data.turn.dataSubject(scene),
+          rotateDef.data.alt.dataSubject(scene),
+        ]);
+      }),
+    ).pipe(map((mechStates) => _.isEqual(mechStates, solution)));
+
+  const solvePuzzle = Flow.whenTrueDo({
+    condition: checkSolvePuzzle([
+      [0, false],
+      [0, false],
+      [0, false],
+    ]),
     action: Flow.sequence(
       Flow.tween({ targets: hint, props: { alpha: 0 } }),
       Flow.call(() => hint.destroy()),
       arrowSkillAltar({ wp: { room: 5, x: 4, y: 0 } }),
     ),
   });
-  return Flow.parallel(...switchFlows, solvePuzzle);
+
+  const solveFishPuzzle = Flow.whenTrueDo({
+    condition: checkSolvePuzzle([
+      [1, false],
+      [1, true],
+      [4, false],
+    ]),
+    action: Flow.call(hintFlameRoom5.instance.data.solved.setValue(true)),
+  });
+
+  return Flow.parallel(
+    ...switchFlows,
+    altSwitchFlow,
+    solvePuzzle,
+    solveFishPuzzle,
+  );
 });
+
 const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
   Flow.call((scene) => {
     const factory = Npc.switchCrystalFactory(scene);
@@ -140,7 +229,11 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
     }),
     Flow.whenTrueDo({
       condition: playerIsOnPos({ room: 5, x: 0, y: 2 }),
-      action: Npc.closeDoor("door4To5"),
+      action: Flow.lazy((scene) =>
+        events.dungeonPhase1.value(scene)
+          ? Flow.noop
+          : Npc.closeDoor("door4To5"),
+      ),
     }),
   ),
 );

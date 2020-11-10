@@ -91,7 +91,7 @@ export const showGreenFlame = ({
       ),
       Flow.waitTrue(playerIsOnFlame(instance)),
       Flow.parallel(
-        moveFlameTo({ instance, newPos: { room: 2, x: 2, y: 0 } }),
+        moveFlameTo({ instance, newPos: config.nextPos }),
         Flow.sequence(
           createHint,
           Flow.tween(() => ({
@@ -125,10 +125,10 @@ export const playerIsOnFlame = (
 ): SceneContext<Observable<boolean>> => (scene) =>
   Def.playerIsOnPos(instance.data.currentPos.value(scene))(scene);
 
-export const hintFlameRoom2 = makeGreenFlame({
-  pos: { room: 4, x: 3, y: 3 },
-  hintFrame: "hint-hourglass",
-  nextPos: { room: 2, x: 2, y: 0 },
+export const hintFlameRoom5 = makeGreenFlame({
+  pos: { room: 4, x: 3, y: 4 },
+  hintFrame: "hint-fish",
+  nextPos: { room: 5, x: 3, y: 4 },
 });
 export const hintFlameRoom0 = makeGreenFlame({
   pos: { room: 4, x: 1, y: 3 },
@@ -139,9 +139,4 @@ export const hintFlameRoom3 = makeGreenFlame({
   pos: { room: 4, x: 1, y: 4 },
   hintFrame: "hint-hourglass",
   nextPos: { room: 3, x: 1, y: 1 },
-});
-export const hintFlameRoom5 = makeGreenFlame({
-  pos: { room: 4, x: 3, y: 4 },
-  hintFrame: "hint-hourglass",
-  nextPos: { room: 5, x: 3, y: 4 },
 });

@@ -13,14 +13,13 @@ import { createSpriteAt } from "/src/helpers/phaser";
 import {
   createFlameAnim,
   hintFlameRoom0,
-  hintFlameRoom2,
   hintFlameRoom3,
-  hintFlameRoom5,
   showGreenFlame,
 } from "./goal-4-defs";
 import { puzzleRoom2Config } from "./goal-4-puzzle-room-2";
+import { goal4PuzzleRoom5Config } from "./goal-4-puzzle-room-5";
 
-const allFlames = [puzzleRoom2Config];
+const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config];
 
 const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
   createFlameAnim(scene);

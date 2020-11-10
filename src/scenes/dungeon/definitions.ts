@@ -48,6 +48,9 @@ export const scene = defineSceneClass({
     killPlayer: customEvent(),
 
     sendMagicArrow: customEvent<Vector2>(),
+
+    // puzzle related events
+    showAltSwitchInRoom5: customEvent(),
   },
 });
 
@@ -107,6 +110,7 @@ export const switches = declareGoInstances(switchClass, "switch", {
   room5Rotate1: { wp: { room: 5, x: 0, y: 4 }, offset: new Vector2(-20, 5) },
   room5Rotate2: { wp: { room: 5, x: 1, y: 4 }, offset: new Vector2(-20, 5) },
   room5Rotate3: { wp: { room: 5, x: 2, y: 4 }, offset: new Vector2(-20, 5) },
+  room5AltPanel: { wp: { room: 5, x: 3, y: 4 }, offset: new Vector2(-20, 5) },
   room4ForRoom5Door: {
     wp: { room: 4, x: 4, y: 3 },
     offset: new Vector2(25, 0),
