@@ -28,7 +28,12 @@ export const tween = (
 };
 
 export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
-  scene.time.delayedCall(ms, p.onComplete);
+  const abortHandler = () => timer.remove();
+  const timer = scene.time.delayedCall(ms, () => {
+    p.unregisterAbort(abortHandler);
+    p.onComplete();
+  });
+  p.registerAbort(abortHandler);
 };
 
 /**

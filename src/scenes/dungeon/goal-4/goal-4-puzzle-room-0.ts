@@ -32,11 +32,12 @@ import {
   revealFlameThrower,
 } from "../fireball";
 
+const startPuzzlePos: Wp.WpDef = { room: 0, x: 1, y: 1 };
+
 const flame = makeGreenFlame({
-  // pos: { room: 0, x: 1, y: 2 }, for testing
   pos: { room: 4, x: 1, y: 3 },
   hintFrame: "hint-snail",
-  nextPos: { room: 0, x: 1, y: 1 },
+  nextPos: startPuzzlePos,
 });
 
 const puzzleState = defineSceneClass({
@@ -103,13 +104,16 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const flameActiveState = () =>
     Flow.lazy(() =>
       Flow.parallel(
-        ..._.flatMap(flameThrowers, (flameThrower) => [
-          revealFlameThrower(flameThrower),
-          Flow.repeatSequence(
-            Flow.waitTimer(4000),
-            Flow.call(flameThrower.events.fire.emit({})),
-          ),
-        ]),
+        ..._.flatMap(flameThrowers, (flameThrower) => {
+          const makeGreenFlame(pos: )
+          return [
+            revealFlameThrower(flameThrower),
+            Flow.repeatSequence(
+              Flow.waitTimer(4000),
+              Flow.call(flameThrower.events.fire.emit({}))
+            ),
+          ];
+        }),
         Flow.tween({
           targets: flame.instance.getObj(scene),
           props: { alpha: 0 },
