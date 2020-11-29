@@ -111,10 +111,11 @@ export const launchFireball = ({
 
 type FlameThrowerConfig = {
   wp: Wp.WpDef;
-  angle: number; // in radians;
+  orientation: number; // 0-3;
+  hidden?: boolean;
 };
 
-const flameThrowerClass = defineGoClass({
+export const flameThrowerClass = defineGoClass({
   data: {
     continuous: annotate<boolean>(),
   },
@@ -129,23 +130,23 @@ export const flameThrowers = declareGoInstances(
   {
     room2: {
       wp: { room: 2, x: 0, y: 3 },
-      angle: 0,
+      orientation: 0,
     },
     room0ALeft: {
       wp: { room: 0, x: 0, y: 4 },
-      angle: 0,
+      orientation: 0,
     },
     room0ARight: {
       wp: { room: 0, x: 4, y: 4 },
-      angle: Math.PI,
+      orientation: 2,
     },
     room0BLeft: {
       wp: { room: 0, x: 0, y: 0 },
-      angle: 0,
+      orientation: 0,
     },
     room0BRight: {
       wp: { room: 0, x: 4, y: 0 },
-      angle: Math.PI,
+      orientation: 2,
     },
   },
 );
@@ -154,46 +155,71 @@ export type FlameThrower = ValueOf<typeof flameThrowers>;
 
 export const createFlameThrower = (instance: FlameThrower): Flow.PhaserNode =>
   Flow.lazy((scene) => {
+    const angle = (Math.PI / 2) * instance.config.orientation;
     const object = instance.create(
       createSpriteAt(scene, new Vector2(0, 0), "npc", "flamethrower")
         .setDepth(Def.depths.npcHigh)
-        .setRotation(instance.config.angle),
+        .setRotation(angle),
     );
-    const fireOffset = object.displayWidth / 2;
+    object.setVisible(!instance.config.hidden);
+    const [posOffset, fireOffset] =
+      instance.config.orientation % 2 === 1
+        ? [Wp.wpHalfSize.y, object.displayHeight / 2]
+        : [Wp.wpHalfSize.x, object.displayWidth / 2];
     placeAt(
       object,
       Wp.wpPos(instance.config.wp).subtract(
-        new Vector2().setToPolar(
-          instance.config.angle,
-          Wp.wpHalfSize.x + fireOffset,
-        ),
+        new Vector2().setToPolar(angle, posOffset + fireOffset),
       ),
     );
     const fire = Flow.lazy(() =>
       launchFireball({
         radius: 30,
         fromPos: getObjectPosition(object).add(
-          new Vector2().setToPolar(instance.config.angle, fireOffset + 2),
+          new Vector2().setToPolar(angle, fireOffset + 2),
         ),
         targetPos: getObjectPosition(object).add(
-          new Vector2().setToPolar(instance.config.angle, fireOffset + 10),
+          new Vector2().setToPolar(angle, fireOffset + 10),
         ),
       }),
     );
     instance.data.continuous.setValue(false)(scene);
-    return Flow.parallel(
-      Flow.observe(instance.events.fire.subject, () => fire),
-      Flow.taskWithSentinel({
-        condition: instance.data.continuous.dataSubject,
-        task: Flow.repeat(
-          Flow.sequence(
-            Flow.waitTimer(120),
-            Flow.call(instance.events.fire.emit({})),
+    return Flow.withCleanup({
+      flow: Flow.parallel(
+        Flow.observe(instance.events.fire.subject, () => fire),
+        Flow.taskWithSentinel({
+          condition: instance.data.continuous.dataSubject,
+          task: Flow.repeat(
+            Flow.sequence(
+              Flow.waitTimer(120),
+              Flow.call(instance.events.fire.emit({})),
+            ),
           ),
-        ),
-      }),
-    );
+        }),
+      ),
+      cleanup: () => object.destroy(),
+    });
   });
+
+export const revealFlameThrower = (instance: FlameThrower): Flow.PhaserNode =>
+  Flow.sequence(
+    Flow.call((scene) => instance.getObj(scene).setScale(0.1).setVisible(true)),
+    Flow.tween((scene) => ({
+      targets: instance.getObj(scene),
+      props: { scale: 1 },
+      duration: 500,
+    })),
+  );
+
+export const hideFlameThrower = (instance: FlameThrower): Flow.PhaserNode =>
+  Flow.sequence(
+    Flow.tween((scene) => ({
+      targets: instance.getObj(scene),
+      props: { scale: 0.01 },
+      duration: 500,
+    })),
+    Flow.call((scene) => instance.getObj(scene).setVisible(false)),
+  );
 
 export const createAllFlameThrowers: Flow.PhaserNode = Flow.parallel(
   ...Object.values(flameThrowers).map(createFlameThrower),

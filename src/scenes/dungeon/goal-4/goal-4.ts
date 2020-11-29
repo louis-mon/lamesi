@@ -10,16 +10,12 @@ import { iceArmorAltar } from "../ice-armor";
 import { events } from "../../global-events";
 import { amuletSkillAltar } from "../skills";
 import { createSpriteAt } from "/src/helpers/phaser";
-import {
-  createFlameAnim,
-  hintFlameRoom0,
-  hintFlameRoom3,
-  showGreenFlame,
-} from "./goal-4-defs";
+import { createFlameAnim, showGreenFlame } from "./goal-4-defs";
 import { puzzleRoom2Config } from "./goal-4-puzzle-room-2";
 import { goal4PuzzleRoom5Config } from "./goal-4-puzzle-room-5";
+import { goal4Puzzle0 } from "./goal-4-puzzle-room-0";
 
-const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config];
+const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config, goal4Puzzle0];
 
 const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
   createFlameAnim(scene);
@@ -50,6 +46,7 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
 const enableGoal4 = Flow.whenTrueDo({
   condition: events.dungeonPhase3.dataSubject,
   action: Flow.parallel(
+    Npc.openDoor("door3To0"),
     amuletSkillAltar({ wp: { room: 4, x: 4, y: 4 } }),
     greenFlames,
   ),

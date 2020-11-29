@@ -130,11 +130,6 @@ export const hintFlameRoom5 = makeGreenFlame({
   hintFrame: "hint-fish",
   nextPos: { room: 5, x: 3, y: 4 },
 });
-export const hintFlameRoom0 = makeGreenFlame({
-  pos: { room: 4, x: 1, y: 3 },
-  hintFrame: "hint-hourglass",
-  nextPos: { room: 0, x: 1, y: 1 },
-});
 export const hintFlameRoom3 = makeGreenFlame({
   pos: { room: 4, x: 1, y: 4 },
   hintFrame: "hint-hourglass",
