@@ -41,6 +41,7 @@ import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
 import { dragon } from "./dragon";
 import { dungeonGoal4 } from "./goal-4/goal-4";
+import { equipFireShield } from "./ice-armor";
 
 export class DungeonScene extends Phaser.Scene {
   constructor() {
@@ -91,6 +92,7 @@ export class DungeonScene extends Phaser.Scene {
       playerFlow,
       Wp.wpsAction,
       skillsFlow,
+      equipFireShield,
       dragon,
       createAllFlameThrowers,
       dungeonGoal1,

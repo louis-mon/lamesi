@@ -40,7 +40,9 @@ export const scene = defineSceneClass({
     shieldGroup: annotate<Phaser.Physics.Arcade.Group>(),
     wallGroup: annotate<Phaser.Physics.Arcade.StaticGroup>(),
 
-    playerCheckpoint: annotate<WpId>(),
+    playerCheckpoint: annotate<WpId>(), // position where the player will respawn when dead
+    playerHasArmor: annotate<boolean>(), // is the ice armor equiped ?
+    fireShieldActive: annotate<boolean>(), // when true, player cannot die because of flames
   },
   events: {
     clickWp: customEvent<WpId>(),
@@ -53,6 +55,8 @@ export const scene = defineSceneClass({
     showAltSwitchInRoom5: customEvent(),
   },
 });
+
+export const amuletSkillKey = "amulet-skill";
 
 export const bellHitEvent = (wp: WpId) =>
   makeSceneEventHelper({ key: `bell-hit-${wp}`, selector: _.identity });

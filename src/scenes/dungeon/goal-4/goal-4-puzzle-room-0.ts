@@ -104,16 +104,13 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const flameActiveState = () =>
     Flow.lazy(() =>
       Flow.parallel(
-        ..._.flatMap(flameThrowers, (flameThrower) => {
-          const makeGreenFlame(pos: )
-          return [
-            revealFlameThrower(flameThrower),
-            Flow.repeatSequence(
-              Flow.waitTimer(4000),
-              Flow.call(flameThrower.events.fire.emit({}))
-            ),
-          ];
-        }),
+        ..._.flatMap(flameThrowers, (flameThrower) => [
+          revealFlameThrower(flameThrower),
+          Flow.repeatSequence(
+            Flow.waitTimer(4000),
+            Flow.call(flameThrower.events.fire.emit({})),
+          ),
+        ]),
         Flow.tween({
           targets: flame.instance.getObj(scene),
           props: { alpha: 0 },

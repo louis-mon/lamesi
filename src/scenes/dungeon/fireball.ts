@@ -99,7 +99,10 @@ export const launchFireball = ({
             object1: fireballObj,
             object2: Def.player.getObj(scene),
           }),
-          () => Flow.call(Def.scene.events.killPlayer.emit({})),
+          () =>
+            Def.scene.data.fireShieldActive.value(scene)
+              ? Flow.noop
+              : Flow.call(Def.scene.events.killPlayer.emit({})),
         ),
         Flow.sequence(
           Flow.waitTimer(1000),

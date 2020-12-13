@@ -39,6 +39,7 @@ const bellParticlesDef = declareGoInstance(
 
 export const initSkills: Flow.PhaserNode = Flow.call((scene) => {
   Def.scene.data.currentSkill.setValue("")(scene);
+  Def.scene.data.currentSkillInUse.setValue(false)(scene);
   arrowLightParticleDef.create(
     scene.add.particles("npc", "light-particle").setDepth(Def.depths.floating),
   );
@@ -331,48 +332,29 @@ const bellSkillDef: SkillDef = {
   useAction: bellUseAction,
 };
 
-const amuletShieldInst = declareGoInstance(
-  physicsImageClassKind,
-  "amulet-shield",
+const deactivateAmulet: Flow.PhaserNode = Flow.call(
+  Def.scene.data.currentSkillInUse.setValue(false),
 );
 
-const deactivateAmulet: Flow.PhaserNode = Flow.call((scene) => {
-  Maybe.fromNullable(amuletShieldInst.getObj(scene)).ifJust((shield) =>
-    shield.destroy(),
-  );
-});
-
-export const createShield = (scene: Phaser.Scene) => {
-  const playerObj = Def.player.getObj(scene);
-  const shield = scene.physics.add
-    .image(playerObj.x, playerObj.y, "npc", "symbol-circle-1")
-    .setDepth(Def.depths.floating)
-    .setScale(0.5);
-  shield.body.isCircle = true;
-  Def.scene.data.shieldGroup.value(scene).add(shield);
-  return shield;
-};
-
-const activateAmulet: Flow.PhaserNode = Flow.lazy((scene) => {
-  amuletShieldInst.create(createShield(scene));
-  return Flow.parallel(
-    Flow.whenTrueDo({
-      condition: Def.player.data.isMoving.subject,
-      action: deactivateAmulet,
-    }),
-    Flow.whenTrueDo({
-      condition: Def.player.data.isDead.subject,
-      action: deactivateAmulet,
-    }),
-  );
-});
-
-const amuletUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
-  return amuletShieldInst.getObj(scene) ? deactivateAmulet : activateAmulet;
-});
+const amuletUseAction: Flow.PhaserNode = Flow.sequence(
+  Flow.call(Def.scene.data.currentSkillInUse.updateValue((x) => !x)),
+  Flow.whenTrueDo({
+    condition: Def.scene.data.currentSkillInUse.dataSubject,
+    action: Flow.parallel(
+      Flow.whenTrueDo({
+        condition: Def.player.data.isMoving.subject,
+        action: deactivateAmulet,
+      }),
+      Flow.whenTrueDo({
+        condition: Def.player.data.isDead.subject,
+        action: deactivateAmulet,
+      }),
+    ),
+  }),
+);
 
 export const amuletSkillDef: SkillDef = {
-  key: "amulet-skill",
+  key: Def.amuletSkillKey,
   createItem: ({ pos }) => (scene) =>
     createSpriteAt(scene, pos, "npc", "amulet"),
   useAction: amuletUseAction,
