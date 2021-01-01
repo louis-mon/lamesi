@@ -46,10 +46,43 @@ export const equipFireShield: Flow.PhaserNode = Flow.lazy((scene) => {
       .setDepth(Def.depths.floating)
       .setAlpha(0);
     shield.body.isCircle = true;
+    shield.body.radius = 46;
     Def.scene.data.shieldGroup.value(scene).add(shield);
 
+    const particle = scene.add
+      .particles("npc", "snowflake")
+      .setDepth(Def.depths.floating)
+      .createEmitter({
+        follow: shield,
+        alpha: { start: 1, end: 0 },
+        scale: { start: 0.7, end: 0.2 },
+        frequency: 1300,
+        lifespan: {
+          min: 1500,
+          max: 3000,
+        },
+        emitZone: {
+          type: "random",
+          source: {
+            getRandomPoint(point: Vector2) {
+              const r = shield.body.radius;
+              Phaser.Math.RotateAroundDistance(
+                point,
+                0,
+                0,
+                Phaser.Math.RND.angle(),
+                Math.sqrt(Phaser.Math.RND.between(((r * 3) / 4) ** 2, r ** 2)),
+              );
+            },
+          },
+        },
+      });
+
     return Flow.withCleanup({
-      cleanup: () => shield.destroy(),
+      cleanup: () => {
+        particle.remove();
+        shield.destroy();
+      },
       flow: Flow.parallel(
         followObject({
           source: Def.player.getObj,
