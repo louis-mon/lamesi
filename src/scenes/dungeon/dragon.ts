@@ -197,7 +197,8 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
     .create(createSpriteWithPhysicsAt(scene, headPosSleep, "dragon", "head"))
     .setDepth(Def.depths.npcHigh);
   Def.scene.data.interactableGroup.value(scene).add(headObj);
-  const initHp = headInst.data.hp.setValue(3);
+  const initialHp = 3;
+  const initHp = headInst.data.hp.setValue(initialHp);
   initHp(scene);
 
   const eatPlayerCondition = () =>
@@ -401,7 +402,13 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
             Flow.waitTimer(70),
           ),
         ),
-        Flow.waitTimer(1200),
+        Flow.lazy(() =>
+          // When hit, the dragon becomes angry and never stops breathing fire
+          // This is to prevent the player to hide and fire arrows between breathes
+          headInst.data.hp.value(scene) === initialHp
+            ? Flow.waitTimer(1200)
+            : Flow.noop,
+        ),
       ),
     );
 
