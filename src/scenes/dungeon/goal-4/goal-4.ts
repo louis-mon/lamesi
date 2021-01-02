@@ -19,6 +19,7 @@ const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config, goal4Puzzle0];
 
 const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
   createFlameAnim(scene);
+  const particles = scene.add.particles("npc").setDepth(Def.depths.npc);
   return Flow.parallel(
     ...allFlames.map(({ instance, flow }) =>
       Flow.sequence(
@@ -28,13 +29,28 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
             flow,
             Flow.whenTrueDo({
               condition: instance.instance.data.solved.dataSubject,
-              action: Flow.tween({
-                targets: instance.hintInstance.getObj(scene),
-                props: { scale: 0.25 },
-                repeat: -1,
-                duration: 600,
-                yoyo: true,
-              }),
+              action: Flow.sequence(
+                Flow.tween({
+                  targets: instance.hintInstance.getObj(scene),
+                  props: { alpha: 0.6 },
+                  duration: 1000,
+                }),
+                Flow.call(() => {
+                  const hintObj = instance.hintInstance.getObj(scene);
+                  particles.createEmitter({
+                    follow: hintObj,
+                    scale: hintObj.scale,
+                    frame: instance.config.hintFrame,
+                    x: 0,
+                    y: 0,
+                    speedY: -80,
+                    frequency: 350,
+                    quantity: 1,
+                    alpha: { start: hintObj.alpha, end: 0 },
+                    lifespan: 750,
+                  });
+                }),
+              ),
             }),
           ),
         ),
