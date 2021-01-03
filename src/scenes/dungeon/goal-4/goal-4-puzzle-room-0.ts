@@ -40,13 +40,6 @@ const flame = makeGreenFlame({
   nextPos: startPuzzlePos,
 });
 
-const puzzleState = defineSceneClass({
-  events: {
-    goal4Room0Puzzle: customEvent<Flow.PhaserNode>(),
-  },
-  data: {},
-});
-
 const solution: Phaser.Types.Math.Vector2Like[] = [
   { x: 2, y: 1 },
   { x: 3, y: 1 },
@@ -70,8 +63,7 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   let lines: Phaser.GameObjects.Line[] = [];
   let positions: Wp.WpId[] = [];
 
-  const emitState = (state: Flow.PhaserNode): Flow.PhaserNode =>
-    Flow.call(puzzleState.events.goal4Room0Puzzle.emit(state));
+  const state = Flow.makeSceneStates();
 
   const checkSolveState = () =>
     Flow.lazy(() => {
@@ -97,7 +89,7 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
           lines = [];
           positions = [];
         }),
-        emitState(flameWaitingState()),
+        state.nextFlow(flameWaitingState()),
       );
     });
 
@@ -127,7 +119,7 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
                 pos.y > 3,
             ),
           ),
-          action: emitState(checkSolveState()),
+          action: state.nextFlow(checkSolveState()),
         }),
         Flow.observe(
           Def.player.data.currentPos.dataSubject(scene).pipe(pairwise()),
@@ -153,16 +145,12 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const flameWaitingState = (): Flow.PhaserNode =>
     Flow.sequence(
       Flow.waitTrue(playerIsOnFlame(flame.instance)),
-      emitState(flameActiveState()),
+      state.nextFlow(flameActiveState()),
     );
 
   return Flow.parallel(
     ..._.map(flameThrowers, createFlameThrower),
-    Flow.observeSentinel(
-      puzzleState.events.goal4Room0Puzzle.subject,
-      _.identity,
-    ),
-    emitState(flameWaitingState()),
+    state.start(flameWaitingState()),
   );
 });
 
