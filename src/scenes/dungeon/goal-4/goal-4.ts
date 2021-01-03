@@ -14,6 +14,8 @@ import { createFlameAnim, showGreenFlame } from "./goal-4-defs";
 import { puzzleRoom2Config } from "./goal-4-puzzle-room-2";
 import { goal4PuzzleRoom5Config } from "./goal-4-puzzle-room-5";
 import { goal4Puzzle0 } from "./goal-4-puzzle-room-0";
+import { combineLatest } from "rxjs";
+import { map } from "rxjs/operators";
 
 const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config, goal4Puzzle0];
 
@@ -56,6 +58,19 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
         ),
       ),
     ),
+    Flow.lazy(() =>
+      Flow.whenTrueDo({
+        condition: combineLatest(
+          allFlames.map((flameDef) =>
+            flameDef.instance.instance.data.solved.dataSubject(scene),
+          ),
+        ).pipe(map((values) => values.every((x) => x))),
+        action: Npc.endGoalAltarPlaceholder({
+          n: 4,
+          wp: { room: 4, x: 1, y: 4 },
+        }),
+      }),
+    ),
   );
 });
 
@@ -68,7 +83,4 @@ const enableGoal4 = Flow.whenTrueDo({
   ),
 });
 
-export const dungeonGoal4: Flow.PhaserNode = Flow.parallel(
-  enableGoal4,
-  iceArmorAltar,
-);
+export const dungeonGoal4: Flow.PhaserNode = Flow.parallel(enableGoal4);

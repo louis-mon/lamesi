@@ -26,6 +26,8 @@ import {
 import { annotate } from "/src/helpers/typing";
 import { combineLatest } from "rxjs";
 import { bindAttackButton, endGoalAltarPlaceholder } from "./npc";
+import { events } from "../global-events";
+import { iceArmorAltar } from "./ice-armor";
 
 const dragonHeadClass = defineGoClass({
   events: {
@@ -309,7 +311,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         props: { alpha: 0 },
       }),
       Flow.call(toggleForbiddenPos(false)),
-      endGoalAltarPlaceholder({ n: 4, wp: goalPos }),
+      endGoalAltarPlaceholder({ n: 5, wp: goalPos }),
     );
 
   const downBody = (): Flow.PhaserNode =>
@@ -473,4 +475,9 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     ),
   );
+});
+
+export const enableGoal5 = Flow.whenTrueDo({
+  condition: events.dungeonPhase4.dataSubject,
+  action: Flow.parallel(iceArmorAltar),
 });

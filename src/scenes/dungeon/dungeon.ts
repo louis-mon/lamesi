@@ -39,7 +39,7 @@ import {
 } from "./skills";
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";
-import { dragon } from "./dragon";
+import { dragon, enableGoal5 } from "./dragon";
 import { dungeonGoal4 } from "./goal-4/goal-4";
 import { equipFireShield } from "./ice-armor";
 
@@ -82,6 +82,7 @@ export class DungeonScene extends Phaser.Scene {
               events.dungeonPhase1,
               events.dungeonPhase2,
               events.dungeonPhase3,
+              events.dungeonPhase4,
             ].forEach((trigger) => trigger.setValue(true)(this)),
           ),
         });
@@ -99,6 +100,7 @@ export class DungeonScene extends Phaser.Scene {
       dungeonGoal2,
       dungeonGoal3,
       dungeonGoal4,
+      enableGoal5,
       cheatCodeAction,
     );
     Flow.run(this, Flow.sequence(initActions, ambientActions));

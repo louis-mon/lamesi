@@ -22,6 +22,7 @@ export const events = defineData(
     dungeonPhase1: annotate<boolean>(),
     dungeonPhase2: annotate<boolean>(),
     dungeonPhase3: annotate<boolean>(),
+    dungeonPhase4: annotate<boolean>(),
   },
   "game",
 );
@@ -45,6 +46,7 @@ const startupEvents: DataMappingDefValues<typeof events> = {
   dungeonPhase1: false,
   dungeonPhase2: false,
   dungeonPhase3: false,
+  dungeonPhase4: false,
 };
 
 export const eventsHelpers = {
