@@ -5,6 +5,7 @@ import { LightScene } from "../lights/lights";
 import { DungeonScene } from "../dungeon/dungeon";
 import { MenuScene } from "../menu";
 import _ from "lodash";
+import { CreaturesScene } from "../creatures/creatures";
 
 export class HubScene extends Phaser.Scene {
   constructor() {
@@ -27,6 +28,10 @@ export class HubScene extends Phaser.Scene {
         create: () => new DungeonScene(),
         key: "dungeon",
         position: new Phaser.Math.Vector2(1200, 200),
+      },
+      {
+        create: () => new CreaturesScene(),
+        key: "creatures",
       },
     ];
     scenes.forEach((sceneDef, i) => {
