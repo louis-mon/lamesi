@@ -17,22 +17,3 @@ import {
 import { combineContext } from "/src/helpers/functional";
 import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
-
-export class CreaturesScene extends Phaser.Scene {
-  constructor() {
-    super({
-      key: "creatures",
-      loader: {
-        path: "assets/creatures",
-      },
-    });
-  }
-
-  preload() {
-    this.load.atlas("tree");
-  }
-
-  create() {
-    this.add.image(1400, 700, "tree", "bud");
-  }
-}
