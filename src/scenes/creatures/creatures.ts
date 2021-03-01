@@ -7,7 +7,7 @@ import {
   addPhysicsFromSprite,
 } from "/src/helpers/phaser";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
-import * as Flow from "/src/helpers/flow";
+import * as Flow from "/src/helpers/phaser-flow";
 import { annotate } from "/src/helpers/typing";
 import {
   defineGoClass,
@@ -17,6 +17,7 @@ import {
 import { combineContext } from "/src/helpers/functional";
 import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
+import { createTree } from "./tree";
 
 export class CreaturesScene extends Phaser.Scene {
   constructor() {
@@ -33,6 +34,6 @@ export class CreaturesScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.image(1400, 700, "tree", "bud");
+    Flow.run(this, createTree);
   }
 }
