@@ -87,5 +87,5 @@ const createBud = (params: CreateBudParams): Flow.PhaserNode =>
   });
 
 export const createTree: Flow.PhaserNode = Flow.lazy((scene) =>
-  createBud({ pos: new Vector2(1400, 700), level: 0, angleR: -Math.PI / 2 }),
+  createBud({ pos: new Vector2(1500, 900), level: 0, angleR: -Math.PI / 2 }),
 );
