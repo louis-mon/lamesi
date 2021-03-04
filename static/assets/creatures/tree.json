@@ -24,10 +24,154 @@
         "y": 0.5
       }
     },
-    "bud": {
+    "vine": {
       "frame": {
         "x": 2,
         "y": 134,
+        "w": 8,
+        "h": 78
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 78
+      },
+      "sourceSize": {
+        "w": 8,
+        "h": 78
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "eye-blank": {
+      "frame": {
+        "x": 2,
+        "y": 216,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "eyelid-1": {
+      "frame": {
+        "x": 14,
+        "y": 134,
+        "w": 57,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 0,
+        "w": 57,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "leaves": {
+      "frame": {
+        "x": 53,
+        "y": 2,
+        "w": 54,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 10,
+        "y": 0,
+        "w": 54,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "eyelid-2": {
+      "frame": {
+        "x": 53,
+        "y": 70,
+        "w": 57,
+        "h": 53
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 6,
+        "w": 57,
+        "h": 53
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "eyelid-3": {
+      "frame": {
+        "x": 111,
+        "y": 2,
+        "w": 56,
+        "h": 53
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 6,
+        "w": 56,
+        "h": 53
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "bud": {
+      "frame": {
+        "x": 2,
+        "y": 284,
         "w": 29,
         "h": 32
       },
@@ -55,8 +199,8 @@
     "image": "tree.png",
     "format": "RGBA8888",
     "size": {
-      "w": 51,
-      "h": 168
+      "w": 169,
+      "h": 318
     },
     "scale": 1
   }
