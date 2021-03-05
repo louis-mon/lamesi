@@ -65,21 +65,23 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
       )
       .setDepth(Def.dephts.treeVine)
       .setScale(1, 0);
+    const swing = swingController(vine);
+    const doSwing = (props: Partial<Phaser.Types.Tweens.TweenBuilderConfig>) =>
+      Flow.tween({
+        targets: swing,
+        ease: "sine.InOut",
+        yoyo: true,
+        ...props,
+        duration: (props.duration ?? 1) * 650,
+      });
     return Flow.sequence(
-      Flow.tween({ targets: bud, props: { scale: 0 }, duration: 400 }),
-      Flow.call(() => bud.destroy()),
-      Flow.tween({ targets: vine, props: { scaleY: 1 }, duration: 350 }),
-      Flow.repeatSequence(
-        ...[1, -1].map((value) =>
-          Flow.tween({
-            targets: swingController(vine),
-            props: { value },
-            duration: 1300,
-            ease: "sine",
-            yoyo: true,
-          }),
-        ),
+      Flow.parallel(
+        Flow.tween({ targets: bud, props: { scale: 0 }, duration: 400 }),
+        Flow.call(() => bud.destroy()),
+        Flow.tween({ targets: vine, props: { scaleY: 1 }, duration: 873 }),
       ),
+      doSwing({ props: { value: -1 }, duration: 1, yoyo: false }),
+      Flow.repeat(doSwing({ props: { value: 1 }, duration: 2 })),
     );
   });
 
