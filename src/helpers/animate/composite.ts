@@ -8,6 +8,32 @@ import {
 } from "../phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 
+export const followPosition = ({
+  getPos,
+  target,
+}: {
+  getPos: SceneContext<Phaser.Types.Math.Vector2Like>;
+  target: SceneContext<ManipulableObject>;
+}): Flow.PhaserNode =>
+  Flow.handlePostUpdate({
+    handler: (scene) => () => {
+      placeAt(target(scene), getPos(scene));
+    },
+  });
+
+export const followRotation = ({
+  getRotation,
+  target,
+}: {
+  getRotation: SceneContext<number>;
+  target: SceneContext<ManipulableObject>;
+}): Flow.PhaserNode =>
+  Flow.handlePostUpdate({
+    handler: (scene) => () => {
+      target(scene).setRotation(getRotation(scene));
+    },
+  });
+
 export const followObject = ({
   source,
   target,
@@ -16,12 +42,8 @@ export const followObject = ({
   source: SceneContext<ManipulableObject>;
   target: SceneContext<ManipulableObject>;
   offset: Vector2;
-}): Flow.PhaserNode => (scene) => (params) => {
-  const handler = () => {
-    placeAt(target(scene), getObjectPosition(source(scene)).add(offset));
-  };
-  scene.events.on(Phaser.Scenes.Events.POST_UPDATE, handler);
-  params.registerAbort(() =>
-    scene.events.removeListener(Phaser.Scenes.Events.POST_UPDATE, handler),
-  );
-};
+}): Flow.PhaserNode =>
+  followPosition({
+    target,
+    getPos: (scene) => getObjectPosition(source(scene)).add(offset),
+  });

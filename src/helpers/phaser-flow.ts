@@ -109,3 +109,23 @@ const arcadeGenericCollideSubject = (
 export const arcadeOverlapSubject = arcadeGenericCollideSubject("overlap");
 
 export const arcadeColliderSubject = arcadeGenericCollideSubject("collider");
+
+export const handleEvent = (makeParams: {
+  handler: SceneContext<() => void>;
+  emitter: SceneContext<Phaser.Events.EventEmitter>;
+  event: any;
+}): PhaserNode => (scene) => (params) => {
+  const handler = makeParams.handler(scene);
+  const emitter = makeParams.emitter(scene);
+  emitter.on(makeParams.event, handler);
+  params.registerAbort(() => emitter.removeListener(makeParams.event, handler));
+};
+
+export const handlePostUpdate = (makeParams: {
+  handler: SceneContext<() => void>;
+}): PhaserNode =>
+  handleEvent({
+    ...makeParams,
+    emitter: (scene) => scene.events,
+    event: Phaser.Scenes.Events.POST_UPDATE,
+  });

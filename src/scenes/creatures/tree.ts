@@ -6,6 +6,7 @@ import {
   placeAt,
   addPhysicsFromSprite,
   ManipulableObject,
+  getObjectPosition,
 } from "/src/helpers/phaser";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -22,6 +23,7 @@ import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
 import * as Def from "./def";
 import _ from "lodash";
+import { followPosition, followRotation } from "/src/helpers/animate/composite";
 
 type CreateBudParams = {
   pos: Vector2;
@@ -72,16 +74,81 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
         ease: "sine.InOut",
         yoyo: true,
         ...props,
-        duration: (props.duration ?? 1) * 650,
+        duration: (props.duration ?? 1) * 940,
       });
+
+    const leaves = scene.add
+      .sprite(0, 0, "tree", "leaves")
+      .setScale(0)
+      .setDepth(Def.dephts.treeVine);
+
+    const eyeblank = scene.add
+      .sprite(0, 0, "tree", "eye-blank")
+      .setDepth(Def.dephts.treeVine)
+      .setScale(0);
+
+    const eyelid = scene.add
+      .sprite(0, 0, "tree", "eyelid-1")
+      .setScale(0)
+      .setDepth(Def.dephts.treeVine);
+
+    const getVineEndpos = () =>
+      getObjectPosition(vine).add(new Vector2(_.last(vine.points)!));
+
+    const getVineEndRotation = () => {
+      const [a1, a2] = _.takeRight(vine.points, 2);
+      return new Vector2(a1).subtract(new Vector2(a2)).angle() - Math.PI / 2;
+    };
+
     return Flow.sequence(
       Flow.parallel(
         Flow.tween({ targets: bud, props: { scale: 0 }, duration: 400 }),
         Flow.call(() => bud.destroy()),
         Flow.tween({ targets: vine, props: { scaleY: 1 }, duration: 873 }),
       ),
-      doSwing({ props: { value: -1 }, duration: 1, yoyo: false }),
-      Flow.repeat(doSwing({ props: { value: 1 }, duration: 2 })),
+      Flow.parallel(
+        Flow.sequence(
+          doSwing({ props: { value: -1 }, duration: 1, yoyo: false }),
+          Flow.repeat(doSwing({ props: { value: 1 }, duration: 2 })),
+        ),
+        followPosition({
+          getPos: getVineEndpos,
+          target: () => leaves,
+        }),
+        followPosition({
+          getPos: getVineEndpos,
+          target: () => eyelid,
+        }),
+        followPosition({
+          getPos: getVineEndpos,
+          target: () => eyeblank,
+        }),
+        followRotation({
+          getRotation: getVineEndRotation,
+          target: () => leaves,
+        }),
+        followRotation({
+          getRotation: getVineEndRotation,
+          target: () => eyelid,
+        }),
+        followRotation({
+          getRotation: () => {
+            const pointer = scene.input.activePointer;
+            return pointer.position
+              .clone()
+              .subtract(getObjectPosition(eyeblank))
+              .angle();
+          },
+          target: () => eyeblank,
+        }),
+        Flow.sequence(
+          Flow.tween({ targets: leaves, props: { scale: 1.3, duration: 580 } }),
+          Flow.tween({
+            targets: [eyelid, eyeblank],
+            props: { scale: 1, duration: 580 },
+          }),
+        ),
+      ),
     );
   });
 
