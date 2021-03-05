@@ -181,9 +181,7 @@ const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
       emitZone: {
         type: "random",
         source: {
-          getRandomPoint(point: Vector2) {
-            Phaser.Math.RandomXY(point, 80);
-          },
+          getRandomPoint: (point) => Phaser.Math.RandomXY(point as Vector2, 80),
         },
       },
       tint: arrowParticleTint,
@@ -247,9 +245,8 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
     emitZone: {
       type: "random",
       source: {
-        getRandomPoint(point: Vector2) {
-          Phaser.Math.RandomXY(point, radius.r);
-        },
+        getRandomPoint: (point) =>
+          Phaser.Math.RandomXY(point as Vector2, radius.r),
       },
     },
   });
@@ -313,7 +310,7 @@ export const bellHiddenAction = ({
           -Wp.wpHalfSize.y * zoneScale,
           Wp.wpSize.x * zoneScale,
           Wp.wpSize.y * zoneScale,
-        ),
+        ) as Phaser.Types.GameObjects.Particles.RandomZoneSource,
       },
       x,
       y,

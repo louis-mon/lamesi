@@ -64,7 +64,7 @@ export const equipFireShield: Flow.PhaserNode = Flow.lazy((scene) => {
         emitZone: {
           type: "random",
           source: {
-            getRandomPoint(point: Vector2) {
+            getRandomPoint: (point) => {
               const r = shield.body.radius;
               Phaser.Math.RotateAroundDistance(
                 point,

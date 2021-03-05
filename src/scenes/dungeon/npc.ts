@@ -332,9 +332,7 @@ export const endGoalAltarPlaceholder = (params: { n: number; wp: Wp.WpDef }) =>
       menuHelpers.getMenuScene,
       Flow.lazy((scene) => {
         scene.add
-          .text(gameWidth / 2, 50, `Objectif ${params.n} atteint`, {
-            boundsAlignH: true,
-          })
+          .text(gameWidth / 2, 50, `Objectif ${params.n} atteint`)
           .setFontSize(30);
         const moon = scene.add.sprite(
           gameWidth / 2,

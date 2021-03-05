@@ -92,6 +92,19 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
       .setScale(0)
       .setDepth(Def.dephts.treeVine);
 
+    const eyeAnimKey = "blinkEye";
+    const eyeAnim = eyelid.anims.create({
+      key: eyeAnimKey,
+      defaultTextureKey: "tree",
+      duration: 150,
+      yoyo: true,
+      frames: [
+        { frame: "eyelid-1" },
+        { frame: "eyelid-2" },
+        { frame: "eyelid-3" },
+      ],
+    });
+
     const getVineEndpos = () =>
       getObjectPosition(vine).add(new Vector2(_.last(vine.points)!));
 
@@ -147,6 +160,12 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
             targets: [eyelid, eyeblank],
             props: { scale: 1, duration: 580 },
           }),
+        ),
+        Flow.repeatSequence(
+          Flow.waitTimer(3000),
+          Flow.call(() => eyelid.play(eyeAnimKey)),
+          Flow.waitTimer(400),
+          Flow.call(() => eyelid.play(eyeAnimKey)),
         ),
       ),
     );
