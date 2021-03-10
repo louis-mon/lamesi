@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "central": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 300,
+        "h": 30
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 300,
+        "h": 30
+      },
+      "sourceSize": {
+        "w": 300,
+        "h": 30
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-cli",
+    "version": "0.2.8",
+    "image": "central.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 304,
+      "h": 34
+    },
+    "scale": 1
+  }
+}
