@@ -186,7 +186,7 @@ const createBud = (params: CreateBudParams): Flow.PhaserNode =>
       const newAngle =
         params.angleR +
         dAngle * ((Math.PI * 2) / 3 / Math.pow(1.7, params.level));
-      const length = 238 / Math.pow(1.5, params.level);
+      const length = 200 / Math.pow(1.7, params.level);
       const targetPos = Phaser.Math.RotateTo(
         new Vector2(),
         params.pos.x,
@@ -220,7 +220,7 @@ const createBud = (params: CreateBudParams): Flow.PhaserNode =>
     };
 
     return Flow.sequence(
-      Flow.tween({ targets: bud, props: { scale: 1 }, duration: 500 }),
+      Flow.tween({ targets: bud, props: { scale: 1.3 }, duration: 500 }),
       Flow.wait(commonGoEvents.pointerdown(budInst.key).subject),
       Flow.lazy(() =>
         params.level === 0
@@ -234,7 +234,7 @@ const createBud = (params: CreateBudParams): Flow.PhaserNode =>
 
 export const createTree: Flow.PhaserNode = Flow.lazy((scene) =>
   createBud({
-    pos: new Vector2(1500, gameHeight - 100),
+    pos: new Vector2(gameWidth - 330, gameHeight - 85),
     level: 0,
     angleR: -Math.PI / 2,
   }),
