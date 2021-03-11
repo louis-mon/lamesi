@@ -224,7 +224,7 @@ export const declareGoInstance = <
   const getObj = goClass.getObj(key);
   return {
     config: config || ({} as Config),
-    create: (obj: Cl) => {
+    create: <SubCl extends Cl>(obj: SubCl) => {
       if (!_.isEmpty(goClass.data)) obj.setDataEnabled();
       return obj.setName(key);
     },

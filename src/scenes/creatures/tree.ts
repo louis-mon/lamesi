@@ -8,6 +8,7 @@ import {
   ManipulableObject,
   getObjectPosition,
   getPointerPosInMainCam,
+  SceneContext,
 } from "/src/helpers/phaser";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -25,6 +26,77 @@ import { map } from "rxjs/operators";
 import * as Def from "./def";
 import _ from "lodash";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
+import { number } from "purify-ts";
+
+const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    const eyelidInst = declareGoInstance(Def.movableElementClass, null);
+    const eyeblank = eyelidInst.create(
+      scene.add
+        .sprite(0, 0, "tree", "eye-blank")
+        .setDepth(Def.dephts.eye)
+        .setScale(0),
+    );
+
+    eyelidInst.data.move.setValue(initial)(scene);
+
+    const eyelid = scene.add
+      .sprite(0, 0, "tree", "eyelid-1")
+      .setScale(0)
+      .setDepth(Def.dephts.eye);
+
+    const eyeAnimKey = "blinkEye";
+    const eyeAnim = eyelid.anims.create({
+      key: eyeAnimKey,
+      defaultTextureKey: "tree",
+      duration: 150,
+      yoyo: true,
+      frames: [
+        { frame: "eyelid-1" },
+        { frame: "eyelid-2" },
+        { frame: "eyelid-3" },
+      ],
+    });
+
+    return Flow.parallel(
+      followPosition({
+        getPos: () => eyelidInst.data.move.value(scene).pos(),
+        target: () => eyelid,
+      }),
+      followPosition({
+        getPos: () => eyelidInst.data.move.value(scene).pos(),
+        target: () => eyeblank,
+      }),
+      followRotation({
+        getRotation: () => eyelidInst.data.move.value(scene).rotation(),
+        target: () => eyelid,
+      }),
+      followRotation({
+        getRotation: () => {
+          return getPointerPosInMainCam(scene)
+            .subtract(getObjectPosition(eyeblank))
+            .angle();
+        },
+        target: () => eyeblank,
+      }),
+      Flow.sequence(
+        Flow.tween({
+          targets: [eyelid, eyeblank],
+          props: { scale: 1, duration: 580 },
+        }),
+        Flow.waitTimer(3000),
+        Flow.call(
+          Def.sceneClass.events.elemReadyToPick.emit({ key: eyelidInst.key }),
+        ),
+      ),
+      Flow.repeatSequence(
+        Flow.waitTimer(3000),
+        Flow.call(() => eyelid.play(eyeAnimKey)),
+        Flow.waitTimer(400),
+        Flow.call(() => eyelid.play(eyeAnimKey)),
+      ),
+    );
+  });
 
 type CreateBudParams = {
   pos: Vector2;
@@ -83,29 +155,6 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
       .setScale(0)
       .setDepth(Def.dephts.treeVine);
 
-    const eyeblank = scene.add
-      .sprite(0, 0, "tree", "eye-blank")
-      .setDepth(Def.dephts.treeVine)
-      .setScale(0);
-
-    const eyelid = scene.add
-      .sprite(0, 0, "tree", "eyelid-1")
-      .setScale(0)
-      .setDepth(Def.dephts.treeVine);
-
-    const eyeAnimKey = "blinkEye";
-    const eyeAnim = eyelid.anims.create({
-      key: eyeAnimKey,
-      defaultTextureKey: "tree",
-      duration: 150,
-      yoyo: true,
-      frames: [
-        { frame: "eyelid-1" },
-        { frame: "eyelid-2" },
-        { frame: "eyelid-3" },
-      ],
-    });
-
     const getVineEndpos = () =>
       getObjectPosition(vine).add(new Vector2(_.last(vine.points)!));
 
@@ -129,42 +178,16 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
           getPos: getVineEndpos,
           target: () => leaves,
         }),
-        followPosition({
-          getPos: getVineEndpos,
-          target: () => eyelid,
-        }),
-        followPosition({
-          getPos: getVineEndpos,
-          target: () => eyeblank,
-        }),
         followRotation({
           getRotation: getVineEndRotation,
           target: () => leaves,
         }),
-        followRotation({
-          getRotation: getVineEndRotation,
-          target: () => eyelid,
-        }),
-        followRotation({
-          getRotation: () => {
-            return getPointerPosInMainCam(scene)
-              .subtract(getObjectPosition(eyeblank))
-              .angle();
-          },
-          target: () => eyeblank,
-        }),
         Flow.sequence(
           Flow.tween({ targets: leaves, props: { scale: 1.3, duration: 580 } }),
-          Flow.tween({
-            targets: [eyelid, eyeblank],
-            props: { scale: 1, duration: 580 },
+          createEye({
+            pos: getVineEndpos,
+            rotation: getVineEndRotation,
           }),
-        ),
-        Flow.repeatSequence(
-          Flow.waitTimer(3000),
-          Flow.call(() => eyelid.play(eyeAnimKey)),
-          Flow.waitTimer(400),
-          Flow.call(() => eyelid.play(eyeAnimKey)),
         ),
       ),
     );

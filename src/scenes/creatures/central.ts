@@ -37,9 +37,10 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 
   const spasms: Array<{ pos: number; t: number }> = [];
+  const bodyDiameter = 225;
 
   const updateBodyPoints = () => {
-    const circle = new Phaser.Curves.Ellipse(0, 0, 225);
+    const circle = new Phaser.Curves.Ellipse(0, 0, bodyDiameter);
     const points = circle.getPoints(0, 5).concat([circle.getStartPoint()]);
     spasms.forEach((spasm) => {
       const t = scene.time.now - spasm.t;
@@ -65,45 +66,91 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     body.setDirty();
   };
 
-  const catchElement = ({ pos }: { pos: Vector2 }): Flow.PhaserNode =>
+  const availableSlots = {
+    eye: _.range(8).map((i) =>
+      new Vector2()
+        .setToPolar(
+          -Math.PI / 2 + ((i % 2 === 0 ? i + 1 : -i) * Math.PI) / 14,
+          bodyDiameter - 58,
+        )
+        .add(getObjectPosition(body)),
+    ),
+  };
+
+  const catchElement = (pickEvent: { key: string }): Flow.PhaserNode =>
     Flow.lazy(() => {
-      const tentacle = scene.add.rope(pos.x, pos.y, "central", "tentacle");
-      const currentPos = pos.clone();
-      const getTargetPos = () => getPointerPosInMainCam(scene);
+      const pickableInst = declareGoInstance(
+        Def.movableElementClass,
+        pickEvent.key,
+      );
+      const rootPos = availableSlots.eye.shift();
+      if (!rootPos) return Flow.noop;
+      const tentacle = scene.add
+        .rope(rootPos.x, rootPos.y, "central", "tentacle")
+        .setDepth(Def.dephts.tentacle);
+      const currentPos = rootPos.clone();
 
       const tentacleState = Flow.makeSceneStates();
+
+      const retractTentacle: Flow.PhaserNode = Flow.lazy(() => {
+        return Flow.parallel(
+          Flow.handlePostUpdate({
+            handler: () => () => {
+              const diff = updateTentaclePos(rootPos);
+              if (diff < 2) {
+                currentPos.setFromObject(rootPos);
+                tentacleState.next(Flow.noop);
+              }
+            },
+          }),
+        );
+      });
+
+      const updateTentaclePos = (targetPos: Vector2) => {
+        const diff = targetPos.distance(currentPos);
+        const speed = targetPos
+          .clone()
+          .subtract(currentPos)
+          .normalize()
+          .scale(Phaser.Math.SmoothStep(diff, 50, 300) * 8 + 1);
+        currentPos.add(speed);
+        const endPoint = currentPos.clone().subtract(rootPos);
+        const path = new Phaser.Curves.Line(new Vector2(0, 0), endPoint);
+        const points = path.getPoints(undefined, 3).map((point) => {
+          const dist = point.length();
+          const delta = Math.cos(dist / 30 - scene.time.now / 650);
+          return point.clone().add(
+            path
+              .getTangent()
+              .normalizeLeftHand()
+              .scale(
+                delta *
+                  Phaser.Math.Interpolation.SmoothStep(
+                    Math.min(dist, endPoint.distance(point)) / 50,
+                    0,
+                    25,
+                  ),
+              ),
+          );
+        });
+        tentacle.setPoints(points);
+        tentacle.setDirty();
+        return diff;
+      };
 
       return tentacleState.start(
         Flow.handlePostUpdate({
           handler: () => () => {
-            const totalDiff = getTargetPos().distance(pos);
-            const diff = getTargetPos().distance(currentPos);
-            const speed = getTargetPos()
-              .subtract(currentPos)
-              .normalize()
-              .scale((diff / totalDiff) * 20);
-            currentPos.add(speed);
-            const endPoint = currentPos.clone().subtract(pos);
-            const path = new Phaser.Curves.Line(new Vector2(0, 0), endPoint);
-            const points = path.getPoints(undefined, 3).map((point) => {
-              const dist = point.length();
-              const delta = Math.cos(dist / 30 - scene.time.now / 650);
-              return point.clone().add(
-                path
-                  .getTangent()
-                  .normalizeLeftHand()
-                  .scale(
-                    delta *
-                      Phaser.Math.Interpolation.SmoothStep(
-                        Math.min(dist, endPoint.distance(point)) / 50,
-                        0,
-                        25,
-                      ),
-                  ),
-              );
-            });
-            tentacle.setPoints(points);
-            tentacle.setDirty();
+            const diff = updateTentaclePos(
+              getObjectPosition(pickableInst.getObj(scene)),
+            );
+            if (diff < 8) {
+              pickableInst.data.move.setValue({
+                pos: () => currentPos,
+                rotation: () => 0,
+              })(scene);
+              tentacleState.next(retractTentacle);
+            }
           },
         }),
       );
@@ -128,7 +175,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         }
       }),
     ),
+    Flow.observe(Def.sceneClass.events.elemReadyToPick.subject, catchElement),
     Flow.handlePostUpdate({ handler: () => updateBodyPoints }),
-    catchElement({ pos: getObjectPosition(body) }),
   );
 });
