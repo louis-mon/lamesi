@@ -7,6 +7,7 @@ import {
   addPhysicsFromSprite,
   ManipulableObject,
   getObjectPosition,
+  getPointerPosInMainCam,
 } from "/src/helpers/phaser";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -25,6 +26,7 @@ import * as Def from "./def";
 import _ from "lodash";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
 import { Maybe } from "purify-ts";
+import { makeStatesFlow } from "/src/helpers/animate/flow-state";
 
 export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
   const body = scene.add.rope(
@@ -63,6 +65,50 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     body.setDirty();
   };
 
+  const catchElement = ({ pos }: { pos: Vector2 }): Flow.PhaserNode =>
+    Flow.lazy(() => {
+      const tentacle = scene.add.rope(pos.x, pos.y, "central", "tentacle");
+      const currentPos = pos.clone();
+      const getTargetPos = () => getPointerPosInMainCam(scene);
+
+      const tentacleState = Flow.makeSceneStates();
+
+      return tentacleState.start(
+        Flow.handlePostUpdate({
+          handler: () => () => {
+            const totalDiff = getTargetPos().distance(pos);
+            const diff = getTargetPos().distance(currentPos);
+            const speed = getTargetPos()
+              .subtract(currentPos)
+              .normalize()
+              .scale((diff / totalDiff) * 20);
+            currentPos.add(speed);
+            const endPoint = currentPos.clone().subtract(pos);
+            const path = new Phaser.Curves.Line(new Vector2(0, 0), endPoint);
+            const points = path.getPoints(undefined, 3).map((point) => {
+              const dist = point.length();
+              const delta = Math.cos(dist / 30 - scene.time.now / 650);
+              return point.clone().add(
+                path
+                  .getTangent()
+                  .normalizeLeftHand()
+                  .scale(
+                    delta *
+                      Phaser.Math.Interpolation.SmoothStep(
+                        Math.min(dist, endPoint.distance(point)) / 50,
+                        0,
+                        25,
+                      ),
+                  ),
+              );
+            });
+            tentacle.setPoints(points);
+            tentacle.setDirty();
+          },
+        }),
+      );
+    });
+
   return Flow.parallel(
     Flow.repeatSequence(
       Flow.waitTimer(650),
@@ -83,5 +129,6 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
       }),
     ),
     Flow.handlePostUpdate({ handler: () => updateBodyPoints }),
+    catchElement({ pos: getObjectPosition(body) }),
   );
 });

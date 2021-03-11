@@ -53,3 +53,6 @@ export const makeAnimFrames = (
   frames: string[],
 ): Phaser.Types.Animations.AnimationFrame[] =>
   frames.map((frame) => ({ frame, key }));
+
+export const getPointerPosInMainCam = (scene: Phaser.Scene) =>
+  new Vector2(scene.input.activePointer.positionToCamera(scene.cameras.main));

@@ -23,6 +23,30 @@
         "x": 0.5,
         "y": 0.5
       }
+    },
+    "tentacle": {
+      "frame": {
+        "x": 306,
+        "y": 2,
+        "w": 99,
+        "h": 20
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 99,
+        "h": 20
+      },
+      "sourceSize": {
+        "w": 100,
+        "h": 20
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {
@@ -31,7 +55,7 @@
     "image": "central.png",
     "format": "RGBA8888",
     "size": {
-      "w": 304,
+      "w": 407,
       "h": 34
     },
     "scale": 1

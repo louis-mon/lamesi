@@ -7,6 +7,7 @@ import {
   addPhysicsFromSprite,
   ManipulableObject,
   getObjectPosition,
+  getPointerPosInMainCam,
 } from "/src/helpers/phaser";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -146,9 +147,7 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
         }),
         followRotation({
           getRotation: () => {
-            const pointer = scene.input.activePointer;
-            return pointer.position
-              .clone()
+            return getPointerPosInMainCam(scene)
               .subtract(getObjectPosition(eyeblank))
               .angle();
           },
