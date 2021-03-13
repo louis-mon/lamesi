@@ -44,15 +44,18 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
   const points = circle.getPoints(0, 5).concat([circle.getStartPoint()]);
   let tensionForce: number[] = [];
   const getBodyPointPos = (i: number) => i / points.length;
-  const getTensionMove = () =>
-    points.map((point, i) =>
-      point.clone().add(
-        circle
-          .getTangent(getBodyPointPos(i))
-          .normalizeRightHand()
-          .scale((tensionForce[i] * 45 * point.length()) / bodyDiameter),
-      ),
+  const getPointTensionMove = (point: Vector2, i: number) =>
+    point.clone().add(
+      circle
+        .getTangent(getBodyPointPos(i))
+        .normalizeRightHand()
+        .scale((tensionForce[i] * 45 * point.length()) / bodyDiameter),
     );
+  const getPointTensionMoveGlobal = (point: Vector2) => {
+    const localPoint = point.clone().subtract(getObjectPosition(body));
+    const i = Math.floor((localPoint.angle() / (Math.PI * 2)) * points.length);
+    return getPointTensionMove(localPoint, i).add(getObjectPosition(body));
+  };
 
   const updateBodyPoints = () => {
     const getForce = (spasm: Spasm) => {
@@ -79,19 +82,14 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     tensionForce = spasms.reduce(
       (acc, spasm) => {
         const force = getForce(spasm);
-        return _.range(0, points.length).map((i) => {
-          const pos = getBodyPointPos(i);
-          const dist = Math.min(
-            Math.abs(pos - spasm.pos),
-            1 - Math.abs(pos - spasm.pos),
-          );
-          return acc[i] + Math.cos(force.t / 70) * force.power(i);
-        });
+        return _.range(0, points.length).map(
+          (i) => acc[i] + Math.cos(force.t / 70) * force.power(i),
+        );
       },
       points.map(() => 0),
     );
 
-    body.setPoints(getTensionMove());
+    body.setPoints(points.map(getPointTensionMove));
     body.setColors(
       colorForce.map(
         (force) =>
@@ -129,13 +127,19 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const tentacleState = Flow.makeSceneStates();
 
+      const getBodyMove = () => getPointTensionMoveGlobal(rootPos);
+
       const retractTentacle: Flow.PhaserNode = Flow.lazy(() => {
         return Flow.parallel(
           Flow.handlePostUpdate({
             handler: () => () => {
               const diff = updateTentaclePos(rootPos);
               if (diff < 2) {
-                currentPos.setFromObject(rootPos);
+                tentacle.destroy();
+                pickableInst.data.move.setValue({
+                  pos: () => getBodyMove(),
+                  rotation: () => 0,
+                })(scene);
                 tentacleState.next(Flow.noop);
               }
             },
@@ -152,7 +156,10 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
           .scale(Phaser.Math.SmoothStep(diff, 50, 300) * 8 + 1);
         currentPos.add(speed);
         const endPoint = currentPos.clone().subtract(rootPos);
-        const path = new Phaser.Curves.Line(new Vector2(0, 0), endPoint);
+        const path = new Phaser.Curves.Line(
+          getBodyMove().subtract(rootPos),
+          endPoint,
+        );
         const points = path.getPoints(undefined, 3).map((point) => {
           const dist = point.length();
           const delta = Math.cos(dist / 30 - scene.time.now / 650);
