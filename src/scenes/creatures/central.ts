@@ -1,4 +1,5 @@
 import Vector2 = Phaser.Math.Vector2;
+import Color = Phaser.Display.Color;
 import {
   createSpriteAt,
   vecToXY,
@@ -36,33 +37,69 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     "central",
   );
 
-  const spasms: Array<{ pos: number; t: number }> = [];
+  type Spasm = { pos: number; t: number };
+  const spasms: Array<Spasm> = [];
   const bodyDiameter = 225;
+  const circle = new Phaser.Curves.Ellipse(0, 0, bodyDiameter);
+  const points = circle.getPoints(0, 5).concat([circle.getStartPoint()]);
+  let tensionForce: number[] = [];
+  const getBodyPointPos = (i: number) => i / points.length;
+  const getTensionMove = () =>
+    points.map((point, i) =>
+      point.clone().add(
+        circle
+          .getTangent(getBodyPointPos(i))
+          .normalizeRightHand()
+          .scale((tensionForce[i] * 45 * point.length()) / bodyDiameter),
+      ),
+    );
 
   const updateBodyPoints = () => {
-    const circle = new Phaser.Curves.Ellipse(0, 0, bodyDiameter);
-    const points = circle.getPoints(0, 5).concat([circle.getStartPoint()]);
-    spasms.forEach((spasm) => {
+    const getForce = (spasm: Spasm) => {
       const t = scene.time.now - spasm.t;
-      _.range(0, points.length).forEach((i) => {
-        const pos = i / points.length;
-        const point = points[i];
-        const dist = Math.min(
-          Math.abs(pos - spasm.pos),
-          1 - Math.abs(pos - spasm.pos),
-        );
-        const value =
-          Math.cos(t / 70) *
-          45 *
-          Math.exp(-((t / 500) ** 2)) *
-          Math.exp(-((dist / 0.1) ** 2));
-        points[i] = point
-          .clone()
-          .add(circle.getTangent(pos).normalizeRightHand().scale(value));
-      });
-    });
+      return {
+        t,
+        power: (i: number) => {
+          const pos = getBodyPointPos(i);
+          const dist = Math.min(
+            Math.abs(pos - spasm.pos),
+            1 - Math.abs(pos - spasm.pos),
+          );
+          return Math.exp(-((t / 500) ** 2)) * Math.exp(-((dist / 0.1) ** 2));
+        },
+      };
+    };
+    const colorForce = spasms.reduce(
+      (acc, spasm) => {
+        const force = getForce(spasm);
+        return _.range(0, points.length).map((i) => acc[i] + force.power(i));
+      },
+      points.map(() => 0),
+    );
+    tensionForce = spasms.reduce(
+      (acc, spasm) => {
+        const force = getForce(spasm);
+        return _.range(0, points.length).map((i) => {
+          const pos = getBodyPointPos(i);
+          const dist = Math.min(
+            Math.abs(pos - spasm.pos),
+            1 - Math.abs(pos - spasm.pos),
+          );
+          return acc[i] + Math.cos(force.t / 70) * force.power(i);
+        });
+      },
+      points.map(() => 0),
+    );
 
-    body.setPoints(points);
+    body.setPoints(getTensionMove());
+    body.setColors(
+      colorForce.map(
+        (force) =>
+          Color.ObjectToColor(
+            Color.Interpolate.RGBWithRGB(63, 255, 0, 255, 38, 200, 1, force),
+          ).color,
+      ),
+    );
     body.setDirty();
   };
 
