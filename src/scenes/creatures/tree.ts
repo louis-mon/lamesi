@@ -34,7 +34,7 @@ const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
     const eyeblank = eyelidInst.create(
       scene.add
         .sprite(0, 0, "tree", "eye-blank")
-        .setDepth(Def.dephts.eye)
+        .setDepth(Def.depths.eye)
         .setScale(0),
     );
 
@@ -43,7 +43,7 @@ const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
     const eyelid = scene.add
       .sprite(0, 0, "tree", "eyelid-1")
       .setScale(0)
-      .setDepth(Def.dephts.eye);
+      .setDepth(Def.depths.eye);
 
     const eyeAnimKey = "blinkEye";
     const eyeAnim = eyelid.anims.create({
@@ -138,7 +138,7 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
         _.range(30).map((y) => ({ x: 0, y: y * 4 })),
         false,
       )
-      .setDepth(Def.dephts.treeVine)
+      .setDepth(Def.depths.treeVine)
       .setScale(1, 0);
     const swing = swingController(vine);
     const doSwing = (props: Partial<Phaser.Types.Tweens.TweenBuilderConfig>) =>
@@ -153,7 +153,7 @@ const bloomEye = ({ bud }: { bud: ManipulableObject }): Flow.PhaserNode =>
     const leaves = scene.add
       .sprite(0, 0, "tree", "leaves")
       .setScale(0)
-      .setDepth(Def.dephts.treeVine);
+      .setDepth(Def.depths.treeVine);
 
     const getVineEndpos = () =>
       getObjectPosition(vine).add(new Vector2(_.last(vine.points)!));
@@ -199,7 +199,7 @@ const createBud = (params: CreateBudParams): Flow.PhaserNode =>
     const bud = createSpriteAt(scene, params.pos, "tree", "bud")
       .setScale(0)
       .setRotation(displayRot(params.angleR))
-      .setDepth(Def.dephts.treeBud)
+      .setDepth(Def.depths.treeBud)
       .setInteractive();
     const budInst = declareGoInstance(spriteClassKind, null);
     budInst.create(bud);
@@ -217,7 +217,7 @@ const createBud = (params: CreateBudParams): Flow.PhaserNode =>
         length,
       );
       const trunk = createSpriteAt(scene, params.pos, "tree", "trunk")
-        .setDepth(Def.dephts.treeTrunk)
+        .setDepth(Def.depths.treeTrunk)
         .setRotation(displayRot(newAngle))
         .setOrigin(0.5, 1);
       trunk.setScale((length / trunk.height) * 0.7, 0);

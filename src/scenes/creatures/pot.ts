@@ -41,18 +41,18 @@ const totalDepth = 5;
 const totalBuds = 3;
 const nbPtPerFloor = 1 + (totalBuds - 1) * 2 ** (totalDepth / 2);
 const potPosition = new Vector2(400, 300);
-const hspaceDepth = 300 / (totalDepth - 1);
+const hspaceDepth = 250 / (totalDepth - 1);
 
 export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
   const potCut = createImageAt(scene, potPosition, "pot", "pot-cut").setDepth(
-    Def.dephts.potCut,
+    Def.depths.potCut,
   );
   const potFront = createImageAt(
     scene,
     potPosition,
     "pot",
     "pot-front",
-  ).setDepth(Def.dephts.potFront);
+  ).setDepth(Def.depths.potFront);
 
   const anchorPositions = _.range(totalDepth).map((depth) =>
     _.range(nbPtPerFloor).map((posInFloor) =>
@@ -78,7 +78,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         "bud",
       )
         .setOrigin(0.5, 1)
-        .setDepth(Def.dephts.potBud)
+        .setDepth(Def.depths.potBud)
         .setInteractive(),
       initialPos,
     };
@@ -141,7 +141,6 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
                 const nextPos =
                   anchorPositions[rootStep.depth][rootStep.position];
                 const destPos = nextPos.clone().subtract(lastPos);
-                const splineHspace = hspaceDepth / 5;
                 const spline = new Phaser.Curves.CubicBezier(
                   new Vector2(0, 0),
                   new Vector2(0, hspaceDepth / 2),
@@ -151,7 +150,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
                 const rootObj = scene.add
                   .rope(lastPos.x, lastPos.y, "pot", "root")
                   .setVisible(false)
-                  .setDepth(Def.dephts.potRoot);
+                  .setDepth(Def.depths.potRoot);
                 let rootExtent = 0;
                 const ropeController = {
                   get value() {

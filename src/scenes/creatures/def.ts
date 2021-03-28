@@ -7,7 +7,7 @@ import {
 import { ManipulableObject } from "/src/helpers/phaser";
 import { annotate } from "/src/helpers/typing";
 
-export const dephts = {
+export const depths = {
   treeTrunk: 10,
   treeVine: 11,
   treeBud: 20,

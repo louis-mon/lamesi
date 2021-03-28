@@ -120,7 +120,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
       if (!rootPos) return Flow.noop;
       const tentacle = scene.add
         .rope(rootPos.x, rootPos.y, "central", "tentacle")
-        .setDepth(Def.dephts.tentacle);
+        .setDepth(Def.depths.tentacle);
       const currentPos = rootPos.clone();
 
       const tentacleState = Flow.makeSceneStates();
