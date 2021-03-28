@@ -12,6 +12,12 @@ export const dephts = {
   treeVine: 11,
   treeBud: 20,
   treeLeaves: 30,
+
+  potCut: 10,
+  potRoot: 19,
+  potBud: 20,
+  potFront: 30,
+
   tentacle: 40,
   eye: 50,
 };

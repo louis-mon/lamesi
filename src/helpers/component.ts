@@ -210,6 +210,11 @@ export const commonGoEvents = defineEvents(
   "go",
 );
 
+export const observeCommonGoEvent = (
+  go: Phaser.GameObjects.GameObject,
+  event: keyof typeof commonGoEvents,
+) => fromEvent(go, event);
+
 export const declareGoInstance = <
   Cl extends Phaser.GameObjects.GameObject,
   Events extends DefineEventMappingParams,

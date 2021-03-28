@@ -64,10 +64,8 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         t,
         power: (i: number) => {
           const pos = getBodyPointPos(i);
-          const dist = Math.min(
-            Math.abs(pos - spasm.pos),
-            1 - Math.abs(pos - spasm.pos),
-          );
+          const distToPos = Math.abs(pos - spasm.pos);
+          const dist = Math.min(distToPos, 1 - distToPos);
           return Math.exp(-((t / 500) ** 2)) * Math.exp(-((dist / 0.1) ** 2));
         },
       };

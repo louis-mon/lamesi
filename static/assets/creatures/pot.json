@@ -1,0 +1,111 @@
+{
+  "frames": {
+    "pot-cut": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 427,
+        "h": 332
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 427,
+        "h": 332
+      },
+      "sourceSize": {
+        "w": 427,
+        "h": 332
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "pot-front": {
+      "frame": {
+        "x": 433,
+        "y": 2,
+        "w": 427,
+        "h": 297
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 35,
+        "w": 427,
+        "h": 297
+      },
+      "sourceSize": {
+        "w": 427,
+        "h": 332
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "root": {
+      "frame": {
+        "x": 864,
+        "y": 2,
+        "w": 200,
+        "h": 11
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 15,
+        "w": 200,
+        "h": 11
+      },
+      "sourceSize": {
+        "w": 200,
+        "h": 40
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "bud": {
+      "frame": {
+        "x": 1068,
+        "y": 2,
+        "w": 43,
+        "h": 50
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 3,
+        "y": 0,
+        "w": 43,
+        "h": 50
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-cli",
+    "version": "0.2.8",
+    "image": "pot.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1113,
+      "h": 336
+    },
+    "scale": 1
+  }
+}

@@ -19,6 +19,7 @@ import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
 import { createTree } from "./tree";
 import { createCentralCreature } from "./central";
+import { createPot } from "./pot";
 
 export class CreaturesScene extends Phaser.Scene {
   constructor() {
@@ -33,9 +34,10 @@ export class CreaturesScene extends Phaser.Scene {
   preload() {
     this.load.atlas("tree");
     this.load.atlas("central");
+    this.load.atlas("pot");
   }
 
   create() {
-    Flow.run(this, Flow.parallel(createTree, createCentralCreature));
+    Flow.run(this, Flow.parallel(createTree, createPot, createCentralCreature));
   }
 }
