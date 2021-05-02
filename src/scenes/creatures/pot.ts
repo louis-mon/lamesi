@@ -68,6 +68,9 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     ),
   );
 
+  const getPositionOfRootState = (state: RootStepState) =>
+    anchorPositions[state.depth][state.position];
+
   const budStates = _.range(totalBuds).map((i) => {
     const initialPos = Math.floor(((i + 0.5) / totalBuds) * nbPtPerFloor);
     return {
@@ -125,6 +128,40 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         ],
       );
 
+      const developBulbs = Flow.lazy(() =>
+        Flow.parallel(
+          ..._.last(rootPaths)!.map((rootStep) => {
+            const bulbPos = getPositionOfRootState(rootStep);
+            const bulb = scene.add
+              .sprite(bulbPos.x, bulbPos.y, "pot", "root-bulb")
+              .setDepth(Def.depths.potRoot)
+              .setScale(0.1)
+              .setInteractive();
+
+            return Flow.parallel(
+              Flow.sequence(
+                Flow.tween({
+                  targets: bulb,
+                  props: { scale: 0.5 },
+                  duration: 200,
+                }),
+                Flow.tween({
+                  targets: bulb,
+                  props: { scale: 1.2 },
+                  ease: Phaser.Math.Easing.Sine.In,
+                  yoyo: true,
+                  repeat: -1,
+                  duration: 410,
+                }),
+              ),
+              Flow.observe(observeCommonGoEvent(bulb, "pointerdown"), () =>
+                potState.nextFlow(Flow.noop),
+              ),
+            );
+          }),
+        ),
+      );
+
       return Flow.sequence(
         Flow.tween({
           targets: potFront,
@@ -136,10 +173,8 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
             ...rootSteps.map((rootStep) =>
               Flow.lazy(() => {
                 if (rootStep.prev === null) return Flow.noop;
-                const lastPos =
-                  anchorPositions[rootStep.prev.depth][rootStep.prev.position];
-                const nextPos =
-                  anchorPositions[rootStep.depth][rootStep.position];
+                const lastPos = getPositionOfRootState(rootStep.prev);
+                const nextPos = getPositionOfRootState(rootStep);
                 const destPos = nextPos.clone().subtract(lastPos);
                 const spline = new Phaser.Curves.CubicBezier(
                   new Vector2(0, 0),
@@ -168,11 +203,13 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
                 return Flow.tween({
                   targets: ropeController,
                   props: { value: 1 },
+                  duration: 350,
                 });
               }),
             ),
           ),
         ),
+        developBulbs,
       );
     });
 
