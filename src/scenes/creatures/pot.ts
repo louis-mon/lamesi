@@ -31,15 +31,22 @@ import _ from "lodash";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
 import { Maybe } from "purify-ts";
 import { makeStatesFlow } from "/src/helpers/animate/flow-state";
+import { MovedCurve } from "/src/helpers/math/curves";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
+  curve: Phaser.Curves.Curve;
+};
+
+type BudState = {
+  sprite: Phaser.GameObjects.Sprite;
+  initialPos: number;
 };
 
 type RootStepState = {
   position: number;
   depth: number;
-  bud: unknown;
+  bud: BudState;
   prev: RootStepState | null;
   bulb?: Phaser.GameObjects.Sprite;
   vine?: VineController;
@@ -70,6 +77,26 @@ const makeRopeCurveController = ({
       rootExtent = newValue;
       rope.setPoints(_.take(points, Math.max(2, rootExtent * points.length)));
       rope.setDirty().setVisible(true);
+    },
+  };
+};
+
+const makePathFollower = ({
+  curve,
+  obj,
+}: {
+  curve: Phaser.Curves.Path;
+  obj: Phaser.GameObjects.Components.Transform;
+}) => {
+  let extent = 1;
+  return {
+    get value() {
+      return extent;
+    },
+    set value(newValue: number) {
+      const pos = curve.getPoint(newValue);
+      extent = newValue;
+      placeAt(obj, pos);
     },
   };
 };
@@ -136,11 +163,68 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         ...lastSteps.map((lastStep) =>
           Flow.tween({
             targets: lastStep.bulb,
-            props: { scale: lastStep === stepClicked && isRightBulb ? 2 : 0 },
+            props: { scale: 0 },
             duration: 500,
           }),
         ),
       );
+
+      const bulbClicked = stepClicked.bulb!;
+
+      const getStepsFromStart = (step: RootStepState): RootStepState[] =>
+        Maybe.fromNullable(step.prev)
+          .map(getStepsFromStart)
+          .orDefault([])
+          .concat(step);
+      const stepsFromStart = getStepsFromStart(stepClicked);
+
+      const reverseCurve = new Phaser.Curves.Path(300, 250);
+      stepsFromStart.forEach((step) => {
+        Maybe.fromNullable(step.vine).ifJust((vine) =>
+          reverseCurve.add(
+            new MovedCurve(vine.curve, getPositionOfRootState(step.prev!)),
+          ),
+        );
+      });
+
+      const budReceiveEnergyDuration = 60;
+      const moveEnergy = Flow.lazy(() => {
+        const energyObj = createImageAt(
+          scene,
+          getObjectPosition(bulbClicked),
+          bulbClicked.texture.key,
+          bulbClicked.frame.name,
+        ).setDepth(Def.depths.potRoot);
+        return Flow.sequence(
+          Flow.tween({
+            targets: makePathFollower({ curve: reverseCurve, obj: energyObj }),
+            props: { value: 0 },
+            duration: 1300,
+          }),
+          Flow.call(() => energyObj.destroy()),
+          Flow.tween({
+            targets: stepClicked.bud.sprite,
+            props: { scale: 1.4 },
+            duration: budReceiveEnergyDuration,
+            yoyo: true,
+          }),
+        );
+      });
+
+      const moveAllEnergyRec = (n: number): Flow.PhaserNode =>
+        Flow.lazy(() =>
+          n === 0
+            ? Flow.noop
+            : Flow.parallel(
+                moveEnergy,
+                Flow.sequence(
+                  Flow.waitTimer(budReceiveEnergyDuration * 3),
+                  moveAllEnergyRec(n - 1),
+                ),
+              ),
+        );
+
+      const moveAllEnergy = isRightBulb ? moveAllEnergyRec(8) : Flow.noop;
 
       const retractVines = rootPaths
         .slice()
@@ -155,7 +239,10 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
           ),
         );
 
-      return Flow.sequence(retractBulbs, ...retractVines);
+      return Flow.sequence(
+        Flow.parallel(moveAllEnergy, retractBulbs),
+        ...retractVines,
+      );
     });
 
   const developRoots = (fromBud: unknown): Flow.PhaserNode =>
@@ -248,12 +335,13 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
                 const lastPos = getPositionOfRootState(rootStep.prev);
                 const nextPos = getPositionOfRootState(rootStep);
                 const destPos = nextPos.clone().subtract(lastPos);
-                const spline = new Phaser.Curves.CubicBezier(
+                const splinePoints: [Vector2, Vector2, Vector2, Vector2] = [
                   new Vector2(0, 0),
                   new Vector2(0, hspaceDepth / 2),
                   new Vector2(destPos.x, hspaceDepth / 2),
                   destPos,
-                );
+                ];
+                const spline = new Phaser.Curves.CubicBezier(...splinePoints);
                 const rootObj = scene.add
                   .rope(lastPos.x, lastPos.y, "pot", "root")
                   .setVisible(false)
@@ -265,6 +353,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
                 });
                 const duration = 450;
                 rootStep.vine = {
+                  curve: spline,
                   retract: () =>
                     Flow.sequence(
                       Flow.tween({
