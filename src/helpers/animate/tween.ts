@@ -1,9 +1,9 @@
 import { ManipulableObject } from "/src/helpers/phaser";
 import _ from "lodash";
 import Phaser from "phaser";
-import Vector2Like = Phaser.Types.Math.Vector2Like;
 
 import * as Flow from "/src/helpers/phaser-flow";
+import Vector2Like = Phaser.Types.Math.Vector2Like;
 import Vector2 = Phaser.Math.Vector2;
 
 export const tintProxy = (source: Phaser.GameObjects.Components.Tint) =>
@@ -66,4 +66,26 @@ export const memoryCyclicTween = ({
       }),
     ),
   );
+};
+
+/*
+For usage in a phaser tween
+ */
+export const makeControlledValue = <T>({
+  startValue,
+  setter,
+}: {
+  startValue: T;
+  setter: (t: T) => void;
+}) => {
+  let currentValue = startValue;
+  return {
+    get value() {
+      return currentValue;
+    },
+    set value(newValue: T) {
+      currentValue = newValue;
+      setter(newValue);
+    },
+  };
 };

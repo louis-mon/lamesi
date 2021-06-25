@@ -1,37 +1,20 @@
 import Phaser from "phaser";
-import Vector2 = Phaser.Math.Vector2;
-import Color = Phaser.Display.Color;
 
 import {
-  createSpriteAt,
-  vecToXY,
   createImageAt,
-  placeAt,
-  addPhysicsFromSprite,
-  ManipulableObject,
+  createSpriteAt,
   getObjectPosition,
-  getPointerPosInMainCam,
+  placeAt,
 } from "/src/helpers/phaser";
-import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import * as Flow from "/src/helpers/phaser-flow";
-import { annotate } from "/src/helpers/typing";
-import {
-  defineGoClass,
-  declareGoInstance,
-  customEvent,
-  spriteClassKind,
-  commonGoEvents,
-  observeCommonGoEvent,
-} from "/src/helpers/component";
-import { combineContext, getProp } from "/src/helpers/functional";
-import { combineLatest, fromEvent } from "rxjs";
-import { map } from "rxjs/operators";
+import { observeCommonGoEvent } from "/src/helpers/component";
+import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
 import _ from "lodash";
-import { followPosition, followRotation } from "/src/helpers/animate/composite";
 import { Maybe } from "purify-ts";
-import { makeStatesFlow } from "/src/helpers/animate/flow-state";
 import { MovedCurve } from "/src/helpers/math/curves";
+import { makeControlledValue } from "/src/helpers/animate/tween";
+import Vector2 = Phaser.Math.Vector2;
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -41,6 +24,8 @@ type VineController = {
 type BudState = {
   sprite: Phaser.GameObjects.Sprite;
   initialPos: number;
+  readyToBloom: boolean;
+  bloomParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
 };
 
 type RootStepState = {
@@ -67,18 +52,14 @@ const makeRopeCurveController = ({
   curve: Phaser.Curves.Curve;
   rope: Phaser.GameObjects.Rope;
 }) => {
-  let rootExtent = 0;
   const points = curve.getPoints(50);
-  return {
-    get value() {
-      return rootExtent;
-    },
-    set value(newValue: number) {
-      rootExtent = newValue;
+  return makeControlledValue({
+    startValue: 0,
+    setter: (rootExtent) => {
       rope.setPoints(_.take(points, Math.max(2, rootExtent * points.length)));
       rope.setDirty().setVisible(true);
     },
-  };
+  });
 };
 
 const makePathFollower = ({
@@ -88,17 +69,13 @@ const makePathFollower = ({
   curve: Phaser.Curves.Path;
   obj: Phaser.GameObjects.Components.Transform;
 }) => {
-  let extent = 1;
-  return {
-    get value() {
-      return extent;
-    },
-    set value(newValue: number) {
-      const pos = curve.getPoint(newValue);
-      extent = newValue;
+  return makeControlledValue({
+    startValue: 1,
+    setter: (extent) => {
+      const pos = curve.getPoint(extent);
       placeAt(obj, pos);
     },
-  };
+  });
 };
 
 export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
@@ -129,7 +106,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
   const getPositionOfRootState = (state: RootStepState) =>
     anchorPositions[state.depth][state.position];
 
-  const budStates = _.range(totalBuds).map((i) => {
+  const budStates = _.range(totalBuds).map<BudState>((i) => {
     const initialPos = Math.floor(((i + 0.5) / totalBuds) * nbPtPerFloor);
     return {
       sprite: createSpriteAt(
@@ -142,10 +119,15 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         .setDepth(Def.depths.potBud)
         .setInteractive(),
       initialPos,
+      readyToBloom: false,
     };
   });
 
   const potState = Flow.makeSceneStates();
+
+  const bloomParticles = scene.add
+    .particles("pot", "root-bulb")
+    .setDepth(Def.depths.potFront);
 
   const activateBulb = ({
     rootPaths,
@@ -154,7 +136,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
   }: {
     rootPaths: RootStepsDeployed;
     stepClicked: RootStepState;
-    fromBud: unknown;
+    fromBud: BudState;
   }): Flow.PhaserNode =>
     Flow.lazy(() => {
       const isRightBulb = stepClicked.bud === fromBud;
@@ -178,7 +160,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
           .concat(step);
       const stepsFromStart = getStepsFromStart(stepClicked);
 
-      const reverseCurve = new Phaser.Curves.Path(300, 250);
+      const reverseCurve = new Phaser.Curves.Path(0, 0);
       stepsFromStart.forEach((step) => {
         Maybe.fromNullable(step.vine).ifJust((vine) =>
           reverseCurve.add(
@@ -226,6 +208,19 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const moveAllEnergy = isRightBulb ? moveAllEnergyRec(8) : Flow.noop;
 
+      const makeReadyToBloom = () => {
+        fromBud.bloomParticles = bloomParticles.createEmitter({
+          follow: fromBud.sprite,
+          "followOffset.y": fromBud.sprite.height / 2,
+          alpha: { end: 0, start: 1 },
+          angle: { min: -25, max: -155 },
+          scale: { start: 0.7, end: 0 },
+          lifespan: 500,
+          frequency: 70,
+          speed: 100,
+        });
+      };
+
       const retractVines = rootPaths
         .slice()
         .reverse()
@@ -241,11 +236,12 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
 
       return Flow.sequence(
         Flow.parallel(moveAllEnergy, retractBulbs),
+        Flow.call(makeReadyToBloom),
         ...retractVines,
       );
     });
 
-  const developRoots = (fromBud: unknown): Flow.PhaserNode =>
+  const developRoots = (fromBud: BudState): Flow.PhaserNode =>
     Flow.lazy(() => {
       const rootPaths = _.range(1, totalDepth).reduce(
         (prevStates, depth) =>
