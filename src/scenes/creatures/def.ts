@@ -35,9 +35,17 @@ export const movableElementClass = defineGoClass({
   events: {},
 });
 
+export type BodyPart = "eye" | "mouth";
+
+export const bodyPartsConfig: { [key in BodyPart]: { total: number } } = {
+  eye: { total: 8 },
+  mouth: { total: 3 },
+};
+
+export type ElemReadyToPickParams = { key: string; bodyPart: BodyPart };
 export const sceneClass = defineSceneClass({
   events: {
-    elemReadyToPick: customEvent<{ key: string }>(),
+    elemReadyToPick: customEvent<ElemReadyToPickParams>(),
   },
   data: {},
 });

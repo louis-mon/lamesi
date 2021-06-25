@@ -7,7 +7,10 @@ import {
   placeAt,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
-import { observeCommonGoEvent } from "/src/helpers/component";
+import {
+  declareGoInstance,
+  observeCommonGoEvent,
+} from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
 import _ from "lodash";
@@ -15,6 +18,7 @@ import { Maybe } from "purify-ts";
 import { MovedCurve } from "/src/helpers/math/curves";
 import { makeControlledValue } from "/src/helpers/animate/tween";
 import Vector2 = Phaser.Math.Vector2;
+import { followObject, followPosition } from "/src/helpers/animate/composite";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -385,10 +389,88 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
           console.log(bud.initialPos, bud.readyToBloom);
           return Flow.sequence(
             Flow.wait(observeCommonGoEvent(bud.sprite, "pointerdown")),
-            potState.nextFlow(developRoots(bud)),
+            potState.nextFlow(bloomAll()),
           );
         }),
     );
+
+  const bloomMandibles = (fromBud: BudState): Flow.PhaserNode => {
+    const mandibleInst = declareGoInstance(Def.movableElementClass, null);
+    const mandibleRoot = mandibleInst.create(
+      scene.add.circle(fromBud.sprite.x, fromBud.sprite.y).setVisible(false),
+    );
+
+    mandibleInst.data.move.setValue({
+      pos: () => getObjectPosition(fromBud.sprite),
+      rotation: () => 0,
+    })(scene);
+
+    const singleMandible = (flip: boolean) => {
+      const mandible = scene.add
+        .image(0, 0, "pot", "mandible")
+        .setDepth(Def.depths.potBud)
+        .setScale(0)
+        .setFlipX(flip)
+        .setOrigin(1, 1);
+      return Flow.parallel(
+        followObject({
+          source: () => mandibleRoot,
+          target: () => mandible,
+          offset: new Vector2(),
+        }),
+        Flow.sequence(
+          Flow.tween({
+            targets: mandible,
+            props: {
+              scale: 1,
+            },
+            duration: 400,
+          }),
+          Flow.tween({
+            targets: mandible,
+            props: {
+              angle: -30 * (flip ? -1 : 1),
+            },
+            duration: 480,
+            yoyo: true,
+            repeat: -1,
+          }),
+        ),
+      );
+    };
+
+    const retractBud = Flow.parallel(
+      Flow.call(() => fromBud.bloomParticles?.stop()),
+      Flow.tween({
+        targets: fromBud.sprite,
+        props: { scale: 0 },
+        duration: 620,
+      }),
+    );
+
+    return Flow.parallel(
+      followPosition({
+        getPos: () => mandibleInst.data.move.value(scene).pos(),
+        target: () => mandibleRoot,
+      }),
+      retractBud,
+      singleMandible(false),
+      singleMandible(true),
+      Flow.sequence(
+        Flow.waitTimer(4000),
+        Flow.call(
+          Def.sceneClass.events.elemReadyToPick.emit({
+            key: mandibleInst.key,
+            bodyPart: "mouth",
+          }),
+        ),
+      ),
+    );
+  };
+
+  const bloomAll = () => {
+    return Flow.parallel(...budStates.map(bloomMandibles));
+  };
 
   return potState.start(waitForBulbClicked());
 });

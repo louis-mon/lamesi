@@ -99,8 +99,8 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     body.setDirty();
   };
 
-  const availableSlots = {
-    eye: _.range(8).map((i) =>
+  const availableSlots: { [key in Def.BodyPart]: Vector2[] } = {
+    eye: _.range(Def.bodyPartsConfig.eye.total).map((i) =>
       new Vector2()
         .setToPolar(
           -Math.PI / 2 + ((i % 2 === 0 ? i + 1 : -i) * Math.PI) / 14,
@@ -108,15 +108,22 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         )
         .add(getObjectPosition(body)),
     ),
+    mouth: _.range(Def.bodyPartsConfig.mouth.total).map((i) =>
+      new Vector2()
+        .setToPolar(((Math.PI * 2) / 3) * i, bodyDiameter)
+        .add(getObjectPosition(body)),
+    ),
   };
 
-  const catchElement = (pickEvent: { key: string }): Flow.PhaserNode =>
+  const catchElement = (
+    pickEvent: Def.ElemReadyToPickParams,
+  ): Flow.PhaserNode =>
     Flow.lazy(() => {
       const pickableInst = declareGoInstance(
         Def.movableElementClass,
         pickEvent.key,
       );
-      const rootPos = availableSlots.eye.shift();
+      const rootPos = availableSlots[pickEvent.bodyPart].shift();
       if (!rootPos) return Flow.noop;
       const tentacle = scene.add
         .rope(rootPos.x, rootPos.y, "central", "tentacle")

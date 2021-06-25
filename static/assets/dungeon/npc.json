@@ -891,7 +891,7 @@
   },
   "meta": {
     "app": "http://github.com/odrick/free-tex-packer-cli",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "image": "npc.png",
     "format": "RGBA8888",
     "size": {

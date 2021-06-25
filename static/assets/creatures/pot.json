@@ -96,9 +96,57 @@
         "y": 0.5
       }
     },
-    "root-bulb": {
+    "mandible": {
       "frame": {
         "x": 864,
+        "y": 17,
+        "w": 40,
+        "h": 100
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 100
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 100
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "mandible": {
+      "frame": {
+        "x": 908,
+        "y": 17,
+        "w": 39,
+        "h": 100
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 0,
+        "w": 39,
+        "h": 100
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 100
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "root-bulb": {
+      "frame": {
+        "x": 951,
         "y": 17,
         "w": 20,
         "h": 20
@@ -123,7 +171,7 @@
   },
   "meta": {
     "app": "http://github.com/odrick/free-tex-packer-cli",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "image": "pot.png",
     "format": "RGBA8888",
     "size": {

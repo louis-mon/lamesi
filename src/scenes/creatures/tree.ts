@@ -86,7 +86,10 @@ const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
         }),
         Flow.waitTimer(3000),
         Flow.call(
-          Def.sceneClass.events.elemReadyToPick.emit({ key: eyelidInst.key }),
+          Def.sceneClass.events.elemReadyToPick.emit({
+            key: eyelidInst.key,
+            bodyPart: "eye",
+          }),
         ),
       ),
       Flow.repeatSequence(

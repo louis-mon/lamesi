@@ -1,4 +1,4 @@
-import * as Phaser from 'phaser';
+import * as Phaser from "phaser";
 
 export class MovedCurve extends Phaser.Curves.Curve {
   private fromCurve: Phaser.Curves.Curve;
@@ -10,6 +10,8 @@ export class MovedCurve extends Phaser.Curves.Curve {
     this.fromPoint = point;
   }
   getPoint(t: number, out?: Phaser.Math.Vector2) {
-    return (this.fromCurve as Phaser.Curves.Line).getPoint(t, out)!.add(this.fromPoint);
+    return (this.fromCurve as Phaser.Curves.Line)
+      .getPoint(t, out)!
+      .add(this.fromPoint);
   }
 }
