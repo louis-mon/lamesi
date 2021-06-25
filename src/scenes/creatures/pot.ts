@@ -209,16 +209,19 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
       const moveAllEnergy = isRightBulb ? moveAllEnergyRec(8) : Flow.noop;
 
       const makeReadyToBloom = () => {
-        fromBud.bloomParticles = bloomParticles.createEmitter({
-          follow: fromBud.sprite,
-          "followOffset.y": fromBud.sprite.height / 2,
-          alpha: { end: 0, start: 1 },
-          angle: { min: -25, max: -155 },
-          scale: { start: 0.7, end: 0 },
-          lifespan: 500,
-          frequency: 70,
-          speed: 100,
-        });
+        if (isRightBulb) {
+          fromBud.readyToBloom = true;
+          fromBud.bloomParticles = bloomParticles.createEmitter({
+            follow: fromBud.sprite,
+            "followOffset.y": fromBud.sprite.height / 2,
+            alpha: { end: 0, start: 1 },
+            angle: { min: -25, max: -155 },
+            scale: { start: 0.7, end: 0 },
+            lifespan: 500,
+            frequency: 70,
+            speed: 100,
+          });
+        }
       };
 
       const retractVines = rootPaths
@@ -238,6 +241,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         Flow.parallel(moveAllEnergy, retractBulbs),
         Flow.call(makeReadyToBloom),
         ...retractVines,
+        Flow.lazy(() => potState.nextFlow(waitForBulbClicked())),
       );
     });
 
@@ -373,14 +377,18 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
       );
     });
 
-  return potState.start(
+  const waitForBulbClicked = (): Flow.PhaserNode =>
     Flow.parallel(
-      ...budStates.map((bud) =>
-        Flow.sequence(
-          Flow.wait(observeCommonGoEvent(bud.sprite, "pointerdown")),
-          potState.nextFlow(developRoots(bud)),
-        ),
-      ),
-    ),
-  );
+      ...budStates
+        .filter((bud) => !bud.readyToBloom)
+        .map((bud) => {
+          console.log(bud.initialPos, bud.readyToBloom);
+          return Flow.sequence(
+            Flow.wait(observeCommonGoEvent(bud.sprite, "pointerdown")),
+            potState.nextFlow(developRoots(bud)),
+          );
+        }),
+    );
+
+  return potState.start(waitForBulbClicked());
 });
