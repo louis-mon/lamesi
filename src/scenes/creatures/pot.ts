@@ -431,15 +431,19 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
           },
           duration: 740,
         }),
-        Flow.tween({
-          targets: mandible,
-          props: {
-            angle: -30 * (flip ? -1 : 1),
-          },
-          duration: 480,
-          yoyo: true,
-          repeat: -1,
-        }),
+        Flow.repeatSequence(
+          Flow.waitTimer(690),
+          ..._.range(2).map(() =>
+            Flow.tween({
+              targets: mandible,
+              props: {
+                angle: -30 * (flip ? -1 : 1),
+              },
+              duration: 340,
+              yoyo: true,
+            }),
+          ),
+        ),
       );
     };
 
