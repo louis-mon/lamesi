@@ -1,3 +1,4 @@
+import * as Phaser from "phaser";
 import Vector2 = Phaser.Math.Vector2;
 
 import {
@@ -13,7 +14,7 @@ export const followPosition = ({
   target,
 }: {
   getPos: SceneContext<Phaser.Types.Math.Vector2Like>;
-  target: SceneContext<ManipulableObject>;
+  target: SceneContext<Phaser.GameObjects.Components.Transform>;
 }): Flow.PhaserNode =>
   Flow.handlePostUpdate({
     handler: (scene) => () => {
@@ -26,7 +27,7 @@ export const followRotation = ({
   target,
 }: {
   getRotation: SceneContext<number>;
-  target: SceneContext<ManipulableObject>;
+  target: SceneContext<Phaser.GameObjects.Components.Transform>;
 }): Flow.PhaserNode =>
   Flow.handlePostUpdate({
     handler: (scene) => () => {

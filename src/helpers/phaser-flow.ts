@@ -42,8 +42,8 @@ export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
  * Standard tween does not work with angles, use this one instead
  */
 export const rotateTween = (
-  config: Phaser.Types.Tweens.TweenBuilderConfig & {
-    props: { [key: string]: number };
+  config: Omit<Phaser.Types.Tweens.TweenBuilderConfig, "props"> & {
+    props: { angle: number };
   },
 ): PhaserNode => {
   const ease = Phaser.Tweens.Builders.GetEaseFunction(config.ease || "");

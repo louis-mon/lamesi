@@ -18,7 +18,11 @@ import { Maybe } from "purify-ts";
 import { MovedCurve } from "/src/helpers/math/curves";
 import { makeControlledValue } from "/src/helpers/animate/tween";
 import Vector2 = Phaser.Math.Vector2;
-import { followObject, followPosition } from "/src/helpers/animate/composite";
+import {
+  followObject,
+  followPosition,
+  followRotation,
+} from "/src/helpers/animate/composite";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -385,19 +389,21 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     Flow.parallel(
       ...budStates
         .filter((bud) => !bud.readyToBloom)
-        .map((bud) => {
-          console.log(bud.initialPos, bud.readyToBloom);
-          return Flow.sequence(
+        .map((bud) =>
+          Flow.sequence(
             Flow.wait(observeCommonGoEvent(bud.sprite, "pointerdown")),
+            // potState.nextFlow(developRoots(bud)),
             potState.nextFlow(bloomAll()),
-          );
-        }),
+          ),
+        ),
     );
 
   const bloomMandibles = (fromBud: BudState): Flow.PhaserNode => {
     const mandibleInst = declareGoInstance(Def.movableElementClass, null);
     const mandibleRoot = mandibleInst.create(
-      scene.add.circle(fromBud.sprite.x, fromBud.sprite.y).setVisible(false),
+      scene.add
+        .container(fromBud.sprite.x, fromBud.sprite.y)
+        .setDepth(Def.depths.potBud),
     );
 
     mandibleInst.data.move.setValue({
@@ -408,34 +414,27 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     const singleMandible = (flip: boolean) => {
       const mandible = scene.add
         .image(0, 0, "pot", "mandible")
-        .setDepth(Def.depths.potBud)
         .setScale(0)
         .setFlipX(flip)
         .setOrigin(1, 1);
-      return Flow.parallel(
-        followObject({
-          source: () => mandibleRoot,
-          target: () => mandible,
-          offset: new Vector2(),
+      mandibleRoot.add(mandible);
+      return Flow.sequence(
+        Flow.tween({
+          targets: mandible,
+          props: {
+            scale: 1,
+          },
+          duration: 740,
         }),
-        Flow.sequence(
-          Flow.tween({
-            targets: mandible,
-            props: {
-              scale: 1,
-            },
-            duration: 400,
-          }),
-          Flow.tween({
-            targets: mandible,
-            props: {
-              angle: -30 * (flip ? -1 : 1),
-            },
-            duration: 480,
-            yoyo: true,
-            repeat: -1,
-          }),
-        ),
+        Flow.tween({
+          targets: mandible,
+          props: {
+            angle: -30 * (flip ? -1 : 1),
+          },
+          duration: 480,
+          yoyo: true,
+          repeat: -1,
+        }),
       );
     };
 
@@ -453,9 +452,10 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         getPos: () => mandibleInst.data.move.value(scene).pos(),
         target: () => mandibleRoot,
       }),
-      retractBud,
-      singleMandible(false),
-      singleMandible(true),
+      Flow.sequence(
+        retractBud,
+        Flow.parallel(...[true, false].map(singleMandible)),
+      ),
       Flow.sequence(
         Flow.waitTimer(4000),
         Flow.call(

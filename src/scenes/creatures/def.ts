@@ -28,7 +28,9 @@ export type CreatureMoveCommand = {
 };
 
 export const movableElementClass = defineGoClass({
-  kind: annotate<ManipulableObject>(),
+  kind: annotate<
+    Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform
+  >(),
   data: {
     move: annotate<CreatureMoveCommand>(),
   },

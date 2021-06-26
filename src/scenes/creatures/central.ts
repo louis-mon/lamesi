@@ -110,7 +110,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     ),
     mouth: _.range(Def.bodyPartsConfig.mouth.total).map((i) =>
       new Vector2()
-        .setToPolar(((Math.PI * 2) / 3) * i, bodyDiameter)
+        .setToPolar(((Math.PI * 2) / 3) * i + Math.PI / 2, bodyDiameter)
         .add(getObjectPosition(body)),
     ),
   };
@@ -134,6 +134,22 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const getBodyMove = () => getPointTensionMoveGlobal(rootPos);
 
+      const afterRetractTentacle: Flow.PhaserNode = Flow.lazy(() => {
+        if (pickEvent.bodyPart !== "mouth") return Flow.noop;
+        const destAngle = Phaser.Math.Angle.WrapDegrees(
+          Phaser.Math.RadToDeg(
+            Phaser.Math.Angle.BetweenPoints(getObjectPosition(body), rootPos),
+          ) + 90,
+        );
+        return Flow.tween({
+          targets: pickableInst.getObj(scene),
+          props: {
+            angle: (target, key, value) =>
+              value + Phaser.Math.Angle.ShortestBetween(value, destAngle),
+          },
+        });
+      });
+
       const retractTentacle: Flow.PhaserNode = Flow.lazy(() => {
         return Flow.parallel(
           Flow.handlePostUpdate({
@@ -145,7 +161,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
                   pos: () => getBodyMove(),
                   rotation: () => 0,
                 })(scene);
-                tentacleState.next(Flow.noop);
+                tentacleState.next(afterRetractTentacle);
               }
             },
           }),
