@@ -249,9 +249,14 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         Flow.parallel(moveAllEnergy, retractBulbs),
         Flow.call(makeReadyToBloom),
         ...retractVines,
-        Flow.lazy(() => potState.nextFlow(waitForBulbClicked())),
+        potState.nextFlow(afterBulbActivated),
       );
     });
+
+  const afterBulbActivated: Flow.PhaserNode = Flow.lazy(() => {
+    if (budStates.every((state) => state.readyToBloom)) return bloomAll();
+    return waitForBulbClicked();
+  });
 
   const developRoots = (fromBud: BudState): Flow.PhaserNode =>
     Flow.lazy(() => {
@@ -392,8 +397,8 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         .map((bud) =>
           Flow.sequence(
             Flow.wait(observeCommonGoEvent(bud.sprite, "pointerdown")),
-            // potState.nextFlow(developRoots(bud)),
-            potState.nextFlow(bloomAll()),
+            potState.nextFlow(developRoots(bud)),
+            //potState.nextFlow(bloomAll()),
           ),
         ),
     );
