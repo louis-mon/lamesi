@@ -194,8 +194,8 @@
     }
   },
   "meta": {
-    "app": "http://github.com/odrick/free-tex-packer-cli",
-    "version": "0.2.9",
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
     "image": "tree.png",
     "format": "RGBA8888",
     "size": {
