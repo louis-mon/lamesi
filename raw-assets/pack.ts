@@ -4,19 +4,21 @@ import Path from "path";
 import util from "util";
 
 const packImages = async (directory: string) => {
-  const rawFiles = await util.promisify(fs.readdir)(directory);
+  const rawFiles = await fs.promises.readdir(directory);
   console.log(
     `Processing ${directory}...`,
     Path.dirname(directory),
     Path.basename(directory),
   );
 
-  const images = rawFiles
-    .filter((file) => Path.extname(file) === ".png")
-    .map((file) => ({
-      path: file,
-      contents: fs.readFileSync(`${directory}/${file}`),
-    }));
+  const images = await Promise.all(
+    rawFiles
+      .filter((file) => Path.extname(file) === ".png")
+      .map(async (file) => ({
+        path: file,
+        contents: await fs.promises.readFile(`${directory}/${file}`),
+      })),
+  );
   try {
     const files = await packAsync(images, {
       textureName: Path.basename(directory),
@@ -38,12 +40,15 @@ const packImages = async (directory: string) => {
       alphaThreshold: 0,
       detectIdentical: true,
     });
-    for (let item of files) {
-      fs.writeFileSync(
-        `../static/assets/${Path.dirname(directory)}/${item.name}`,
-        item.buffer,
-      );
-    }
+    await Promise.all(
+      files.map(async (item) => {
+        const outDir = `../static/assets/${Path.dirname(directory)}`;
+        try {
+          await fs.promises.mkdir(outDir, { recursive: true });
+        } catch {}
+        return fs.promises.writeFile(`${outDir}/${item.name}`, item.buffer);
+      }),
+    );
   } catch (error) {
     console.log(error);
   }
@@ -54,7 +59,7 @@ const packDirectories = async (fromDir: string) => {
     await packImages(fromDir);
   } else {
     try {
-      const subDirs = await util.promisify(fs.readdir)(fromDir);
+      const subDirs = await fs.promises.readdir(fromDir);
       await Promise.all(
         subDirs.map((dir) =>
           packDirectories(Path.relative(".", `${fromDir}/${dir}`)),

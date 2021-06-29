@@ -12,8 +12,7 @@
     "build": "parcel build index.html",
     "check": "tsc --noEmit && prettier --write src",
     "test": "jest",
-    "tex-pack": "cd raw-assets && ./pack.sh",
-    "tex-pack-2": "cd raw-assets && ts-node pack.ts"
+    "tex-pack": "cd raw-assets && ts-node pack.ts"
   },
   "dependencies": {
     "lodash": "^4.17.20",
