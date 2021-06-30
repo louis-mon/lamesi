@@ -1,7 +1,13 @@
 import { Subject } from "rxjs";
 import * as Flow from "../flow";
 
-export const makeStatesFlow = <C>() => {
+export type StatesFlow<C> = {
+  next: (flow: Flow.ActionNode<C>) => void;
+  nextFlow: (flow: Flow.ActionNode<C>) => Flow.ActionNode<C>;
+  start: (flow: Flow.ActionNode<C>) => Flow.ActionNode<C>;
+};
+
+export const makeStatesFlow = <C>(): StatesFlow<C> => {
   const currentState = new Subject<Flow.ActionNode<C>>();
   const next = (flow: Flow.ActionNode<C>): void => currentState.next(flow);
   const nextFlow = (flow: Flow.ActionNode<C>): Flow.ActionNode<C> =>

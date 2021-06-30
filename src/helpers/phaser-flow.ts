@@ -5,12 +5,13 @@ import _ from "lodash";
 import { FuncOrConst, funcOrConstValue } from "./functional";
 import { fromEventPattern, Observable } from "rxjs";
 import { SceneContext } from "./phaser";
-import { makeStatesFlow } from "./animate/flow-state";
+import { makeStatesFlow, StatesFlow } from "./animate/flow-state";
 export * from "./flow";
 
 export type Context = Phaser.Scene;
 export type PhaserNode = Flow.ActionNode<Context>;
 
+export type SceneStatesFlow = StatesFlow<Context>;
 export const makeSceneStates = () => makeStatesFlow<Context>();
 
 export const tween = (
