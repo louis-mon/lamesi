@@ -28,6 +28,7 @@ import _ from "lodash";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
 import { Maybe } from "purify-ts";
 import { makeStatesFlow } from "/src/helpers/animate/flow-state";
+import { bodyPartsConfig } from "./def";
 
 export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
   const body = scene.add.rope(
@@ -101,17 +102,22 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const availableSlots: { [key in Def.BodyPart]: Vector2[] } = {
     eye: _.range(Def.bodyPartsConfig.eye.total).map((i) =>
-      new Vector2()
-        .setToPolar(
-          -Math.PI / 2 + ((i % 2 === 0 ? i + 1 : -i) * Math.PI) / 14,
-          bodyDiameter - 58,
-        )
-        .add(getObjectPosition(body)),
+      new Vector2().setToPolar(
+        -Math.PI / 2 + ((i % 2 === 0 ? i + 1 : -i) * Math.PI) / 14,
+        bodyDiameter - 58,
+      ),
     ),
     mouth: _.range(Def.bodyPartsConfig.mouth.total).map((i) =>
-      new Vector2()
-        .setToPolar(((Math.PI * 2) / 3) * i + Math.PI / 2, bodyDiameter)
-        .add(getObjectPosition(body)),
+      new Vector2().setToPolar(
+        ((Math.PI * 2) / 3) * i + Math.PI / 2,
+        bodyDiameter,
+      ),
+    ),
+    algae: _.range(Def.bodyPartsConfig.algae.total).map((i) =>
+      new Vector2().setToPolar(
+        Math.PI / 2 + ((i % 2 === 0 ? i + 1 : -i) * Math.PI) / 10,
+        bodyDiameter / 2,
+      ),
     ),
   };
 
@@ -125,6 +131,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
       );
       const rootPos = availableSlots[pickEvent.bodyPart].shift();
       if (!rootPos) return Flow.noop;
+      rootPos.add(getObjectPosition(body));
       const tentacle = scene.add
         .rope(rootPos.x, rootPos.y, "central", "tentacle")
         .setDepth(Def.depths.tentacle);
@@ -134,18 +141,21 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const getBodyMove = () => getPointTensionMoveGlobal(rootPos);
 
+      const bodyTypeConfig = bodyPartsConfig[pickEvent.bodyPart];
+
       const afterRetractTentacle: Flow.PhaserNode = Flow.lazy(() => {
-        if (pickEvent.bodyPart !== "mouth") return Flow.noop;
+        if (!bodyTypeConfig.needsRotation) return Flow.noop;
         const destAngle = Phaser.Math.Angle.WrapDegrees(
           Phaser.Math.RadToDeg(
             Phaser.Math.Angle.BetweenPoints(getObjectPosition(body), rootPos),
-          ) + 90,
+          ) + bodyTypeConfig.rotationOffset,
         );
         return Flow.tween({
           targets: pickableInst.getObj(scene),
           props: {
-            angle: (target, key, value) =>
-              value + Phaser.Math.Angle.ShortestBetween(value, destAngle),
+            angle: destAngle,
+            //angle: (target, key, value) =>
+            //  value + Phaser.Math.Angle.ShortestBetween(value, destAngle),
           },
         });
       });

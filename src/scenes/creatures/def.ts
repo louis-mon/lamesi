@@ -16,6 +16,7 @@ export const depths = {
   potCut: 10,
   potRoot: 19,
   potBud: 20,
+  potMandible: 28,
   potFront: 30,
 
   algae: 30,
@@ -39,11 +40,18 @@ export const movableElementClass = defineGoClass({
   events: {},
 });
 
-export type BodyPart = "eye" | "mouth";
+export type BodyPart = "eye" | "mouth" | "algae";
 
-export const bodyPartsConfig: { [key in BodyPart]: { total: number } } = {
-  eye: { total: 8 },
-  mouth: { total: 3 },
+export const bodyPartsConfig: {
+  [key in BodyPart]: {
+    total: number;
+    needsRotation: boolean;
+    rotationOffset: number;
+  };
+} = {
+  eye: { total: 8, needsRotation: false, rotationOffset: 0 },
+  mouth: { total: 3, needsRotation: true, rotationOffset: 90 },
+  algae: { total: 4, needsRotation: true, rotationOffset: 0 },
 };
 
 export type ElemReadyToPickParams = { key: string; bodyPart: BodyPart };

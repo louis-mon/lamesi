@@ -64,10 +64,10 @@ const initializeState = (scene: Phaser.Scene): RockState => {
     state.shells.push({ obj: newShell });
   };
 
-  createEgg({ pos: new Vector2(1400, 430), algaeAngle: -110 });
-  createEgg({ pos: new Vector2(1750, 460), algaeAngle: -80 });
+  createEgg({ pos: new Vector2(1400, 430), algaeAngle: -148 });
+  createEgg({ pos: new Vector2(1750, 460), algaeAngle: 90 });
   createEgg({ pos: new Vector2(1380, 80), algaeAngle: 140 });
-  createEgg({ pos: new Vector2(1750, 90), algaeAngle: 70 });
+  createEgg({ pos: new Vector2(1750, 90), algaeAngle: 30 });
 
   createShell({ pos: new Vector2(1470, 150) });
   createShell({ pos: new Vector2(1570, 170) });
@@ -93,6 +93,18 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
       props: { scale: 1 },
       duration: 400,
     });
+
+  const moveAlgae = Flow.sequence(
+    Flow.waitTimer(4000),
+    Flow.call(() =>
+      rockState.eggs.forEach((egg) =>
+        Def.sceneClass.events.elemReadyToPick.emit({
+          key: egg.algae!.instance.key,
+          bodyPart: "algae",
+        })(scene),
+      ),
+    ),
+  );
 
   const prepareEggRiddle = (egg: EggRockState): Flow.PhaserNode => {
     const order = _.take(_.shuffle(rockState.shells), 2);
@@ -134,7 +146,11 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     const allShellClicked = Flow.sequence(
       resetShell,
       Flow.call(bloomAlgae),
-      Flow.lazy(() => flowState.nextFlow(chooseEgg)),
+      Flow.lazy(() =>
+        flowState.nextFlow(
+          rockState.eggs.every((egg) => egg.algae) ? moveAlgae : chooseEgg,
+        ),
+      ),
     );
 
     const validateInput = (shell: ShellRockState): Flow.PhaserNode =>

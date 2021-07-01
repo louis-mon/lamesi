@@ -402,7 +402,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     const mandibleRoot = mandibleInst.create(
       scene.add
         .container(fromBud.sprite.x, fromBud.sprite.y)
-        .setDepth(Def.depths.potBud),
+        .setDepth(Def.depths.potMandible),
     );
 
     mandibleInst.data.move.setValue({
