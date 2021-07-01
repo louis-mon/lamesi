@@ -18,6 +18,8 @@ export const depths = {
   potBud: 20,
   potFront: 30,
 
+  algae: 30,
+
   tentacle: 40,
   eye: 50,
 };

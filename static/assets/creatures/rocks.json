@@ -1,8 +1,32 @@
 {
   "frames": {
-    "egg": {
+    "algae": {
       "frame": {
         "x": 2,
+        "y": 2,
+        "w": 80,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 1,
+        "w": 80,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "egg": {
+      "frame": {
+        "x": 86,
         "y": 2,
         "w": 50,
         "h": 49
@@ -26,8 +50,8 @@
     },
     "shell-1": {
       "frame": {
-        "x": 56,
-        "y": 2,
+        "x": 2,
+        "y": 54,
         "w": 34,
         "h": 35
       },
@@ -55,8 +79,8 @@
     "image": "rocks.png",
     "format": "RGBA8888",
     "size": {
-      "w": 92,
-      "h": 53
+      "w": 138,
+      "h": 91
     },
     "scale": 1
   }

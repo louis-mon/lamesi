@@ -20,11 +20,13 @@ import {
   followPosition,
   followRotation,
 } from "/src/helpers/animate/composite";
+import { AlgaeController, createAlgae } from "/src/scenes/creatures/algae";
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;
-  isCompleted: boolean;
+  algae: AlgaeController | null;
   bloomFlow: Flow.SceneStatesFlow;
+  algaeAngle: number;
 };
 
 type ShellRockState = {
@@ -38,14 +40,21 @@ type RockState = {
 
 const initializeState = (scene: Phaser.Scene): RockState => {
   const state: RockState = { eggs: [], shells: [] };
-  const createEgg = ({ pos }: { pos: Vector2 }) => {
+  const createEgg = ({
+    pos,
+    algaeAngle,
+  }: {
+    pos: Vector2;
+    algaeAngle: number;
+  }) => {
     const newEgg = scene.add
       .image(pos.x, pos.y, "rocks", "egg")
       .setInteractive();
     state.eggs.push({
       obj: newEgg,
-      isCompleted: false,
+      algae: null,
       bloomFlow: Flow.makeSceneStates(),
+      algaeAngle,
     });
   };
   const createShell = ({ pos }: { pos: Vector2 }) => {
@@ -55,10 +64,10 @@ const initializeState = (scene: Phaser.Scene): RockState => {
     state.shells.push({ obj: newShell });
   };
 
-  createEgg({ pos: new Vector2(1400, 430) });
-  createEgg({ pos: new Vector2(1750, 460) });
-  createEgg({ pos: new Vector2(1380, 80) });
-  createEgg({ pos: new Vector2(1750, 90) });
+  createEgg({ pos: new Vector2(1400, 430), algaeAngle: -110 });
+  createEgg({ pos: new Vector2(1750, 460), algaeAngle: -80 });
+  createEgg({ pos: new Vector2(1380, 80), algaeAngle: 140 });
+  createEgg({ pos: new Vector2(1750, 90), algaeAngle: 70 });
 
   createShell({ pos: new Vector2(1470, 150) });
   createShell({ pos: new Vector2(1570, 170) });
@@ -115,18 +124,16 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     );
 
+    const bloomAlgae = () => {
+      egg.algae = createAlgae({
+        pos: getObjectPosition(egg.obj),
+        angle: egg.algaeAngle,
+      });
+      egg.bloomFlow.next(egg.algae.flow);
+    };
     const allShellClicked = Flow.sequence(
       resetShell,
-      egg.bloomFlow.nextFlow(
-        Flow.tween({
-          targets: egg.obj,
-          props: { angle: 360 },
-          repeat: -1,
-        }),
-      ),
-      Flow.call(() => {
-        egg.isCompleted = true;
-      }),
+      Flow.call(bloomAlgae),
       Flow.lazy(() => flowState.nextFlow(chooseEgg)),
     );
 
@@ -175,7 +182,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const chooseEgg: Flow.PhaserNode = Flow.lazy(() =>
     Flow.waitOnOfPointerdown({
-      items: rockState.eggs.filter((egg) => !egg.isCompleted),
+      items: rockState.eggs.filter((egg) => !egg.algae),
       getObj: getProp("obj"),
       nextFlow: (egg) => flowState.nextFlow(prepareEggRiddle(egg)),
     }),
