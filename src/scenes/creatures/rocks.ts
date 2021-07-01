@@ -7,10 +7,7 @@ import {
   placeAt,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
-import {
-  declareGoInstance,
-  observeCommonGoEvent,
-} from "/src/helpers/component";
+import { declareGoInstance } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
 import _ from "lodash";
@@ -146,28 +143,23 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
         Flow.lazy(() =>
           playerStep === order.length
             ? flowState.nextFlow(allShellClicked)
-            : enterInputAll,
+            : enterShellInput,
         ),
       );
 
-    const chooseStm = Flow.makeSceneStates();
-    const enterInputAll: Flow.PhaserNode = Flow.lazy(() => {
+    const enterShellInput: Flow.PhaserNode = Flow.lazy(() => {
       const targetShell = order[playerStep];
-      return Flow.parallel(
-        ...rockState.shells.map((shell) =>
-          Flow.sequence(
-            Flow.wait(observeCommonGoEvent(shell.obj, "pointerdown")),
-            Flow.lazy(() =>
-              shell === targetShell
-                ? chooseStm.nextFlow(validateInput(shell))
-                : flowState.nextFlow(failEggRiddle),
-            ),
-          ),
-        ),
-      );
+      return Flow.waitOnOfPointerdown({
+        items: rockState.shells,
+        getObj: getProp("obj"),
+        nextFlow: (shell) =>
+          shell === targetShell
+            ? validateInput(shell)
+            : flowState.nextFlow(failEggRiddle),
+      });
     });
 
-    const shellFlows = Flow.sequence(showOrder, chooseStm.start(enterInputAll));
+    const shellFlows = Flow.sequence(showOrder, enterShellInput);
 
     return Flow.parallel(
       Flow.tween({
@@ -181,18 +173,14 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     );
   };
 
-  const chooseEgg: Flow.PhaserNode = Flow.lazy(() => {
-    return Flow.parallel(
-      ...rockState.eggs
-        .filter((egg) => !egg.isCompleted)
-        .map((egg) =>
-          Flow.sequence(
-            Flow.wait(observeCommonGoEvent(egg.obj, "pointerdown")),
-            flowState.nextFlow(prepareEggRiddle(egg)),
-          ),
-        ),
-    );
-  });
+  const chooseEgg: Flow.PhaserNode = Flow.lazy(() =>
+    Flow.waitOnOfPointerdown({
+      items: rockState.eggs.filter((egg) => !egg.isCompleted),
+      getObj: getProp("obj"),
+      nextFlow: (egg) => flowState.nextFlow(prepareEggRiddle(egg)),
+    }),
+  );
+
   return Flow.parallel(
     flowState.start(chooseEgg),
     ...rockState.eggs.map((egg) => egg.bloomFlow.start(Flow.noop)),

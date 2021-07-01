@@ -6,6 +6,9 @@ import { FuncOrConst, funcOrConstValue } from "./functional";
 import { fromEventPattern, Observable } from "rxjs";
 import { SceneContext } from "./phaser";
 import { makeStatesFlow, StatesFlow } from "./animate/flow-state";
+import { Maybe } from "purify-ts";
+import { observeCommonGoEvent } from "/src/helpers/component";
+
 export * from "./flow";
 
 export type Context = Phaser.Scene;
@@ -130,3 +133,28 @@ export const handlePostUpdate = (makeParams: {
     emitter: (scene) => scene.events,
     event: Phaser.Scenes.Events.POST_UPDATE,
   });
+
+export const waitOnOfPointerdown = <T>({
+  items,
+  getObj,
+  nextFlow,
+}: {
+  items: T[];
+  getObj: (t: T) => Phaser.GameObjects.GameObject;
+  nextFlow: (t: T) => PhaserNode;
+}): PhaserNode => {
+  let clicked: Maybe<T> = Maybe.empty();
+  return Flow.sequence(
+    Flow.concurrent(
+      ...items.map((item) =>
+        Flow.sequence(
+          Flow.wait(observeCommonGoEvent(getObj(item), "pointerdown")),
+          Flow.call(() => {
+            clicked = Maybe.of(item);
+          }),
+        ),
+      ),
+    ),
+    Flow.lazy(() => clicked.map(nextFlow).orDefault(Flow.noop)),
+  );
+};

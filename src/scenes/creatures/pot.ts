@@ -391,17 +391,11 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     });
 
   const waitForBulbClicked = (): Flow.PhaserNode =>
-    Flow.parallel(
-      ...budStates
-        .filter((bud) => !bud.readyToBloom)
-        .map((bud) =>
-          Flow.sequence(
-            Flow.wait(observeCommonGoEvent(bud.sprite, "pointerdown")),
-            potState.nextFlow(developRoots(bud)),
-            //potState.nextFlow(bloomAll()),
-          ),
-        ),
-    );
+    Flow.waitOnOfPointerdown({
+      items: budStates.filter((bud) => !bud.readyToBloom),
+      getObj: getProp("sprite"),
+      nextFlow: (bud) => potState.nextFlow(developRoots(bud)),
+    });
 
   const bloomMandibles = (fromBud: BudState): Flow.PhaserNode => {
     const mandibleInst = declareGoInstance(Def.movableElementClass, null);
