@@ -8,7 +8,9 @@ import {
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import {
+  customEvent,
   declareGoInstance,
+  defineSceneClass,
   observeCommonGoEvent,
 } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
@@ -32,8 +34,8 @@ type VineController = {
 type BudState = {
   sprite: Phaser.GameObjects.Sprite;
   initialPos: number;
-  readyToBloom: boolean;
-  bloomParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
+  hasBloomed: boolean;
+  flowState: Flow.SceneStatesFlow;
 };
 
 type RootStepState = {
@@ -86,6 +88,14 @@ const makePathFollower = ({
   });
 };
 
+const potSceneClass = defineSceneClass({
+  events: {
+    pickAllMandibles: customEvent(),
+    syncMandibleClaw: customEvent(),
+  },
+  data: {},
+});
+
 export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
   const potCut = createImageAt(scene, potPosition, "pot", "pot-cut").setDepth(
     Def.depths.potCut,
@@ -127,15 +137,12 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         .setDepth(Def.depths.potBud)
         .setInteractive(),
       initialPos,
-      readyToBloom: false,
+      hasBloomed: false,
+      flowState: Flow.makeSceneStates(),
     };
   });
 
   const potState = Flow.makeSceneStates();
-
-  const bloomParticles = scene.add
-    .particles("pot", "root-bulb")
-    .setDepth(Def.depths.potFront);
 
   const activateBulb = ({
     rootPaths,
@@ -218,17 +225,8 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const makeReadyToBloom = () => {
         if (isRightBulb) {
-          fromBud.readyToBloom = true;
-          fromBud.bloomParticles = bloomParticles.createEmitter({
-            follow: fromBud.sprite,
-            "followOffset.y": fromBud.sprite.height / 2,
-            alpha: { end: 0, start: 1 },
-            angle: { min: -25, max: -155 },
-            scale: { start: 0.7, end: 0 },
-            lifespan: 500,
-            frequency: 70,
-            speed: 100,
-          });
+          fromBud.hasBloomed = true;
+          fromBud.flowState.next(bloomMandibles(fromBud));
         }
       };
 
@@ -254,7 +252,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     });
 
   const afterBulbActivated: Flow.PhaserNode = Flow.lazy(() => {
-    if (budStates.every((state) => state.readyToBloom)) return bloomAll();
+    if (budStates.every((state) => state.hasBloomed)) return takeAllMandibles;
     return waitForBulbClicked();
   });
 
@@ -392,7 +390,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const waitForBulbClicked = (): Flow.PhaserNode =>
     Flow.waitOnOfPointerdown({
-      items: budStates.filter((bud) => !bud.readyToBloom),
+      items: budStates.filter((bud) => !bud.hasBloomed),
       getObj: getProp("sprite"),
       nextFlow: (bud) => potState.nextFlow(developRoots(bud)),
     });
@@ -425,30 +423,28 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
           },
           duration: 740,
         }),
-        Flow.repeatSequence(
-          Flow.waitTimer(690),
-          ..._.range(2).map(() =>
-            Flow.tween({
-              targets: mandible,
-              props: {
-                angle: -30 * (flip ? -1 : 1),
-              },
-              duration: 340,
-              yoyo: true,
-            }),
+        Flow.observe(potSceneClass.events.syncMandibleClaw.subject, () =>
+          Flow.sequence(
+            ..._.range(2).map(() =>
+              Flow.tween({
+                targets: mandible,
+                props: {
+                  angle: -30 * (flip ? -1 : 1),
+                },
+                duration: 340,
+                yoyo: true,
+              }),
+            ),
           ),
         ),
       );
     };
 
-    const retractBud = Flow.parallel(
-      Flow.call(() => fromBud.bloomParticles?.stop()),
-      Flow.tween({
-        targets: fromBud.sprite,
-        props: { scale: 0 },
-        duration: 620,
-      }),
-    );
+    const retractBud = Flow.tween({
+      targets: fromBud.sprite,
+      props: { scale: 0 },
+      duration: 620,
+    });
 
     return Flow.parallel(
       followPosition({
@@ -460,6 +456,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
         Flow.parallel(...[true, false].map(singleMandible)),
       ),
       Flow.sequence(
+        Flow.wait(potSceneClass.events.pickAllMandibles.subject),
         Flow.waitTimer(4000),
         Flow.call(
           Def.sceneClass.events.elemReadyToPick.emit({
@@ -471,9 +468,22 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     );
   };
 
-  const bloomAll = () => {
-    return Flow.parallel(...budStates.map(bloomMandibles));
-  };
+  const clawMandibles = Flow.repeatSequence(
+    Flow.waitTimer(2200),
+    Flow.call(potSceneClass.events.syncMandibleClaw.emit({})),
+  );
 
-  return potState.start(waitForBulbClicked());
+  const takeAllMandibles = Flow.call(
+    potSceneClass.events.pickAllMandibles.emit({}),
+  );
+
+  const budFlows = Flow.parallel(
+    ...budStates.map((bud) => bud.flowState.start(Flow.noop)),
+  );
+
+  return Flow.parallel(
+    potState.start(waitForBulbClicked()),
+    budFlows,
+    clawMandibles,
+  );
 });
