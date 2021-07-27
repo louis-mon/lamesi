@@ -478,7 +478,7 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 
   const budFlows = Flow.parallel(
-    ...budStates.map((bud) => bud.flowState.start(Flow.noop)),
+    ...budStates.map((bud) => bud.flowState.start()),
   );
 
   return Flow.parallel(

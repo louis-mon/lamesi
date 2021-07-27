@@ -30,7 +30,8 @@ type EggRockState = {
 };
 
 type ShellRockState = {
-  obj: Phaser.GameObjects.Image;
+  belowObj: Phaser.GameObjects.Image;
+  aboveObj: Phaser.GameObjects.Image;
 };
 
 type RockState = {
@@ -59,9 +60,13 @@ const initializeState = (scene: Phaser.Scene): RockState => {
   };
   const createShell = ({ pos }: { pos: Vector2 }) => {
     const newShell = scene.add
+      .image(pos.x, pos.y, "rocks", "shell-2")
+      .setOrigin(0.5, 0);
+    const newShellAbove = scene.add
       .image(pos.x, pos.y, "rocks", "shell-1")
+      .setOrigin(0.5, 0)
       .setInteractive();
-    state.shells.push({ obj: newShell });
+    state.shells.push({ belowObj: newShell, aboveObj: newShellAbove });
   };
 
   createEgg({ pos: new Vector2(1400, 430), algaeAngle: -148 });
@@ -111,8 +116,27 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     // 0 = no click yet, n = n items already validated
     let playerStep = 0;
 
+    const shellOpenDuration = 670;
+    const openShell = (shell: ShellRockState): Flow.PhaserNode =>
+      Flow.tween({
+        targets: shell.aboveObj,
+        props: {
+          angle: -130,
+        },
+        duration: shellOpenDuration,
+      });
+
+    const closeShell = (shell: ShellRockState): Flow.PhaserNode =>
+      Flow.tween({
+        targets: shell.aboveObj,
+        props: {
+          angle: 0,
+        },
+        duration: shellOpenDuration,
+      });
+
     const resetShell: Flow.PhaserNode = Flow.parallel(
-      ...rockState.shells.map((shell) => resetScale(shell.obj)),
+      ...rockState.shells.map((shell) => closeShell(shell)),
       resetScale(egg.obj),
     );
 
@@ -125,13 +149,9 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
       ...order.map((shell) =>
         Flow.sequence(
           Flow.waitTimer(700),
-          Flow.tween({
-            targets: shell.obj,
-            props: { scale: 1.7 },
-            duration: 400,
-            yoyo: true,
-            repeat: 1,
-          }),
+          openShell(shell),
+          Flow.waitTimer(300),
+          closeShell(shell),
         ),
       ),
     );
@@ -155,11 +175,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
 
     const validateInput = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.sequence(
-        Flow.tween({
-          targets: shell.obj,
-          props: { scale: 1.7 },
-          duration: 400,
-        }),
+        openShell(shell),
         Flow.call(() => {
           ++playerStep;
         }),
@@ -174,7 +190,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
       const targetShell = order[playerStep];
       return Flow.waitOnOfPointerdown({
         items: rockState.shells,
-        getObj: getProp("obj"),
+        getObj: getProp("aboveObj"),
         nextFlow: (shell) =>
           shell === targetShell
             ? validateInput(shell)
@@ -205,7 +221,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 
   return Flow.parallel(
+    ...rockState.eggs.map((egg) => egg.bloomFlow.start()),
     flowState.start(chooseEgg),
-    ...rockState.eggs.map((egg) => egg.bloomFlow.start(Flow.noop)),
   );
 });
