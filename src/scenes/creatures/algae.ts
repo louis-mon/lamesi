@@ -56,7 +56,7 @@ export const createAlgae = ({
     const root = instance
       .create(scene.add.container())
       .setScale(0.3)
-      .setDepth(Def.depths.algae)
+      .setDepth(Def.depths.rocks.algae)
       .setAngle(angle);
 
     instance.data.move.setValue({

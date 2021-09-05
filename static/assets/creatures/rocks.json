@@ -95,6 +95,30 @@
         "x": 0.5,
         "y": 0.5
       }
+    },
+    "ball": {
+      "frame": {
+        "x": 140,
+        "y": 2,
+        "w": 31,
+        "h": 31
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 2,
+        "w": 31,
+        "h": 31
+      },
+      "sourceSize": {
+        "w": 35,
+        "h": 35
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {
@@ -103,7 +127,7 @@
     "image": "rocks.png",
     "format": "RGBA8888",
     "size": {
-      "w": 138,
+      "w": 173,
       "h": 91
     },
     "scale": 1

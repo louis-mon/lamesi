@@ -19,7 +19,13 @@ export const depths = {
   potMandible: 28,
   potFront: 30,
 
-  algae: 30,
+  rocks: {
+    rock: 10,
+    shellBelow: 10,
+    shellAbove: 20,
+    algae: 30,
+    ball: 21,
+  },
 
   tentacle: 40,
   eye: 50,

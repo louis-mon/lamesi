@@ -5,6 +5,7 @@ import {
   createSpriteAt,
   getObjectPosition,
   placeAt,
+  vecToXY,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
@@ -32,6 +33,7 @@ type EggRockState = {
 type ShellRockState = {
   belowObj: Phaser.GameObjects.Image;
   aboveObj: Phaser.GameObjects.Image;
+  ball?: Phaser.GameObjects.Image;
 };
 
 type RockState = {
@@ -50,6 +52,7 @@ const initializeState = (scene: Phaser.Scene): RockState => {
   }) => {
     const newEgg = scene.add
       .image(pos.x, pos.y, "rocks", "egg")
+      .setDepth(Def.depths.rocks.rock)
       .setInteractive();
     state.eggs.push({
       obj: newEgg,
@@ -61,9 +64,11 @@ const initializeState = (scene: Phaser.Scene): RockState => {
   const createShell = ({ pos }: { pos: Vector2 }) => {
     const newShell = scene.add
       .image(pos.x, pos.y, "rocks", "shell-2")
+      .setDepth(Def.depths.rocks.shellBelow)
       .setOrigin(0.5, 0);
     const newShellAbove = scene.add
       .image(pos.x, pos.y, "rocks", "shell-1")
+      .setDepth(Def.depths.rocks.shellAbove)
       .setOrigin(0.5, 0)
       .setInteractive();
     state.shells.push({ belowObj: newShell, aboveObj: newShellAbove });
@@ -113,6 +118,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const prepareEggRiddle = (egg: EggRockState): Flow.PhaserNode => {
     const order = _.take(_.shuffle(rockState.shells), 2);
+    const shellsNotInOrder = _.difference(rockState.shells, order);
     // 0 = no click yet, n = n items already validated
     let playerStep = 0;
 
@@ -136,24 +142,79 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
       });
 
     const resetShell: Flow.PhaserNode = Flow.parallel(
-      ...rockState.shells.map((shell) => closeShell(shell)),
+      ...rockState.shells.map((shell) =>
+        Flow.sequence(
+          closeShell(shell),
+          Flow.call(() => shell.ball?.destroy()),
+        ),
+      ),
       resetScale(egg.obj),
     );
 
     const failEggRiddle: Flow.PhaserNode = Flow.sequence(
+      Flow.parallel(...rockState.shells.map(openShell)),
+      Flow.parallel(
+        ...order.map((shell) =>
+          Flow.lazy(() =>
+            Flow.tween({
+              targets: shell.ball,
+              props: {
+                scale: 3,
+                alpha: 0,
+              },
+              duration: 1200,
+            }),
+          ),
+        ),
+      ),
       resetShell,
       flowState.nextFlow(chooseEgg),
     );
 
-    const showOrder = Flow.sequence(
-      ...order.map((shell) =>
-        Flow.sequence(
+    const sendBallToShell = (shell: ShellRockState): Flow.PhaserNode =>
+      Flow.lazy(() => {
+        const startPos = getObjectPosition(egg.obj);
+        shell.ball = createImageAt(scene, startPos, "rocks", "ball")
+          .setScale(0)
+          .setDepth(Def.depths.rocks.ball);
+        scene.tweens.add({
+          targets: shell.ball,
+          props: {
+            angle: 360,
+          },
+          duration: 470,
+          repeat: -1,
+        });
+        return Flow.sequence(
           Flow.waitTimer(700),
-          openShell(shell),
+          Flow.tween({
+            targets: shell.ball,
+            props: { scale: 0.7 },
+            duration: 250,
+          }),
+          Flow.tween({
+            targets: shell.ball,
+            props: vecToXY(startPos.clone().add(new Vector2(0, -54))),
+            duration: 400,
+          }),
+          Flow.waitTimer(800),
+          Flow.tween({
+            targets: shell.ball,
+            props: vecToXY(
+              getObjectPosition(shell.aboveObj).clone().add(new Vector2(0, 17)),
+            ),
+            duration: 400,
+          }),
+          Flow.call(() => shell.ball?.setDepth(shell.belowObj.depth)),
           Flow.waitTimer(300),
           closeShell(shell),
-        ),
-      ),
+        );
+      });
+
+    const showOrder = Flow.sequence(
+      Flow.parallel(...rockState.shells.map(openShell)),
+      ...order.map(sendBallToShell),
+      Flow.parallel(...shellsNotInOrder.map(closeShell)),
     );
 
     const bloomAlgae = () => {
