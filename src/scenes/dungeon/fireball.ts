@@ -19,21 +19,18 @@ import { makeMenu } from "./menu";
 import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
 import { annotate, ValueOf } from "/src/helpers/typing";
 import {
-  defineGoClass,
   declareGoInstance,
   customEvent,
-  defineData,
-  makeSceneDataHelper,
   declareGoInstances,
+  defineGoSprite,
 } from "/src/helpers/component";
 import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
 import { map, pairwise, auditTime, first, tap } from "rxjs/operators";
 
-const fireballClass = defineGoClass({
+const fireballClass = defineGoSprite({
   data: {},
   events: { collideWall: customEvent() },
-  kind: annotate<Phaser.GameObjects.Sprite>(),
 });
 
 export const launchFireball = ({
@@ -118,12 +115,11 @@ type FlameThrowerConfig = {
   hidden?: boolean;
 };
 
-export const flameThrowerClass = defineGoClass({
+export const flameThrowerClass = defineGoSprite({
   data: {
     continuous: annotate<boolean>(),
   },
   events: { fire: customEvent() },
-  kind: annotate<Phaser.GameObjects.Sprite>(),
   config: annotate<FlameThrowerConfig>(),
 });
 

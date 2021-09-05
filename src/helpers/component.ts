@@ -191,14 +191,28 @@ export const defineGoClass = <
   getObj: (key) => (scene) => scene.children.getByName(key) as Cl,
 });
 
-const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() =>
+const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() => <
+  Events extends DefineEventMappingParams,
+  Data extends DefineDataMappingParams,
+  Config extends object
+>(p: {
+  events: Events;
+  data: Data;
+  config?: Config;
+}) => defineGoClass({ ...p, kind: annotate<Cl>() });
+
+const defineDefaultGoClass = <Cl extends Phaser.GameObjects.GameObject>() =>
   defineGoClass({ events: {}, data: {}, kind: annotate<Cl>() });
 
-export const spriteClassKind = defineGoClassKind<Phaser.GameObjects.Sprite>();
-export const physicsImageClassKind = defineGoClassKind<
+export const defineGoSprite = defineGoClassKind<Phaser.GameObjects.Sprite>();
+export const spriteClassKind = defineDefaultGoClass<
+  Phaser.GameObjects.Sprite
+>();
+
+export const physicsImageClassKind = defineDefaultGoClass<
   Phaser.Physics.Arcade.Image
 >();
-export const particleEmitterManagerClassKind = defineGoClassKind<
+export const particleEmitterManagerClassKind = defineDefaultGoClass<
   Phaser.GameObjects.Particles.ParticleEmitterManager
 >();
 

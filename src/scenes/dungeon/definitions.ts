@@ -8,16 +8,14 @@ import * as Flow from "/src/helpers/phaser-flow";
 import Vector2 = Phaser.Math.Vector2;
 import {
   defineSceneClass,
-  defineGoClass,
   declareGoInstance,
   declareGoInstances,
   customEvent,
   defineEvents,
   makeSceneEventHelper,
   MakeObservable,
-  spriteClassKind,
+  defineGoSprite,
 } from "/src/helpers/component";
-import { boolean } from "purify-ts";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 
@@ -61,7 +59,7 @@ export const amuletSkillKey = "amulet-skill";
 export const bellHitEvent = (wp: WpId) =>
   makeSceneEventHelper({ key: `bell-hit-${wp}`, selector: _.identity });
 
-export const playerClass = defineGoClass({
+export const playerClass = defineGoSprite({
   data: {
     currentPos: annotate<WpId>(),
     isMoving: annotate<boolean>(),
@@ -69,7 +67,6 @@ export const playerClass = defineGoClass({
     cannotAct: annotate<boolean>(),
   },
   events: {},
-  kind: annotate<Phaser.GameObjects.Sprite>(),
 });
 
 export const player = declareGoInstance(playerClass, "player");
@@ -103,10 +100,9 @@ type ObjectNextWp = {
   wp: WpDef;
   offset: Vector2;
 };
-export const switchClass = defineGoClass({
+export const switchClass = defineGoSprite({
   data: { state: annotate<boolean>() },
   events: { activateSwitch: customEvent(), deactivateSwitch: customEvent() },
-  kind: annotate<Phaser.GameObjects.Sprite>(),
   config: annotate<ObjectNextWp & { deactivable?: boolean }>(),
 });
 

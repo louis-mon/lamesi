@@ -11,14 +11,14 @@ import { events } from "../../global-events";
 import { amuletSkillAltar } from "../skills";
 import { createSpriteAt, SceneContext, vecToXY } from "/src/helpers/phaser";
 import {
-  customEvent,
   declareGoInstance,
-  defineGoClass,
+  defineGoSprite,
   defineSceneClass,
   spriteClassKind,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { Observable } from "rxjs";
+import { moveTo } from "/src/helpers/animate/move";
 
 export const goal4Class = defineSceneClass({
   events: {},
@@ -31,7 +31,7 @@ type GreenFlameConfig = {
   nextPos: Wp.WpDef;
 };
 
-const greenFlameClass = defineGoClass({
+const greenFlameClass = defineGoSprite({
   events: {},
   data: {
     currentPos: annotate<Wp.WpDef>(),
@@ -113,9 +113,10 @@ export const moveFlameTo = ({
   instance: GreenFlameInst;
 }): Flow.PhaserNode =>
   Flow.sequence(
-    Flow.tween((scene) => ({
-      targets: instance.getObj(scene),
-      props: vecToXY(Wp.wpPos(newPos)),
+    moveTo((scene) => ({
+      target: instance.getObj(scene),
+      dest: Wp.wpPos(newPos),
+      speed: 0.3,
     })),
     Flow.call(instance.data.currentPos.setValue(newPos)),
   );

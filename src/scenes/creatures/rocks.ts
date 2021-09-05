@@ -22,6 +22,7 @@ import {
   followRotation,
 } from "/src/helpers/animate/composite";
 import { AlgaeController, createAlgae } from "/src/scenes/creatures/algae";
+import { moveTo } from "/src/helpers/animate/move";
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;
@@ -198,12 +199,12 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
             duration: 400,
           }),
           Flow.waitTimer(800),
-          Flow.tween({
-            targets: shell.ball,
-            props: vecToXY(
-              getObjectPosition(shell.aboveObj).clone().add(new Vector2(0, 17)),
-            ),
-            duration: 400,
+          moveTo({
+            target: shell.ball,
+            dest: getObjectPosition(shell.aboveObj)
+              .clone()
+              .add(new Vector2(0, 17)),
+            speed: 200 / 1000,
           }),
           Flow.call(() => shell.ball?.setDepth(shell.belowObj.depth)),
           Flow.waitTimer(300),
