@@ -172,6 +172,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
       flowState.nextFlow(chooseEgg),
     );
 
+    const ballSpeed = 300 / 1000;
     const sendBallToShell = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.lazy(() => {
         const startPos = getObjectPosition(egg.obj);
@@ -204,7 +205,7 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
             dest: getObjectPosition(shell.aboveObj)
               .clone()
               .add(new Vector2(0, 17)),
-            speed: 200 / 1000,
+            speed: ballSpeed,
           }),
           Flow.call(() => shell.ball?.setDepth(shell.belowObj.depth)),
           Flow.waitTimer(300),
@@ -238,6 +239,11 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     const validateInput = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.sequence(
         openShell(shell),
+        moveTo({
+          target: shell.ball!,
+          speed: ballSpeed,
+          dest: getObjectPosition(egg.obj),
+        }),
         Flow.call(() => {
           ++playerStep;
         }),
@@ -247,7 +253,6 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
             : enterShellInput,
         ),
       );
-
     const enterShellInput: Flow.PhaserNode = Flow.lazy(() => {
       const targetShell = order[playerStep];
       return Flow.waitOnOfPointerdown({
