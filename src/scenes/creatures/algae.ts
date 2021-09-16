@@ -4,8 +4,6 @@ import Vector2 = Phaser.Math.Vector2;
 import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
 import * as Def from "./def";
-import _ from "lodash";
-import { Maybe } from "purify-ts";
 import { followPosition } from "/src/helpers/animate/composite";
 
 const swingRotation = ({
