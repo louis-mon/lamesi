@@ -68,13 +68,13 @@ const RoomRectangle = new Phaser.Geom.Rectangle(
   wpPerSide - 1,
 );
 
-const allWp: WpDef[] = _.flatMap(_.range(nbRooms), (i) =>
+export const allWp: WpDef[] = _.flatMap(_.range(nbRooms), (i) =>
   _.range(wpPerSide * wpPerSide).map((posI) => ({
     ...Phaser.Math.ToXY(posI, wpPerSide, wpPerSide),
     room: i,
   })),
 );
-const allWpById = _.keyBy(allWp, getWpId);
+export const allWpById = _.keyBy(allWp, getWpId);
 
 export const getWpDef = (id: WpId): WpDef => allWpById[id];
 
@@ -406,6 +406,9 @@ export const wpsAction: Flow.PhaserNode = Flow.lazy((scene) => {
           activeWpIds,
         ) as WpId[];
         return Flow.parallel(
+          Flow.call(
+            Def.scene.events.removeCloudsOnActiveWps.emit({ activeWpIds }),
+          ),
           ...activeWpIds.map((wpId) =>
             toggleWp({ wpDef: getWpDef(wpId), isActive: true }),
           ),

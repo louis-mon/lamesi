@@ -51,6 +51,8 @@ export const scene = defineSceneClass({
 
     // puzzle related events
     showAltSwitchInRoom5: customEvent(),
+
+    removeCloudsOnActiveWps: customEvent<{ activeWpIds: WpId[] }>(),
   },
 });
 
@@ -149,4 +151,5 @@ export const depths = {
   npc: 10,
   npcHigh: 12,
   floating: 15,
+  clouds: 100,
 };

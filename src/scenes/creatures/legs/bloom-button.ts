@@ -29,7 +29,7 @@ export const createBloomButton = ({
     const buttonObj = createImageAt(scene, pos, "legs", "leaf-bud");
     const shell = createImageAt(scene, pos, "legs", "leaf-bud-shell");
 
-    const RLeaves = buttonObj.displayWidth*0.7;
+    const RLeaves = buttonObj.displayWidth * 0.7;
     const nbLeavesOnRay = 6;
     const nbLeaveRays = 5;
     const totalAngleLeaves = Math.PI * 6;

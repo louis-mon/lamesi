@@ -264,9 +264,33 @@
         "y": 0.5
       }
     },
-    "flamethrower": {
+    "clouds": {
       "frame": {
         "x": 212,
+        "y": 154,
+        "w": 70,
+        "h": 50
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 70,
+        "h": 50
+      },
+      "sourceSize": {
+        "w": 70,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "flamethrower": {
+      "frame": {
+        "x": 286,
         "y": 154,
         "w": 60,
         "h": 47
@@ -288,58 +312,10 @@
         "y": 0.5
       }
     },
-    "amulet": {
-      "frame": {
-        "x": 276,
-        "y": 154,
-        "w": 52,
-        "h": 44
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 5,
-        "y": 9,
-        "w": 52,
-        "h": 44
-      },
-      "sourceSize": {
-        "w": 64,
-        "h": 64
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "switch-0": {
-      "frame": {
-        "x": 332,
-        "y": 154,
-        "w": 30,
-        "h": 40
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 2,
-        "y": 1,
-        "w": 30,
-        "h": 40
-      },
-      "sourceSize": {
-        "w": 35,
-        "h": 45
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "hint-snail": {
       "frame": {
-        "x": 364,
-        "y": 2,
+        "x": 2,
+        "y": 722,
         "w": 134,
         "h": 132
       },
@@ -363,7 +339,7 @@
     "goal-2-hint": {
       "frame": {
         "x": 2,
-        "y": 722,
+        "y": 858,
         "w": 105,
         "h": 116
       },
@@ -387,7 +363,7 @@
     "fireball": {
       "frame": {
         "x": 2,
-        "y": 842,
+        "y": 978,
         "w": 128,
         "h": 105
       },
@@ -411,7 +387,7 @@
     "ice-shield": {
       "frame": {
         "x": 111,
-        "y": 722,
+        "y": 858,
         "w": 92,
         "h": 92
       },
@@ -433,6 +409,78 @@
       }
     },
     "symbol-circle-3-alt": {
+      "frame": {
+        "x": 140,
+        "y": 722,
+        "w": 86,
+        "h": 86
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 62,
+        "y": 62,
+        "w": 86,
+        "h": 86
+      },
+      "sourceSize": {
+        "w": 210,
+        "h": 210
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "switch-0": {
+      "frame": {
+        "x": 140,
+        "y": 812,
+        "w": 30,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 1,
+        "w": 30,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 35,
+        "h": 45
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "switch-1": {
+      "frame": {
+        "x": 174,
+        "y": 812,
+        "w": 30,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 1,
+        "w": 30,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 35,
+        "h": 45
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "symbol-circle-3": {
       "frame": {
         "x": 191,
         "y": 556,
@@ -480,34 +528,10 @@
         "y": 0.5
       }
     },
-    "symbol-circle-3": {
-      "frame": {
-        "x": 2,
-        "y": 951,
-        "w": 86,
-        "h": 86
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 62,
-        "y": 62,
-        "w": 86,
-        "h": 86
-      },
-      "sourceSize": {
-        "w": 210,
-        "h": 210
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "ground-switch-up": {
       "frame": {
         "x": 2,
-        "y": 1041,
+        "y": 1087,
         "w": 100,
         "h": 80
       },
@@ -530,8 +554,8 @@
     },
     "wall-v": {
       "frame": {
-        "x": 92,
-        "y": 951,
+        "x": 2,
+        "y": 1171,
         "w": 30,
         "h": 80
       },
@@ -555,7 +579,7 @@
     "spikes-v": {
       "frame": {
         "x": 2,
-        "y": 1125,
+        "y": 1255,
         "w": 28,
         "h": 80
       },
@@ -579,7 +603,7 @@
     "room-2-floor": {
       "frame": {
         "x": 2,
-        "y": 1209,
+        "y": 1339,
         "w": 63,
         "h": 63
       },
@@ -600,24 +624,24 @@
         "y": 0.5
       }
     },
-    "switch-1": {
+    "amulet": {
       "frame": {
         "x": 34,
-        "y": 1125,
-        "w": 30,
-        "h": 40
+        "y": 1255,
+        "w": 52,
+        "h": 44
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 2,
-        "y": 1,
-        "w": 30,
-        "h": 40
+        "x": 5,
+        "y": 9,
+        "w": 52,
+        "h": 44
       },
       "sourceSize": {
-        "w": 35,
-        "h": 45
+        "w": 64,
+        "h": 64
       },
       "pivot": {
         "x": 0.5,
@@ -627,7 +651,7 @@
     "light-particle": {
       "frame": {
         "x": 34,
-        "y": 1169,
+        "y": 1303,
         "w": 31,
         "h": 31
       },
@@ -650,32 +674,8 @@
     },
     "switch-2": {
       "frame": {
-        "x": 68,
-        "y": 1125,
-        "w": 30,
-        "h": 40
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 2,
-        "y": 1,
-        "w": 30,
-        "h": 40
-      },
-      "sourceSize": {
-        "w": 35,
-        "h": 45
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "switch-3": {
-      "frame": {
-        "x": 2,
-        "y": 1276,
+        "x": 36,
+        "y": 1171,
         "w": 30,
         "h": 40
       },
@@ -698,8 +698,8 @@
     },
     "wall-h": {
       "frame": {
-        "x": 2,
-        "y": 1320,
+        "x": 36,
+        "y": 1215,
         "w": 106,
         "h": 30
       },
@@ -720,10 +720,34 @@
         "y": 0.5
       }
     },
+    "switch-3": {
+      "frame": {
+        "x": 70,
+        "y": 1171,
+        "w": 30,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 1,
+        "w": 30,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 35,
+        "h": 45
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
     "spikes-h": {
       "frame": {
-        "x": 36,
-        "y": 1276,
+        "x": 104,
+        "y": 1171,
         "w": 105,
         "h": 30
       },
@@ -746,8 +770,8 @@
     },
     "snowflake": {
       "frame": {
-        "x": 69,
-        "y": 1169,
+        "x": 106,
+        "y": 1087,
         "w": 28,
         "h": 30
       },
@@ -770,8 +794,8 @@
     },
     "flame-0": {
       "frame": {
-        "x": 69,
-        "y": 1203,
+        "x": 106,
+        "y": 1121,
         "w": 14,
         "h": 24
       },
@@ -794,8 +818,8 @@
     },
     "flame-1": {
       "frame": {
-        "x": 69,
-        "y": 1231,
+        "x": 124,
+        "y": 1121,
         "w": 14,
         "h": 23
       },
@@ -818,8 +842,8 @@
     },
     "flame-2": {
       "frame": {
-        "x": 87,
-        "y": 1203,
+        "x": 142,
+        "y": 1121,
         "w": 14,
         "h": 22
       },
@@ -842,8 +866,8 @@
     },
     "flame-3": {
       "frame": {
-        "x": 69,
-        "y": 1231,
+        "x": 124,
+        "y": 1121,
         "w": 14,
         "h": 23
       },
@@ -895,8 +919,8 @@
     "image": "npc.png",
     "format": "RGBA8888",
     "size": {
-      "w": 500,
-      "h": 1352
+      "w": 362,
+      "h": 1404
     },
     "scale": 1
   }
