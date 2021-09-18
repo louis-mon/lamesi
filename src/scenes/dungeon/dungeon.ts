@@ -76,17 +76,18 @@ export class DungeonScene extends Phaser.Scene {
         const activateAllKey = this.input.keyboard.addKey(
           Phaser.Input.Keyboard.KeyCodes.PLUS,
         );
-        return Flow.whenTrueDo({
-          condition: fromEvent(activateAllKey, "down"),
-          action: Flow.call(() =>
-            [
-              events.dungeonPhase1,
-              events.dungeonPhase2,
-              events.dungeonPhase3,
-              events.dungeonPhase4,
-            ].forEach((trigger) => trigger.setValue(true)(this)),
-          ),
-        });
+        const phases = [
+          events.dungeonPhase1,
+          events.dungeonPhase2,
+          events.dungeonPhase3,
+          events.dungeonPhase4,
+        ];
+        return Flow.observe(fromEvent(activateAllKey, "down"), () =>
+          Flow.call(() => {
+            const valueToActivate = phases.find((phase) => !phase.value(this));
+            valueToActivate?.setValue(true)(this);
+          }),
+        );
       }),
     });
 

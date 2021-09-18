@@ -214,6 +214,7 @@ const enableGoal2 = Flow.whenTrueDo({
   action: Flow.parallel(
     Npc.openDoor("door4To3"),
     Npc.openDoor("door5To2"),
+    Npc.openDoor("door4To5"),
     arrowSkillAltar({ wp: { room: 4, x: 0, y: 4 } }),
   ),
 });
@@ -223,4 +224,5 @@ export const dungeonGoal2 = Flow.parallel(
   puzzleForBellAltar,
   hintSymbol,
   room2GoalPuzzle,
+  Flow.call((s) => console.log(globalEvents.events.dungeonPhase1.value(s))),
 );
