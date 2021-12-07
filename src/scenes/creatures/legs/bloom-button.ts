@@ -2,23 +2,30 @@ import Phaser from "phaser";
 import Vector2 = Phaser.Math.Vector2;
 
 import * as Flow from "/src/helpers/phaser-flow";
-import { createImageAt } from "/src/helpers/phaser";
+import { createImageAt, getObjectPosition } from "/src/helpers/phaser";
 import {
+  commonGoEvents,
   customEvent,
   declareGoInstance,
   defineGoImage,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
-import _ from "lodash";
+import _, { keys, pickBy, sortBy, uniq } from "lodash";
+import * as Def from "../def";
+import { thornFlow } from "/src/scenes/creatures/legs/thorns";
 
 export const legsBloomClass = defineGoImage({
   events: {
-    openLeaves: customEvent(),
+    attachThorn: customEvent(),
   },
   data: {},
 });
 
-export const createBloomButton = ({
+type LegsConfig = {
+  budsDependency: Record<string, string[]>;
+};
+
+export const createBloomButtonFactory = ({ budsDependency }: LegsConfig) => ({
   pos,
   id,
 }: {
@@ -26,16 +33,30 @@ export const createBloomButton = ({
   id: string;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    const buttonObj = createImageAt(scene, pos, "legs", "leaf-bud");
-    const shell = createImageAt(scene, pos, "legs", "leaf-bud-shell");
+    const budObj = createImageAt(scene, pos, "legs", "leaf-bud")
+      .setDepth(Def.depths.legs.bud)
+      .setScale(0.1);
+    const shellObj = createImageAt(scene, pos, "legs", "leaf-bud-shell")
+      .setDepth(Def.depths.legs.shell)
+      .setInteractive();
 
-    const RLeaves = buttonObj.displayWidth * 0.7;
+    const instance = declareGoInstance(legsBloomClass, id);
+    instance.create(shellObj);
+
+    const targetIds = keys(pickBy(budsDependency, (l) => l.includes(id)));
+
+    const state = Flow.makeSceneStates();
+    let linkedThorns = 0;
+
+    const RLeaves = shellObj.displayWidth * 0.7;
     const nbLeavesOnRay = 6;
     const nbLeaveRays = 5;
     const totalAngleLeaves = Math.PI * 6;
     const a = RLeaves / 5;
     const b = Math.pow(RLeaves / a, 1 / totalAngleLeaves);
-    const leavesContainer = scene.add.container(pos.x, pos.y);
+    const leavesContainer = scene.add
+      .container(pos.x, pos.y)
+      .setDepth(Def.depths.legs.petal);
     const leaves = _.flatMap(
       _.range(nbLeavesOnRay).map((i) => (i / nbLeavesOnRay) * totalAngleLeaves),
       (leaveAngle) =>
@@ -58,8 +79,6 @@ export const createBloomButton = ({
         }),
     );
     leavesContainer.reverse();
-    const instance = declareGoInstance(legsBloomClass, id);
-    instance.create(buttonObj);
 
     const getLeave = (ray: number, posOnRay: number) =>
       leaves[posOnRay * nbLeaveRays + ray];
@@ -110,9 +129,59 @@ export const createBloomButton = ({
       );
     });
 
-    return Flow.sequence(
-      Flow.wait(instance.events.openLeaves.subject),
-      openLeaves,
-      Flow.repeat(pulseLeaves),
+    const startState = Flow.observe(instance.events.attachThorn.subject, () => {
+      ++linkedThorns;
+      if (linkedThorns < budsDependency[id]?.length ?? 0) return Flow.noop;
+      return Flow.sequence(
+        Flow.tween({
+          targets: budObj,
+          props: { scale: 0.7 },
+          duration: 300,
+          ease: Phaser.Math.Easing.Sine.InOut,
+        }),
+        Flow.parallel(
+          Flow.observe(commonGoEvents.pointerdown(id).subject, () =>
+            state.nextFlow(bloomState),
+          ),
+          Flow.tween({
+            targets: budObj,
+            props: { scale: 0.4 },
+            duration: 900,
+            yoyo: true,
+            repeat: -1,
+            ease: Phaser.Math.Easing.Sine.InOut,
+          }),
+        ),
+      );
+    });
+
+    const bloomState = Flow.lazy(() =>
+      Flow.sequence(
+        Flow.tween({
+          targets: budObj,
+          props: { scale: 0.25 },
+          duration: 500,
+          ease: Phaser.Math.Easing.Sine.InOut,
+        }),
+        openLeaves,
+        Flow.parallel(
+          Flow.repeat(pulseLeaves),
+          ...targetIds.map((targetId) =>
+            Flow.lazy(() => {
+              return thornFlow({
+                startPos: pos,
+                endPos: getObjectPosition(
+                  legsBloomClass.getObj(targetId)(scene),
+                ),
+                afterReach: Flow.call(
+                  legsBloomClass.events.attachThorn(targetId).emit({}),
+                ),
+              });
+            }),
+          ),
+        ),
+      ),
     );
+
+    return state.start(startState);
   });

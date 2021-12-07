@@ -29,6 +29,14 @@ export const depths = {
 
   tentacle: 40,
   eye: 50,
+
+  legs: {
+    shell: 10,
+    bud: 12,
+    petal: 11,
+    thornBranch: 9,
+    thornLeaf: 9,
+  },
 };
 
 export type CreatureMoveCommand = {

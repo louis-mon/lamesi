@@ -1,8 +1,32 @@
 {
   "frames": {
-    "leaf-leaf": {
+    "leaf-branch": {
       "frame": {
         "x": 2,
+        "y": 2,
+        "w": 46,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 19,
+        "w": 46,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "leaf-leaf": {
+      "frame": {
+        "x": 52,
         "y": 2,
         "w": 43,
         "h": 20
@@ -24,33 +48,9 @@
         "y": 0.5
       }
     },
-    "leaf-branch": {
-      "frame": {
-        "x": 49,
-        "y": 2,
-        "w": 41,
-        "h": 17
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 19,
-        "w": 41,
-        "h": 17
-      },
-      "sourceSize": {
-        "w": 50,
-        "h": 50
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "leaf-bud-protection": {
       "frame": {
-        "x": 94,
+        "x": 99,
         "y": 2,
         "w": 40,
         "h": 40
@@ -74,8 +74,8 @@
     },
     "leaf-bud-shell": {
       "frame": {
-        "x": 49,
-        "y": 23,
+        "x": 52,
+        "y": 26,
         "w": 39,
         "h": 39
       },
@@ -99,7 +99,7 @@
     "leaf-bud": {
       "frame": {
         "x": 2,
-        "y": 26,
+        "y": 30,
         "w": 39,
         "h": 39
       },
@@ -127,8 +127,8 @@
     "image": "legs.png",
     "format": "RGBA8888",
     "size": {
-      "w": 136,
-      "h": 67
+      "w": 141,
+      "h": 71
     },
     "scale": 1
   }
