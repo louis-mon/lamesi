@@ -10,8 +10,8 @@ export type ManipulableObject =
 
 export type SceneContext<T> = (scene: Phaser.Scene) => T;
 
-export const placeAt = (
-  obj: Phaser.GameObjects.Components.Transform,
+export const placeAt = <T extends Phaser.GameObjects.Components.Transform>(
+  obj: T,
   pos: Vector2Like,
 ) => obj.setPosition(pos.x, pos.y);
 

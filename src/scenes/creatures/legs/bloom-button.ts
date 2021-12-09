@@ -13,6 +13,7 @@ import { annotate } from "/src/helpers/typing";
 import _, { keys, pickBy, sortBy, uniq } from "lodash";
 import * as Def from "../def";
 import { thornFlow } from "/src/scenes/creatures/legs/thorns";
+import { legFlow, LegFlowParams } from "/src/scenes/creatures/legs/legs-leg";
 
 export const legsBloomClass = defineGoImage({
   events: {
@@ -28,9 +29,11 @@ type LegsConfig = {
 export const createBloomButtonFactory = ({ budsDependency }: LegsConfig) => ({
   pos,
   id,
+  linkedLeg,
 }: {
   pos: Vector2;
   id: string;
+  linkedLeg?: Omit<LegFlowParams, "startPos">;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const budObj = createImageAt(scene, pos, "legs", "leaf-bud")
@@ -166,6 +169,7 @@ export const createBloomButtonFactory = ({ budsDependency }: LegsConfig) => ({
         openLeaves,
         Flow.parallel(
           Flow.repeat(pulseLeaves),
+          linkedLeg ? legFlow({ startPos: pos, ...linkedLeg }) : Flow.noop,
           ...targetIds.map((targetId) =>
             Flow.lazy(() => {
               return thornFlow({

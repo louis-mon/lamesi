@@ -211,6 +211,8 @@ export const spriteClassKind = defineDefaultGoClass<
 
 export const defineGoImage = defineGoClassKind<Phaser.GameObjects.Image>();
 
+export const defineGoObject = defineGoClassKind();
+
 export const physicsImageClassKind = defineDefaultGoClass<
   Phaser.Physics.Arcade.Image
 >();
