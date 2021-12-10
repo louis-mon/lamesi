@@ -54,7 +54,7 @@ export const movableElementClass = defineGoClass({
   events: {},
 });
 
-export type BodyPart = "eye" | "mouth" | "algae";
+export type BodyPart = "eye" | "mouth" | "algae" | "leg";
 
 export const bodyPartsConfig: {
   [key in BodyPart]: {
@@ -64,11 +64,16 @@ export const bodyPartsConfig: {
   };
 } = {
   eye: { total: 8, needsRotation: false, rotationOffset: 0 },
-  mouth: { total: 3, needsRotation: true, rotationOffset: 90 },
+  mouth: { total: 3, needsRotation: true, rotationOffset: Math.PI / 2 },
   algae: { total: 4, needsRotation: true, rotationOffset: 0 },
+  leg: { total: 6, needsRotation: false, rotationOffset: 0 },
 };
 
-export type ElemReadyToPickParams = { key: string; bodyPart: BodyPart };
+export type ElemReadyToPickParams = {
+  key: string;
+  bodyPart: BodyPart;
+  requiredSlot?: number;
+};
 export const sceneClass = defineSceneClass({
   events: {
     elemReadyToPick: customEvent<ElemReadyToPickParams>(),

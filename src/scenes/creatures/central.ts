@@ -24,7 +24,7 @@ import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
 import * as Def from "./def";
-import _ from "lodash";
+import _, { flatMap, mapValues } from "lodash";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
 import { Maybe } from "purify-ts";
 import { makeStatesFlow } from "/src/helpers/animate/flow-state";
@@ -100,6 +100,14 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     body.setDirty();
   };
 
+  const makeLegPos = (dir: number) =>
+    _.range(Def.bodyPartsConfig.leg.total / 2).map((i) =>
+      new Vector2().setToPolar(
+        -Math.PI / 2 + dir * (Math.PI / 5 + (i * Math.PI) / 4),
+        bodyDiameter,
+      ),
+    );
+
   const availableSlots: { [key in Def.BodyPart]: Vector2[] } = {
     eye: _.range(Def.bodyPartsConfig.eye.total).map((i) =>
       new Vector2().setToPolar(
@@ -119,6 +127,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         bodyDiameter / 2,
       ),
     ),
+    leg: flatMap([-1, 1], makeLegPos),
   };
 
   const catchElement = (
@@ -129,7 +138,11 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         Def.movableElementClass,
         pickEvent.key,
       );
-      const rootPos = availableSlots[pickEvent.bodyPart].shift();
+      const bodyPartSlots = availableSlots[pickEvent.bodyPart];
+      const rootPos =
+        pickEvent.requiredSlot !== undefined
+          ? bodyPartSlots[pickEvent.requiredSlot]
+          : bodyPartSlots.shift();
       if (!rootPos) return Flow.noop;
       rootPos.add(getObjectPosition(body));
       const tentacle = scene.add
@@ -145,17 +158,14 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const afterRetractTentacle: Flow.PhaserNode = Flow.lazy(() => {
         if (!bodyTypeConfig.needsRotation) return Flow.noop;
-        const destAngle = Phaser.Math.Angle.WrapDegrees(
-          Phaser.Math.RadToDeg(
-            Phaser.Math.Angle.BetweenPoints(getObjectPosition(body), rootPos),
-          ) + bodyTypeConfig.rotationOffset,
+        const destRot = Phaser.Math.Angle.Wrap(
+          Phaser.Math.Angle.BetweenPoints(getObjectPosition(body), rootPos) +
+            bodyTypeConfig.rotationOffset,
         );
         return Flow.tween({
           targets: pickableInst.getObj(scene),
           props: {
-            angle: destAngle,
-            //angle: (target, key, value) =>
-            //  value + Phaser.Math.Angle.ShortestBetween(value, destAngle),
+            rotation: destRot,
           },
         });
       });

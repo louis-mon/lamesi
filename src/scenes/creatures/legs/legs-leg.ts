@@ -6,32 +6,36 @@ import _ from "lodash";
 import { createImageAt, getObjectPosition, placeAt } from "/src/helpers/phaser";
 import { Subject } from "rxjs";
 import * as Def from "../def";
-import { defineGoImage, defineGoObject } from "/src/helpers/component";
-import { sceneClass } from "../def";
+import {
+  declareGoInstance,
+  defineGoImage,
+  defineGoObject,
+} from "/src/helpers/component";
+import { movableElementClass, sceneClass } from "../def";
 import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
 import { legsSwingDuration } from "/src/scenes/creatures/legs/legs-defs";
-
-export const legsLegClass = defineGoObject({
-  events: {},
-  data: {},
-});
+import { followPosition } from "/src/helpers/animate/composite";
 
 export type LegFlowParams = {
   startPos: Vector2;
   startAngle: number;
   flip?: boolean;
+  requiredSlot: number;
 };
 export const legFlow = ({
   startPos,
   startAngle,
   flip,
+  requiredSlot,
 }: LegFlowParams): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const flows = new Subject<Flow.PhaserNode>();
+    const inst = declareGoInstance(movableElementClass, null);
     const dir = flip ? -1 : 1;
-    const rootContainer = placeAt(scene.add.container(), startPos).setRotation(
-      startAngle,
-    );
+    const rootContainer = inst
+      .create(scene.add.container())
+      .setRotation(startAngle);
+    inst.data.move.setValue({ pos: () => startPos, rotation: () => 0 })(scene);
     rootContainer.scaleY *= dir;
 
     const createNode = ({
@@ -69,6 +73,17 @@ export const legFlow = ({
       container.add([branch, leaf]);
       fromContainer.add(container);
 
+      const askToCatch = Flow.sequence(
+        Flow.waitTimer(1200),
+        Flow.call(
+          sceneClass.events.elemReadyToPick.emit({
+            key: inst.key,
+            bodyPart: "leg",
+            requiredSlot,
+          }),
+        ),
+      );
+
       return Flow.call(() =>
         flows.next(
           Flow.sequence(
@@ -79,7 +94,7 @@ export const legFlow = ({
               ease: Phaser.Math.Easing.Sine.Out,
             }),
             step >= 8
-              ? Flow.noop
+              ? askToCatch
               : createNode({ fromContainer: container, step: step + 1 }),
             Flow.tween({
               targets: leaf,
@@ -87,19 +102,21 @@ export const legFlow = ({
               duration: 700,
               ease: Phaser.Math.Easing.Sine.InOut,
             }),
-            Flow.observe(sceneClass.events.syncLegs.subject, () =>
-              Flow.sequence(
-                Flow.tween({
-                  targets: container,
-                  props: {
-                    rotation:
-                      container.rotation -
-                      Math.PI / 18 / Math.pow(1.2, step - 1),
-                  },
-                  ease: Phaser.Math.Easing.Sine.InOut,
-                  duration: legsSwingDuration,
-                  yoyo: true,
-                }),
+            Flow.parallel(
+              Flow.observe(sceneClass.events.syncLegs.subject, () =>
+                Flow.sequence(
+                  Flow.tween({
+                    targets: container,
+                    props: {
+                      rotation:
+                        container.rotation -
+                        Math.PI / 18 / Math.pow(1.2, step - 1),
+                    },
+                    ease: Phaser.Math.Easing.Sine.InOut,
+                    duration: legsSwingDuration,
+                    yoyo: true,
+                  }),
+                ),
               ),
             ),
           ),
@@ -108,6 +125,10 @@ export const legFlow = ({
     };
 
     return Flow.parallel(
+      followPosition({
+        getPos: () => inst.data.move.value(scene).pos(),
+        target: () => rootContainer,
+      }),
       Flow.observe(flows),
       createNode({ fromContainer: rootContainer, step: 1 }),
     );

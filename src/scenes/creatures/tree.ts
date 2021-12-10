@@ -60,7 +60,7 @@ const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
 
     return Flow.parallel(
       followPosition({
-        getPos: () => eyelidInst.data.move.value(scene).pos(),
+          getPos: () => eyelidInst.data.move.value(scene).pos(),
         target: () => eyelid,
       }),
       followPosition({

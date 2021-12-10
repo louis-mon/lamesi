@@ -44,17 +44,25 @@ export const legsFlow: Flow.PhaserNode = Flow.parallel(
   createBloomButton({
     pos: new Vector2(260, 710),
     id: idButton2,
-    linkedLeg: { startAngle: Math.PI - firstLevelAngle, flip: true },
+    linkedLeg: {
+      startAngle: Math.PI - firstLevelAngle,
+      flip: true,
+      requiredSlot: 0,
+    },
   }),
   createBloomButton({
     pos: new Vector2(512, 720),
     id: idButton3,
-    linkedLeg: { startAngle: firstLevelAngle },
+    linkedLeg: { startAngle: firstLevelAngle, requiredSlot: 3 },
   }),
   createBloomButton({
     pos: new Vector2(230, 870),
     id: idButton4,
-    linkedLeg: { startAngle: Math.PI - secondLevelAngle, flip: true },
+    linkedLeg: {
+      startAngle: Math.PI - secondLevelAngle,
+      flip: false,
+      requiredSlot: 1,
+    },
   }),
   createBloomButton({
     pos: new Vector2(380, 852),
@@ -63,23 +71,21 @@ export const legsFlow: Flow.PhaserNode = Flow.parallel(
   createBloomButton({
     pos: new Vector2(560, 868),
     id: idButton6,
-    linkedLeg: { startAngle: secondLevelAngle },
+    linkedLeg: { startAngle: secondLevelAngle, requiredSlot: 4, flip: true },
   }),
   createBloomButton({
     pos: new Vector2(318, 980),
     id: idButton7,
-    linkedLeg: { startAngle: Math.PI - thirdLevelAngle },
+    linkedLeg: { startAngle: Math.PI - thirdLevelAngle, requiredSlot: 2 },
   }),
   createBloomButton({
     pos: new Vector2(458, 984),
     id: idButton8,
-    linkedLeg: { startAngle: thirdLevelAngle, flip: true },
+    linkedLeg: { startAngle: thirdLevelAngle, flip: true, requiredSlot: 5 },
   }),
   Flow.call(legsBloomClass.events.attachThorn(idButton1).emit({})),
   Flow.repeatSequence(
     Flow.waitTimer(legsSwingDuration * 4),
     Flow.call(sceneClass.events.syncLegs.emit({})),
   ),
-  //legFlow({startAngle: 0, startPos: new Vector2(318, 980)}),
-  //legFlow({startAngle: Math.PI, flip: true, startPos: new Vector2(318, 980)})
 );
