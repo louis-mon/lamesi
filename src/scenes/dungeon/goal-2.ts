@@ -224,5 +224,4 @@ export const dungeonGoal2 = Flow.parallel(
   puzzleForBellAltar,
   hintSymbol,
   room2GoalPuzzle,
-  Flow.call((s) => console.log(globalEvents.events.dungeonPhase1.value(s))),
 );

@@ -21,7 +21,6 @@ export const tintProxy = (source: Phaser.GameObjects.Components.Tint) =>
         const oldColor = Phaser.Display.Color.ColorToRGBA(
           target.tintBottomLeft,
         );
-        console.log(prop, value);
         target.tint = Phaser.Display.Color.GetColor(
           prop === "r" ? value : oldColor.r,
           prop === "g" ? value : oldColor.g,

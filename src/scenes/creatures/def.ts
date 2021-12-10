@@ -72,6 +72,7 @@ export type ElemReadyToPickParams = { key: string; bodyPart: BodyPart };
 export const sceneClass = defineSceneClass({
   events: {
     elemReadyToPick: customEvent<ElemReadyToPickParams>(),
+    syncLegs: customEvent(),
   },
   data: {},
 });

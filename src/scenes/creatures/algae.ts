@@ -5,42 +5,7 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
 import * as Def from "./def";
 import { followPosition } from "/src/helpers/animate/composite";
-
-const swingRotation = ({
-  duration,
-  ampl,
-  target,
-}: {
-  duration: number;
-  ampl: number;
-  target: { angle: number };
-}): Flow.PhaserNode =>
-  Flow.repeatSequence(
-    Flow.tween({
-      targets: target,
-      props: { angle: -ampl / 2 },
-      ease: Phaser.Math.Easing.Sine.Out,
-      duration,
-    }),
-    Flow.tween({
-      targets: target,
-      props: { angle: 0 },
-      ease: Phaser.Math.Easing.Sine.In,
-      duration,
-    }),
-    Flow.tween({
-      targets: target,
-      props: { angle: ampl / 2 },
-      ease: Phaser.Math.Easing.Sine.Out,
-      duration,
-    }),
-    Flow.tween({
-      targets: target,
-      props: { angle: 0 },
-      ease: Phaser.Math.Easing.Sine.In,
-      duration,
-    }),
-  );
+import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
 
 export const createAlgae = ({
   pos,
@@ -73,7 +38,7 @@ export const createAlgae = ({
     }): Flow.PhaserNode =>
       Flow.lazy(() => {
         if (depth > 6) return Flow.noop;
-        const ampl = 30 / Math.pow(1.1, depth);
+        const ampl = Math.PI / 6 / Math.pow(1.1, depth);
         const subAlgae = scene.add
           .image(0, 0, "rocks", "algae")
           .setOrigin(0, 0.5)
@@ -104,7 +69,9 @@ export const createAlgae = ({
               }),
               Flow.waitTimer(820),
             ),
-            swingRotation({ duration: 2300, ampl, target: subContainer }),
+            Flow.repeat(
+              swingRotation({ duration: 2300, ampl, target: subContainer }),
+            ),
           ),
         );
       });
