@@ -44,6 +44,7 @@ type RootStepState = {
   bud: BudState;
   prev: RootStepState | null;
   bulb?: Phaser.GameObjects.Sprite;
+  bulbButton?: Phaser.GameObjects.GameObject;
   vine?: VineController;
 };
 
@@ -158,11 +159,17 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
       const lastSteps = _.last(rootPaths)!;
       const retractBulbs = Flow.parallel(
         ...lastSteps.map((lastStep) =>
-          Flow.tween({
-            targets: lastStep.bulb,
-            props: { scale: 0 },
-            duration: 500,
-          }),
+          Flow.sequence(
+            Flow.tween({
+              targets: lastStep.bulb,
+              props: { scale: 0 },
+              duration: 500,
+            }),
+            Flow.call(() => {
+              lastStep.bulb?.destroy();
+              lastStep.bulbButton?.destroy();
+            }),
+          ),
         ),
       );
 
@@ -302,15 +309,19 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
             const bulb = scene.add
               .sprite(bulbPos.x, bulbPos.y, "pot", "root-bulb")
               .setDepth(Def.depths.potRoot)
-              .setScale(0.1)
+              .setScale(0.1);
+            const bulbButton = scene.add
+              .circle(bulbPos.x, bulbPos.y, bulb.width * 0.6, undefined, 0)
+              .setDepth(Def.depths.potRoot)
               .setInteractive();
             rootStep.bulb = bulb;
+            rootStep.bulbButton = bulbButton;
 
             return Flow.parallel(
               Flow.sequence(
                 Flow.tween({
                   targets: bulb,
-                  props: { scale: 0.5 },
+                  props: { scale: 0.8 },
                   duration: 200,
                 }),
                 Flow.tween({
@@ -319,13 +330,15 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
                   ease: Phaser.Math.Easing.Sine.In,
                   yoyo: true,
                   repeat: -1,
-                  duration: 410,
+                  duration: 610,
                 }),
               ),
-              Flow.observe(observeCommonGoEvent(bulb, "pointerdown"), () =>
-                potState.nextFlow(
-                  activateBulb({ rootPaths, fromBud, stepClicked: rootStep }),
-                ),
+              Flow.observe(
+                observeCommonGoEvent(bulbButton, "pointerdown"),
+                () =>
+                  potState.nextFlow(
+                    activateBulb({ rootPaths, fromBud, stepClicked: rootStep }),
+                  ),
               ),
             );
           }),
