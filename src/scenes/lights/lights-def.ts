@@ -13,7 +13,7 @@ export type LightSceneSourceDef = ObjectCreationDef;
 
 export type LightSceneMaterialDef = ObjectCreationDef & {
   depth: number;
-  rope?: {
+  rope?: WithRequiredEvent & {
     minDepth: number;
     maxDepth: number;
   };
@@ -63,6 +63,7 @@ export const sceneDef: LightSceneDef = {
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true,
       rope: {
+        eventRequired: "lights2",
         minDepth: 0.4,
         maxDepth: 0.8,
       },
@@ -73,6 +74,7 @@ export const sceneDef: LightSceneDef = {
       movable: true,
       eventRequired: "lights1",
       rope: {
+        eventRequired: "lights2",
         minDepth: 0.2,
         maxDepth: 0.9,
       },
@@ -85,6 +87,7 @@ export const sceneDef: LightSceneDef = {
       movable: true,
       eventRequired: "lights4",
       rope: {
+        eventRequired: "lights2",
         minDepth: 0.4,
         maxDepth: 0.9,
       },
@@ -105,6 +108,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g2",
+      eventRequired: "lights1",
       create: (scene) => scene.add.image(676, 444, "goal-2"),
       requires: [
         {
@@ -121,6 +125,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g3",
+      eventRequired: "lights2",
       create: (scene) => scene.add.image(970, 175, "goal-3"),
       requires: [
         {
@@ -137,6 +142,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g4",
+      eventRequired: "lights3",
       create: (scene) => scene.add.image(370, 212, "goal-4"),
       requires: [
         {
@@ -158,6 +164,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g5",
+      eventRequired: "lights4",
       create: (scene) => scene.add.image(1695, 218, "goal-5"),
       requires: [
         {

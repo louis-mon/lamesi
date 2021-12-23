@@ -28,6 +28,7 @@ export class LightScene extends Phaser.Scene {
       },
     });
   }
+
   preload() {
     this.load.image("goal-2");
     this.load.image("goal-3");
@@ -35,6 +36,7 @@ export class LightScene extends Phaser.Scene {
     this.load.image("goal-5");
     this.load.image("rope");
   }
+
   private shadows: Array<{
     source: ManipulableObject;
     material: ManipulableObject;
@@ -42,6 +44,7 @@ export class LightScene extends Phaser.Scene {
     def: LightSceneMaterialDef;
   }> = [];
   private goalFound?: Phaser.Time.TimerEvent;
+
   create() {
     const setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
       go.name = def.key;
@@ -105,7 +108,7 @@ export class LightScene extends Phaser.Scene {
             def: matDef,
           });
         });
-        if (matDef.rope) {
+        if (matDef.rope && eventsHelpers.getEventFilter(this)(matDef.rope)) {
           const { minDepth, maxDepth } = matDef.rope;
           const ropeObj = this.add.image(gameWidth - 30 * i - 20, 0, "rope");
           const ropeIcon = matDef.create(this);
@@ -129,12 +132,15 @@ export class LightScene extends Phaser.Scene {
           });
         }
       });
-    sceneDef.goals.forEach((goalDef) => {
-      const go = goalDef.create(this);
-      setCommonProps(go, goalDef);
-      go.depth = goalPlane;
-    });
+    sceneDef.goals
+      .filter(eventsHelpers.getEventFilter(this))
+      .forEach((goalDef) => {
+        const go = goalDef.create(this);
+        setCommonProps(go, goalDef);
+        go.depth = goalPlane;
+      });
   }
+
   update() {
     this.shadows.forEach(({ source, shadow, material, def }) => {
       const sourcePos = getObjectPosition(source);

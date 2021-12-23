@@ -30,7 +30,7 @@ const createNpcAnimations = (scene: Phaser.Scene) => {
     duration: 300,
     frames: scene.anims.generateFrameNames("npc", {
       start: 0,
-      end: 4,
+      end: 3,
       prefix: "switch-",
     }),
   });

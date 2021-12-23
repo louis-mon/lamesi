@@ -44,7 +44,7 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
     ...subScenes.map((sceneDef, i) => {
       const isTriggered = events[sceneDef.trigger].value(hubScene);
       const isAvailable = events[sceneDef.available].value(hubScene);
-      const firstTime = !isAvailable && isTriggered
+      const firstTime = !isAvailable && isTriggered;
       if (!isAvailable && !isTriggered) {
         return Flow.noop;
       }
