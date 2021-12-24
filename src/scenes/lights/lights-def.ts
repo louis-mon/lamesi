@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
-import { ManipulableObject } from "../../helpers/phaser";
-import { globalData, WithRequiredEvent } from "../common/global-data";
+import { ManipulableObject } from "/src/helpers/phaser";
+import { WithRequiredEvent } from "../common/global-data";
 
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
@@ -39,6 +39,7 @@ export const sceneDef: LightSceneDef = {
   lights: [
     {
       key: "l1",
+      eventRequired: "lights1",
       create: (scene) => scene.add.circle(125, 975, lightSourceSize, 0xfcba03),
     },
     {
@@ -59,6 +60,7 @@ export const sceneDef: LightSceneDef = {
   materials: [
     {
       key: "m-ball-1",
+      eventRequired: "lights1",
       depth: 0.5,
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true,
@@ -97,6 +99,7 @@ export const sceneDef: LightSceneDef = {
   goals: [
     {
       key: "g1",
+      eventRequired: "lights1",
       create: (scene) => scene.add.circle(1340, 253, 92, 0x4a4a4a),
       requires: [
         {

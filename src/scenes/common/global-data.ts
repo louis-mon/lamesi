@@ -33,7 +33,7 @@ export const globalData = defineData(
 export type GlobalDataKey = keyof typeof globalData;
 
 export type WithRequiredEvent = {
-  eventRequired?: GlobalDataKey;
+  eventRequired: GlobalDataKey;
 };
 
 export const eventsHelpers = {

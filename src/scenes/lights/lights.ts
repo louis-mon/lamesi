@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import * as Flow from "/src/helpers/phaser-flow";
 import { ManipulableObject, getObjectPosition } from "/src/helpers/phaser";
 import {
   sceneDef,
@@ -10,6 +11,7 @@ import { eventsHelpers } from "../common/global-data";
 import { gameWidth, gameHeight } from "/src/scenes/common/constants";
 import { menuHelpers } from "../menu";
 import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
+import { solveLight } from "/src/scenes/lights/solve-light";
 
 const goalPlane = 0;
 const shadowPlane = goalPlane + 1;
@@ -180,18 +182,7 @@ export class LightScene extends Phaser.Scene {
         this.goalFound = this.time.delayedCall(2000, () => {
           if (go.getData("done")) return;
           go.toggleData("done");
-          this.tweens.add({
-            targets: go,
-            props: { scale: 1.4 },
-            repeat: 1,
-            yoyo: true,
-            duration: 700,
-            onComplete: () =>
-              this.tweens.add({
-                targets: go,
-                props: { alpha: 0.5 },
-              }),
-          });
+          Flow.run(this, solveLight({ goalDef, target: go }));
         });
       }
       return found || reachGoal;

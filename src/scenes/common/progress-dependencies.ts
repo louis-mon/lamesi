@@ -12,5 +12,12 @@ export const progressDependencies: ProgressDependencies = {
 };
 
 export const isEventSolved = (scene: Scene) => (key: GlobalDataKey) => {
-  return progressDependencies[key]?.triggers.every(trigger => globalData[trigger].value(scene))
-}
+  return progressDependencies[key]?.triggers.every((trigger) =>
+    globalData[trigger].value(scene),
+  );
+};
+
+export const solveEvent = (key: GlobalDataKey) => (scene: Scene) =>
+  progressDependencies[key]?.triggers.forEach((trigger) =>
+    globalData[trigger].setValue(true)(scene),
+  );
