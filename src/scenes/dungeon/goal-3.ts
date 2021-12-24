@@ -181,7 +181,7 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const enableGoal3 = Flow.whenTrueDo({
-  condition: globalData.dungeonPhase2.dataSubject,
+  condition: globalData.dungeonPhase3.dataSubject,
   action: Flow.parallel(
     Npc.openDoor("door4To1"),
     bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),

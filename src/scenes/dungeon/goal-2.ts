@@ -210,7 +210,7 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const enableGoal2 = Flow.whenTrueDo({
-  condition: globalEvents.globalData.dungeonPhase1.dataSubject,
+  condition: globalEvents.globalData.dungeonPhase2.dataSubject,
   action: Flow.parallel(
     Npc.openDoor("door4To3"),
     Npc.openDoor("door5To2"),

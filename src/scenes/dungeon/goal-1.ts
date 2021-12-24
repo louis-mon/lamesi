@@ -234,7 +234,7 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
     Flow.whenTrueDo({
       condition: playerIsOnPos({ room: 5, x: 0, y: 2 }),
       action: Flow.lazy((scene) =>
-        globalData.dungeonPhase1.value(scene)
+        globalData.dungeonPhase2.value(scene)
           ? Flow.noop
           : Npc.closeDoor("door4To5"),
       ),

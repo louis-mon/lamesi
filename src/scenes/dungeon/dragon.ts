@@ -478,6 +478,6 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 export const enableGoal5 = Flow.whenTrueDo({
-  condition: globalData.dungeonPhase4.dataSubject,
+  condition: globalData.dungeonPhase5.dataSubject,
   action: Flow.parallel(iceArmorAltar),
 });

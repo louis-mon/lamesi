@@ -75,7 +75,7 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const enableGoal4 = Flow.whenTrueDo({
-  condition: globalData.dungeonPhase3.dataSubject,
+  condition: globalData.dungeonPhase4.dataSubject,
   action: Flow.parallel(
     Npc.openDoor("door3To0"),
     amuletSkillAltar({ wp: { room: 4, x: 4, y: 4 } }),

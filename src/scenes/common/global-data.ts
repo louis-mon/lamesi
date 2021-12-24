@@ -17,10 +17,10 @@ export const globalData = defineData(
     dungeonSkillHint: annotate<boolean>(),
 
     dungeonAvailable: annotate<boolean>(),
-    dungeonPhase1: annotate<boolean>(),
     dungeonPhase2: annotate<boolean>(),
     dungeonPhase3: annotate<boolean>(),
     dungeonPhase4: annotate<boolean>(),
+    dungeonPhase5: annotate<boolean>(),
 
     creaturesAvailable: annotate<boolean>(),
   },
@@ -48,10 +48,10 @@ const initialGlobalData: DataMappingDefValues<typeof globalData> = {
   dungeonSkillHint: false,
 
   dungeonAvailable: false,
-  dungeonPhase1: false,
   dungeonPhase2: false,
   dungeonPhase3: false,
   dungeonPhase4: false,
+  dungeonPhase5: false,
 
   creaturesAvailable: false,
 };

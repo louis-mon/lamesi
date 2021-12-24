@@ -81,10 +81,10 @@ export class DungeonScene extends Phaser.Scene {
           Phaser.Input.Keyboard.KeyCodes.PLUS,
         );
         const phases = [
-          globalData.dungeonPhase1,
           globalData.dungeonPhase2,
           globalData.dungeonPhase3,
           globalData.dungeonPhase4,
+          globalData.dungeonPhase5,
         ];
         return Flow.observe(fromEvent(activateAllKey, "down"), () =>
           Flow.call(() => {
