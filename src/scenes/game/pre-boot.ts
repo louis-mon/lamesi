@@ -17,13 +17,16 @@ const initialGlobalData: DataMappingDefValues<typeof globalData> = {
   dungeonTakeHint: false,
   dungeonSkillHint: false,
 
-  dungeonAvailable: false,
+  dungeonPhase1: false,
   dungeonPhase2: false,
   dungeonPhase3: false,
   dungeonPhase4: false,
   dungeonPhase5: false,
 
-  creaturesAvailable: false,
+  creatures1: false,
+  creatures2: false,
+  creatures3: false,
+  creatures4: false,
 };
 
 export const gamePreBoot: BootCallback = (game) => {

@@ -16,13 +16,16 @@ export const globalData = defineData(
     dungeonTakeHint: annotate<boolean>(),
     dungeonSkillHint: annotate<boolean>(),
 
-    dungeonAvailable: annotate<boolean>(),
+    dungeonPhase1: annotate<boolean>(),
     dungeonPhase2: annotate<boolean>(),
     dungeonPhase3: annotate<boolean>(),
     dungeonPhase4: annotate<boolean>(),
     dungeonPhase5: annotate<boolean>(),
 
-    creaturesAvailable: annotate<boolean>(),
+    creatures1: annotate<boolean>(),
+    creatures2: annotate<boolean>(),
+    creatures3: annotate<boolean>(),
+    creatures4: annotate<boolean>(),
   },
   "game",
 );

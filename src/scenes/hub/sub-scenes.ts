@@ -10,42 +10,39 @@ import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
 import { observeCommonGoEvent } from "/src/helpers/component";
 import Vector2 = Phaser.Math.Vector2;
+import { isEventSolved } from "/src/scenes/common/progress-dependencies";
 
 type SubScene = {
   create: () => Phaser.Scene;
   key: string;
-  trigger: GlobalDataKey;
-  available: GlobalDataKey;
+  conditionKey: GlobalDataKey;
 };
 
 const subScenes: SubScene[] = [
   {
     create: () => new LightScene(),
     key: "lights",
-    available: "lightsAvailable",
-    trigger: "lights1",
+    conditionKey: "lights1",
   },
   {
     create: () => new DungeonScene(),
     key: "dungeon",
-    trigger: "lights2",
-    available: "dungeonAvailable",
+    conditionKey: "dungeonPhase1",
   },
   {
     create: () => new CreaturesScene(),
     key: "creatures",
-    available: "creaturesAvailable",
-    trigger: "lights2",
+    conditionKey: "creatures1",
   },
 ];
 
 export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
   Flow.parallel(
     ...subScenes.map((sceneDef, i) => {
-      const isTriggered = globalData[sceneDef.trigger].value(hubScene);
-      const isAvailable = globalData[sceneDef.available].value(hubScene);
-      const firstTime = !isAvailable && isTriggered;
-      if (!isAvailable && !isTriggered) {
+      const hasCondition = globalData[sceneDef.conditionKey].value(hubScene);
+      const isSolved = isEventSolved(hubScene)(sceneDef.conditionKey);
+      const firstTime = !isSolved && hasCondition;
+      if (!isSolved && !hasCondition) {
         return Flow.noop;
       }
       const scene = hubScene.scene.add(sceneDef.key, sceneDef.create, false);
@@ -108,14 +105,11 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
             );
           },
         );
-        const showScene = Flow.sequence(
-          Flow.tween({
-            targets: [mainCam, rect],
-            props: { alpha: 1 },
-            duration: 2000,
-          }),
-          Flow.call(globalData[sceneDef.available].setValue(true)),
-        );
+        const showScene = Flow.tween({
+          targets: [mainCam, rect],
+          props: { alpha: 1 },
+          duration: 2000,
+        });
         return Flow.sequence(firstTime ? showScene : Flow.noop, clickScene);
       });
     }),
