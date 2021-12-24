@@ -1,4 +1,4 @@
-import { events } from "/src/scenes/global-events";
+import { globalData } from "/src/scenes/common/global-data";
 import * as Phaser from "phaser";
 import { playerCannotActSubject } from "./definitions";
 import { getWpId } from "./wp";
@@ -46,7 +46,7 @@ export const createPlayer = (scene: Phaser.Scene) => {
     Phaser.Input.Keyboard.KeyCodes.SHIFT,
   );
   const playerSpeed = () =>
-    runKey.isDown && events.cheatCodes.value(scene) ? 0.4 : 0.2;
+    runKey.isDown && globalData.cheatCodes.value(scene) ? 0.4 : 0.2;
   scene.anims.create({
     key: "walk",
     repeat: -1,

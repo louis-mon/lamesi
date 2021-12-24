@@ -1,7 +1,7 @@
 import { createAllFlameThrowers } from "/src/scenes/dungeon/fireball";
 import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
 import { createPlayer } from "/src/scenes/dungeon/player";
-import { events, eventsHelpers } from "/src/scenes/global-events";
+import { globalData, eventsHelpers } from "/src/scenes/common/global-data";
 import * as Phaser from "phaser";
 import _ from "lodash";
 import { playerCannotActSubject } from "./definitions";
@@ -20,7 +20,11 @@ import {
 } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
-import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
+import {
+  subWordGameBeginEvent,
+  gameWidth,
+  gameHeight,
+} from "../common/constants";
 import { annotate } from "/src/helpers/typing";
 import {
   defineGoClass,
@@ -71,16 +75,16 @@ export class DungeonScene extends Phaser.Scene {
     const initActions = Flow.sequence(initSkills);
 
     const cheatCodeAction: Flow.PhaserNode = Flow.whenTrueDo({
-      condition: events.cheatCodes.dataSubject,
+      condition: globalData.cheatCodes.dataSubject,
       action: Flow.lazy(() => {
         const activateAllKey = this.input.keyboard.addKey(
           Phaser.Input.Keyboard.KeyCodes.PLUS,
         );
         const phases = [
-          events.dungeonPhase1,
-          events.dungeonPhase2,
-          events.dungeonPhase3,
-          events.dungeonPhase4,
+          globalData.dungeonPhase1,
+          globalData.dungeonPhase2,
+          globalData.dungeonPhase3,
+          globalData.dungeonPhase4,
         ];
         return Flow.observe(fromEvent(activateAllKey, "down"), () =>
           Flow.call(() => {

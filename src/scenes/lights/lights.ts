@@ -1,15 +1,15 @@
 import * as Phaser from "phaser";
 import { ManipulableObject, getObjectPosition } from "/src/helpers/phaser";
-import { debugObjectPos } from "../common";
 import {
   sceneDef,
   LightSceneMaterialDef,
   ObjectCreationDef,
   LightSceneSourceDef,
 } from "./lights-def";
-import { eventsHelpers } from "../global-events";
-import { gameWidth, gameHeight } from "/src/scenes/common";
+import { eventsHelpers } from "../common/global-data";
+import { gameWidth, gameHeight } from "/src/scenes/common/constants";
 import { menuHelpers } from "../menu";
+import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
 
 const goalPlane = 0;
 const shadowPlane = goalPlane + 1;

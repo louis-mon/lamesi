@@ -1,5 +1,9 @@
 import * as Phaser from "phaser";
-import { gameHeight, gameWidth, subWordGameBeginEvent } from "./common";
+import {
+  gameHeight,
+  gameWidth,
+  subWordGameBeginEvent,
+} from "./common/constants";
 import { ManipulableObject } from "../helpers/phaser";
 
 export const menuZoneSize = 75;

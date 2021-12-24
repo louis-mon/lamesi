@@ -1,19 +1,14 @@
-import _ from "lodash";
-import { annotate } from "../helpers/typing";
-import { DataMappingDefValues, defineData } from "../helpers/component";
+import { annotate } from "../../helpers/typing";
+import { DataMappingDefValues, defineData } from "../../helpers/component";
 
-export type EventKey = string & {
-  __eventKey: null;
-};
-
-export const events = defineData(
+export const globalData = defineData(
   {
-    lightsTrigger: annotate<boolean>(),
-    lightsAvailable: annotate<boolean>(),
     lights1: annotate<boolean>(),
+    lightsAvailable: annotate<boolean>(),
     lights2: annotate<boolean>(),
     lights3: annotate<boolean>(),
     lights4: annotate<boolean>(),
+    lights5: annotate<boolean>(),
 
     cheatCodes: annotate<boolean>(),
 
@@ -32,19 +27,19 @@ export const events = defineData(
   "game",
 );
 
-export type GlobalEventKey = keyof typeof events;
+export type GlobalDataKey = keyof typeof globalData;
 
 export type WithRequiredEvent = {
-  eventRequired?: GlobalEventKey;
+  eventRequired?: GlobalDataKey;
 };
 
-const startupEvents: DataMappingDefValues<typeof events> = {
+const initialGlobalData: DataMappingDefValues<typeof globalData> = {
+  lights1: true,
   lightsAvailable: false,
-  lightsTrigger: true,
-  lights1: false,
   lights2: false,
   lights3: false,
   lights4: false,
+  lights5: false,
 
   cheatCodes: true,
 
@@ -62,7 +57,7 @@ const startupEvents: DataMappingDefValues<typeof events> = {
 };
 
 export const eventsHelpers = {
-  startupEvents: startupEvents,
+  startupEvents: initialGlobalData,
   getEventFilter: (scene: Phaser.Scene) => (e: WithRequiredEvent): boolean =>
-    e.eventRequired ? events[e.eventRequired].value(scene) : true,
+    e.eventRequired ? globalData[e.eventRequired].value(scene) : true,
 };

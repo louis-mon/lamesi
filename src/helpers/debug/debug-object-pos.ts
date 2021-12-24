@@ -1,9 +1,5 @@
 import { Scene } from "phaser";
-import { ManipulableObject } from "../helpers/phaser";
-
-export const gameWidth = 1920;
-export const gameHeight = 1080;
-export const gameRatio = gameHeight / gameWidth;
+import { ManipulableObject } from "/src/helpers/phaser";
 
 export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
   const text = scene.add.text(0, 0, "");
@@ -16,5 +12,3 @@ export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
     )}, ${Math.round(obj.displayHeight)}`;
   });
 };
-
-export const subWordGameBeginEvent = "subWordGameBeginEvent";

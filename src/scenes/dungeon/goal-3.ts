@@ -22,7 +22,7 @@ import {
 import * as Wp from "./wp";
 import { setGroundObstacleLine } from "./wp";
 import Line = Phaser.Geom.Line;
-import { events } from "../global-events";
+import { globalData } from "../common/global-data";
 
 const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
   const switchDef = Def.switches.room1ForRoom2Door;
@@ -181,7 +181,7 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const enableGoal3 = Flow.whenTrueDo({
-  condition: events.dungeonPhase2.dataSubject,
+  condition: globalData.dungeonPhase2.dataSubject,
   action: Flow.parallel(
     Npc.openDoor("door4To1"),
     bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),

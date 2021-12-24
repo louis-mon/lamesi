@@ -16,7 +16,11 @@ import {
 } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
-import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
+import {
+  subWordGameBeginEvent,
+  gameWidth,
+  gameHeight,
+} from "../common/constants";
 import { annotate, ValueOf } from "/src/helpers/typing";
 import {
   declareGoInstance,

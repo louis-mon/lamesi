@@ -21,7 +21,7 @@ import { arrowSkillAltar, bellHiddenAction, bellSkillAltar } from "./skills";
 import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
 import Vector2Like = Phaser.Types.Math.Vector2Like;
-import * as globalEvents from "/src/scenes/global-events";
+import * as globalEvents from "/src/scenes/common/global-data";
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -210,7 +210,7 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const enableGoal2 = Flow.whenTrueDo({
-  condition: globalEvents.events.dungeonPhase1.dataSubject,
+  condition: globalEvents.globalData.dungeonPhase1.dataSubject,
   action: Flow.parallel(
     Npc.openDoor("door4To3"),
     Npc.openDoor("door5To2"),

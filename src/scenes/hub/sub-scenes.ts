@@ -3,8 +3,8 @@ import { LightScene } from "/src/scenes/lights/lights";
 import Phaser from "phaser";
 import { DungeonScene } from "/src/scenes/dungeon/dungeon";
 import { CreaturesScene } from "/src/scenes/creatures/creatures";
-import { events, GlobalEventKey } from "../global-events";
-import { gameHeight, gameRatio, gameWidth } from "/src/scenes/common";
+import { globalData, GlobalDataKey } from "../common/global-data";
+import { gameHeight, gameRatio, gameWidth } from "/src/scenes/common/constants";
 import { MenuScene } from "/src/scenes/menu";
 import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
@@ -14,8 +14,8 @@ import Vector2 = Phaser.Math.Vector2;
 type SubScene = {
   create: () => Phaser.Scene;
   key: string;
-  trigger: GlobalEventKey;
-  available: GlobalEventKey;
+  trigger: GlobalDataKey;
+  available: GlobalDataKey;
 };
 
 const subScenes: SubScene[] = [
@@ -23,27 +23,27 @@ const subScenes: SubScene[] = [
     create: () => new LightScene(),
     key: "lights",
     available: "lightsAvailable",
-    trigger: "lightsTrigger",
+    trigger: "lights1",
   },
   {
     create: () => new DungeonScene(),
     key: "dungeon",
-    trigger: "lights1",
+    trigger: "lights2",
     available: "dungeonAvailable",
   },
   {
     create: () => new CreaturesScene(),
     key: "creatures",
     available: "creaturesAvailable",
-    trigger: "lights1",
+    trigger: "lights2",
   },
 ];
 
 export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
   Flow.parallel(
     ...subScenes.map((sceneDef, i) => {
-      const isTriggered = events[sceneDef.trigger].value(hubScene);
-      const isAvailable = events[sceneDef.available].value(hubScene);
+      const isTriggered = globalData[sceneDef.trigger].value(hubScene);
+      const isAvailable = globalData[sceneDef.available].value(hubScene);
       const firstTime = !isAvailable && isTriggered;
       if (!isAvailable && !isTriggered) {
         return Flow.noop;
@@ -114,7 +114,7 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
             props: { alpha: 1 },
             duration: 2000,
           }),
-          Flow.call(events[sceneDef.available].setValue(true)),
+          Flow.call(globalData[sceneDef.available].setValue(true)),
         );
         return Flow.sequence(firstTime ? showScene : Flow.noop, clickScene);
       });

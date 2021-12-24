@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
-import { gameRatio, gameWidth, gameHeight } from "../common";
-import { eventsHelpers } from "../global-events";
+import { gameRatio, gameWidth, gameHeight } from "../common/constants";
+import { eventsHelpers } from "../common/global-data";
 import { LightScene } from "../lights/lights";
 import { DungeonScene } from "../dungeon/dungeon";
 import { MenuScene } from "../menu";

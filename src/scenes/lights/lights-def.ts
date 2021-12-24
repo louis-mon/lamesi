@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { ManipulableObject } from "../../helpers/phaser";
-import { events, WithRequiredEvent } from "../global-events";
+import { globalData, WithRequiredEvent } from "../common/global-data";
 
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
@@ -43,7 +43,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "l2",
-      eventRequired: "lights3",
+      eventRequired: "lights4",
       create: (scene) => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
       movablePath: {
         path: new Phaser.Curves.Path(1880, 975)
@@ -63,7 +63,7 @@ export const sceneDef: LightSceneDef = {
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true,
       rope: {
-        eventRequired: "lights2",
+        eventRequired: "lights3",
         minDepth: 0.4,
         maxDepth: 0.8,
       },
@@ -72,9 +72,9 @@ export const sceneDef: LightSceneDef = {
       key: "m-triangle-1",
       depth: 0.7,
       movable: true,
-      eventRequired: "lights1",
+      eventRequired: "lights2",
       rope: {
-        eventRequired: "lights2",
+        eventRequired: "lights3",
         minDepth: 0.2,
         maxDepth: 0.9,
       },
@@ -85,9 +85,9 @@ export const sceneDef: LightSceneDef = {
       key: "m-bar-1",
       depth: 0.5,
       movable: true,
-      eventRequired: "lights4",
+      eventRequired: "lights5",
       rope: {
-        eventRequired: "lights2",
+        eventRequired: "lights3",
         minDepth: 0.4,
         maxDepth: 0.9,
       },
@@ -108,7 +108,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g2",
-      eventRequired: "lights1",
+      eventRequired: "lights2",
       create: (scene) => scene.add.image(676, 444, "goal-2"),
       requires: [
         {
@@ -125,7 +125,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g3",
-      eventRequired: "lights2",
+      eventRequired: "lights3",
       create: (scene) => scene.add.image(970, 175, "goal-3"),
       requires: [
         {
@@ -142,7 +142,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g4",
-      eventRequired: "lights3",
+      eventRequired: "lights4",
       create: (scene) => scene.add.image(370, 212, "goal-4"),
       requires: [
         {
@@ -164,7 +164,7 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "g5",
-      eventRequired: "lights4",
+      eventRequired: "lights5",
       create: (scene) => scene.add.image(1695, 218, "goal-5"),
       requires: [
         {

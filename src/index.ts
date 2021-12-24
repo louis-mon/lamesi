@@ -1,8 +1,8 @@
 import * as Phaser from "phaser";
 import { HubScene } from "./scenes/hub/hub";
-import { gameWidth, gameHeight } from "./scenes/common";
+import { gameWidth, gameHeight } from "./scenes/common/constants";
 import _ from "lodash";
-import { eventsHelpers } from "/src/scenes/global-events";
+import { eventsHelpers } from "/src/scenes/common/global-data";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

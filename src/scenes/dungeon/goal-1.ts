@@ -14,7 +14,11 @@ import {
 } from "/src/helpers/phaser";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
-import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
+import {
+  subWordGameBeginEvent,
+  gameWidth,
+  gameHeight,
+} from "../common/constants";
 import { annotate } from "/src/helpers/typing";
 import {
   defineGoClass,
@@ -29,7 +33,7 @@ import { menuHelpers } from "../menu";
 import { tintProxy } from "/src/helpers/animate/tween";
 import { Maybe } from "purify-ts";
 import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
-import { events } from "../global-events";
+import { globalData } from "../common/global-data";
 
 const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
   const mechanisms = [
@@ -230,7 +234,7 @@ const switchesForDoor4To5: Flow.PhaserNode = Flow.sequence(
     Flow.whenTrueDo({
       condition: playerIsOnPos({ room: 5, x: 0, y: 2 }),
       action: Flow.lazy((scene) =>
-        events.dungeonPhase1.value(scene)
+        globalData.dungeonPhase1.value(scene)
           ? Flow.noop
           : Npc.closeDoor("door4To5"),
       ),

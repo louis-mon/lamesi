@@ -22,7 +22,7 @@ import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
 import { menuHelpers } from "../menu";
-import { gameWidth, gameHeight } from "../common";
+import { gameWidth, gameHeight } from "../common/constants";
 
 const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({

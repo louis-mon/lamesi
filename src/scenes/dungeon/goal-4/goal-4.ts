@@ -7,7 +7,7 @@ import * as Geom from "/src/helpers/math/geom";
 import * as Npc from "../npc";
 import * as Def from "../definitions";
 import { iceArmorAltar } from "../ice-armor";
-import { events } from "../../global-events";
+import { globalData } from "../../common/global-data";
 import { amuletSkillAltar } from "../skills";
 import { createSpriteAt } from "/src/helpers/phaser";
 import { createFlameAnim, showGreenFlame } from "./goal-4-defs";
@@ -75,7 +75,7 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const enableGoal4 = Flow.whenTrueDo({
-  condition: events.dungeonPhase3.dataSubject,
+  condition: globalData.dungeonPhase3.dataSubject,
   action: Flow.parallel(
     Npc.openDoor("door3To0"),
     amuletSkillAltar({ wp: { room: 4, x: 4, y: 4 } }),

@@ -6,7 +6,11 @@ import {
   placeAt,
   addPhysicsFromSprite,
 } from "/src/helpers/phaser";
-import { subWordGameBeginEvent, gameWidth, gameHeight } from "../common";
+import {
+  subWordGameBeginEvent,
+  gameWidth,
+  gameHeight,
+} from "../common/constants";
 import * as Flow from "/src/helpers/phaser-flow";
 import { annotate } from "/src/helpers/typing";
 import {

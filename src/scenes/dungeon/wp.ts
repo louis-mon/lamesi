@@ -12,7 +12,7 @@ import _ from "lodash";
 import * as Phaser from "phaser";
 import { combineLatest } from "rxjs";
 import { auditTime, map } from "rxjs/operators";
-import { gameHeight, gameWidth } from "../common";
+import { gameHeight, gameWidth } from "../common/constants";
 import { menuZoneSize } from "../menu";
 import * as Def from "./definitions";
 import { WpDef, WpGraph, WpId } from "./definitions";

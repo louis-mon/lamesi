@@ -7,7 +7,7 @@ import * as Geom from "/src/helpers/math/geom";
 import * as Npc from "../npc";
 import * as Def from "../definitions";
 import { iceArmorAltar } from "../ice-armor";
-import { events } from "../../global-events";
+import { globalData } from "../../common/global-data";
 import { amuletSkillAltar } from "../skills";
 import { createSpriteAt, SceneContext, vecToXY } from "/src/helpers/phaser";
 import {

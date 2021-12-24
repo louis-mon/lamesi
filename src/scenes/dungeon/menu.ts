@@ -3,7 +3,7 @@ import { Maybe } from "purify-ts";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import { menuHelpers } from "../menu";
-import * as globalEvents from "/src/scenes/global-events";
+import * as globalEvents from "/src/scenes/common/global-data";
 import {
   defineGoClass,
   customEvent,
@@ -22,7 +22,7 @@ import {
   placeAt,
 } from "/src/helpers/phaser";
 import _, { remove } from "lodash";
-import { gameWidth, gameHeight } from "../common";
+import { gameWidth, gameHeight } from "../common/constants";
 
 const actionEmptyFrame = "action-empty";
 
@@ -30,7 +30,7 @@ type BindActionParams = {
   action: Flow.PhaserNode;
   key: string;
   disabled?: Observable<boolean>;
-  hintKey: keyof typeof globalEvents.events;
+  hintKey: keyof typeof globalEvents.globalData;
   create: (params: {
     pos: Phaser.Math.Vector2;
   }) => (scene: Phaser.Scene) => ManipulableObject;
@@ -71,11 +71,11 @@ const showShadowRect = ({
   hintKey,
   targetPos,
 }: {
-  hintKey: keyof typeof globalEvents.events;
+  hintKey: keyof typeof globalEvents.globalData;
   targetPos: Phaser.Math.Vector2;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    if (globalEvents.events[hintKey].value(scene)) return Flow.noop;
+    if (globalEvents.globalData[hintKey].value(scene)) return Flow.noop;
 
     const pointerCircle = scene.add.graphics();
     pointerCircle.fillCircle(0, 0, 200).setVisible(false);
@@ -91,7 +91,7 @@ const showShadowRect = ({
         action: ({ activated }) =>
           Flow.call(() => {
             if (activated) {
-              globalEvents.events[hintKey].setValue(true)(scene);
+              globalEvents.globalData[hintKey].setValue(true)(scene);
             }
             shadowRect.destroy();
             pointerCircle.destroy();
