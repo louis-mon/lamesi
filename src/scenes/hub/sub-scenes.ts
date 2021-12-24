@@ -3,7 +3,7 @@ import { LightScene } from "/src/scenes/lights/lights";
 import Phaser from "phaser";
 import { DungeonScene } from "/src/scenes/dungeon/dungeon";
 import { CreaturesScene } from "/src/scenes/creatures/creatures";
-import { events } from "../global-events";
+import { events, GlobalEventKey } from "../global-events";
 import { gameHeight, gameRatio, gameWidth } from "/src/scenes/common";
 import { MenuScene } from "/src/scenes/menu";
 import { observe } from "/src/helpers/phaser-flow";
@@ -14,8 +14,8 @@ import Vector2 = Phaser.Math.Vector2;
 type SubScene = {
   create: () => Phaser.Scene;
   key: string;
-  trigger: keyof typeof events;
-  available: keyof typeof events;
+  trigger: GlobalEventKey;
+  available: GlobalEventKey;
 };
 
 const subScenes: SubScene[] = [

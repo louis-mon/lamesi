@@ -32,8 +32,10 @@ export const events = defineData(
   "game",
 );
 
+export type GlobalEventKey = keyof typeof events;
+
 export type WithRequiredEvent = {
-  eventRequired?: keyof typeof events;
+  eventRequired?: GlobalEventKey;
 };
 
 const startupEvents: DataMappingDefValues<typeof events> = {
