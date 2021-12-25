@@ -9,9 +9,9 @@ import {
 } from "./lights-def";
 import { eventsHelpers } from "../common/global-data";
 import { gameWidth, gameHeight } from "/src/scenes/common/constants";
-import { menuHelpers } from "../menu";
 import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
 import { solveLight } from "/src/scenes/lights/solve-light";
+import { menuHelpers } from "/src/scenes/common/menu-scene-def";
 
 const goalPlane = 0;
 const shadowPlane = goalPlane + 1;

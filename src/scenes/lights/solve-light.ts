@@ -2,6 +2,7 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { LightSceneGoalDef } from "/src/scenes/lights/lights-def";
 import { solveEvent } from "/src/scenes/common/progress-dependencies";
 import GameObject = Phaser.GameObjects.GameObject;
+import { menuHelpers, menuSceneDef } from "/src/scenes/common/menu-scene-def";
 
 export const solveLight = ({
   target,
@@ -24,5 +25,9 @@ export const solveLight = ({
         props: { alpha: 0.5 },
       }),
       Flow.call(solveEvent(goalDef.eventRequired)),
+      Flow.withContext(
+        menuHelpers.getMenuScene,
+        Flow.call(menuSceneDef.events.goToHub.emit({})),
+      ),
     );
   });

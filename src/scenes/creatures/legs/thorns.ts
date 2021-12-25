@@ -2,10 +2,9 @@ import Phaser from "phaser";
 import Vector2 = Phaser.Math.Vector2;
 
 import * as Flow from "/src/helpers/phaser-flow";
-import _ from "lodash";
 import { createImageAt, getObjectPosition } from "/src/helpers/phaser";
-import { Subject } from "rxjs";
 import * as Def from "../def";
+import { makeSceneSpawner } from "/src/helpers/phaser-flow";
 
 export const thornFlow = ({
   startPos,
@@ -25,10 +24,10 @@ export const thornFlow = ({
     );
     const nodePosList = line.getPoints(0, 17);
     const angle = endPos.clone().subtract(startPos).angle();
-    const flows = new Subject<Flow.PhaserNode>();
+    const spawner = makeSceneSpawner();
 
     return Flow.parallel(
-      Flow.observe(flows),
+      spawner.flow,
       Flow.sequence(
         ...nodePosList.map((nodePos, i) =>
           Flow.lazy(() => {
@@ -59,7 +58,7 @@ export const thornFlow = ({
             return Flow.sequence(
               Flow.waitTimer(200),
               Flow.call(() =>
-                flows.next(
+                spawner.spawn(
                   Flow.sequence(
                     Flow.tween({
                       targets: branch,
@@ -79,7 +78,7 @@ export const thornFlow = ({
             );
           }),
         ),
-        Flow.call(() => flows.next(afterReach)),
+        Flow.call(() => spawner.spawn(afterReach)),
       ),
     );
   });

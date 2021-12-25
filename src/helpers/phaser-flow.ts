@@ -8,6 +8,7 @@ import { SceneContext } from "./phaser";
 import { makeStatesFlow, StatesFlow } from "./animate/flow-state";
 import { Maybe } from "purify-ts";
 import { observeCommonGoEvent } from "/src/helpers/component";
+import { makeSpawner } from "/src/helpers/flow/spawner";
 
 export * from "./flow";
 
@@ -16,6 +17,7 @@ export type PhaserNode = Flow.ActionNode<Context>;
 
 export type SceneStatesFlow = StatesFlow<Context>;
 export const makeSceneStates = () => makeStatesFlow<Context>();
+export const makeSceneSpawner = () => makeSpawner<Context>();
 
 export const tween = (
   configFactory: FuncOrConst<Context, Phaser.Types.Tweens.TweenBuilderConfig>,

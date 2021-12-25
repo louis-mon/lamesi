@@ -1,28 +1,16 @@
 import * as Phaser from "phaser";
-import {
-  gameHeight,
-  gameWidth,
-  subWordGameBeginEvent,
-} from "./common/constants";
-import { ManipulableObject } from "../helpers/phaser";
+import { gameHeight, gameWidth, subWordGameBeginEvent } from "./constants";
+import { ManipulableObject } from "/src/helpers/phaser";
+import * as Flow from "/src/helpers/phaser-flow";
+import { makeSceneSpawner } from "/src/helpers/phaser-flow";
+import { fromEvent } from "rxjs";
+import { menuSceneDef, menuZoneSize } from "/src/scenes/common/menu-scene-def";
 
-export const menuZoneSize = 75;
 const buttonSize = 60;
 
 type Side = "left" | "right";
 const mirrorX = (side: Side, x: number) =>
   side === "left" ? x : gameWidth - x;
-
-const getMenuScene = (scene: Phaser.Scene) =>
-  scene.scene.get("menu") as MenuScene;
-
-export const menuHelpers = {
-  ensureOutsideMenu: (go: ManipulableObject) => {
-    const diff = go.getLeftCenter().x - menuZoneSize;
-    if (diff < 0) go.x -= diff;
-  },
-  getMenuScene,
-};
 
 export class MenuScene extends Phaser.Scene {
   private nbButtons = { left: 0, right: 0 };
@@ -67,20 +55,30 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(p: { currentScene: Phaser.Scene; parentScene: Phaser.Scene }) {
+    const spawner = makeSceneSpawner();
+
+    const goToHub: Flow.PhaserNode = Flow.lazy(() => {
+      const manager = this.scene.manager;
+      const scenes = manager.getScenes();
+      const destroyEvents = scenes.map((scene) => {
+        return Flow.wait(fromEvent(scene.events, "destroy"));
+      });
+      const destroyScene = () => {
+        scenes.forEach((scene) => scene.scene.remove());
+      };
+      return Flow.sequence(
+        Flow.parallel(...destroyEvents, Flow.call(destroyScene)),
+        Flow.call(() => manager.start(p.parentScene.scene.key)),
+      );
+    });
+
     if (p.parentScene) {
       const goBackButton = this.addButton(
         ({ x, y, size }) =>
           this.add.star(x, y, 5, size / 4, size / 2, 0xf5a742, 0.5),
         { side: "left" },
       );
-      goBackButton.on("pointerdown", () => {
-        const manager = this.scene.manager;
-        [p.currentScene, this.scene.key].map((key) => {
-          const scene = manager.getScene(key);
-          scene.scene.remove();
-        });
-        manager.start(p.parentScene.scene.key);
-      });
+      goBackButton.on("pointerdown", () => spawner.spawn(goToHub));
     }
     this.addButton(
       ({ x, y, size }) =>
@@ -93,5 +91,12 @@ export class MenuScene extends Phaser.Scene {
       { side: "left" },
     );
     p.currentScene.events.emit(subWordGameBeginEvent);
+    Flow.run(
+      this,
+      Flow.parallel(
+        spawner.flow,
+        Flow.observe(menuSceneDef.events.goToHub.subject, () => goToHub),
+      ),
+    );
   }
 }

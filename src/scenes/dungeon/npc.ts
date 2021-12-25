@@ -21,8 +21,8 @@ import {
 import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
-import { menuHelpers } from "../menu";
 import { gameWidth, gameHeight } from "../common/constants";
+import { menuHelpers } from "/src/scenes/common/menu-scene-def";
 
 const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({

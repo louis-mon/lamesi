@@ -29,11 +29,11 @@ import { combineContext, getProp } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
 import { map, tap } from "rxjs/operators";
 import { arrowSkillAltar } from "./skills";
-import { menuHelpers } from "../menu";
 import { tintProxy } from "/src/helpers/animate/tween";
 import { Maybe } from "purify-ts";
 import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
 import { globalData } from "../common/global-data";
+import { menuHelpers } from "/src/scenes/common/menu-scene-def";
 
 const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
   const mechanisms = [

@@ -5,7 +5,7 @@ import { DungeonScene } from "/src/scenes/dungeon/dungeon";
 import { CreaturesScene } from "/src/scenes/creatures/creatures";
 import { globalData, GlobalDataKey } from "../common/global-data";
 import { gameHeight, gameRatio, gameWidth } from "/src/scenes/common/constants";
-import { MenuScene } from "/src/scenes/menu";
+import { MenuScene } from "/src/scenes/common/menu";
 import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
 import { observeCommonGoEvent } from "/src/helpers/component";

@@ -2,7 +2,6 @@ import * as Phaser from "phaser";
 import { Maybe } from "purify-ts";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import { menuHelpers } from "../menu";
 import * as globalEvents from "/src/scenes/common/global-data";
 import {
   defineGoClass,
@@ -23,6 +22,7 @@ import {
 } from "/src/helpers/phaser";
 import _, { remove } from "lodash";
 import { gameWidth, gameHeight } from "../common/constants";
+import { menuHelpers } from "/src/scenes/common/menu-scene-def";
 
 const actionEmptyFrame = "action-empty";
 

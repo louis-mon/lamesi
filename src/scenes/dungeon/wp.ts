@@ -13,13 +13,13 @@ import * as Phaser from "phaser";
 import { combineLatest } from "rxjs";
 import { auditTime, map } from "rxjs/operators";
 import { gameHeight, gameWidth } from "../common/constants";
-import { menuZoneSize } from "../menu";
 import * as Def from "./definitions";
 import { WpDef, WpGraph, WpId } from "./definitions";
 
 export { WpId, WpDef } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
+import { menuZoneSize } from "/src/scenes/common/menu-scene-def";
 
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
