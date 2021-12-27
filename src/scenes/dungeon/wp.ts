@@ -19,7 +19,7 @@ import { WpDef, WpGraph, WpId } from "./definitions";
 export { WpId, WpDef } from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
-import { menuZoneSize } from "/src/scenes/common/menu-scene-def";
+import { menuZoneSize } from "/src/scenes/menu/menu-scene-def";
 
 export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>

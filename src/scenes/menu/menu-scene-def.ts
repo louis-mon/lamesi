@@ -1,19 +1,14 @@
-import { customEvent, defineSceneClass } from "/src/helpers/component";
 import Phaser from "phaser";
 import { ManipulableObject } from "/src/helpers/phaser";
-import { MenuScene } from "/src/scenes/common/menu";
-
-export const menuSceneDef = defineSceneClass({
-  events: {
-    goToHub: customEvent(),
-  },
-  data: {},
-});
+import { MenuScene } from "/src/scenes/menu/menu-scene";
+import { menuSceneKey } from "/src/scenes/common/constants";
 
 export const menuZoneSize = 75;
 
+export const fadeDuration = 700;
+
 const getMenuScene = (scene: Phaser.Scene) =>
-  scene.scene.get("menu") as MenuScene;
+  scene.scene.get(menuSceneKey) as MenuScene;
 
 export const menuHelpers = {
   ensureOutsideMenu: (go: ManipulableObject) => {

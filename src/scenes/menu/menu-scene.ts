@@ -1,10 +1,15 @@
 import * as Phaser from "phaser";
-import { gameHeight, gameWidth, subWordGameBeginEvent } from "./constants";
-import { ManipulableObject } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
-import { makeSceneSpawner } from "/src/helpers/phaser-flow";
-import { fromEvent } from "rxjs";
-import { menuSceneDef, menuZoneSize } from "/src/scenes/common/menu-scene-def";
+import {
+  gameHeight,
+  gameWidth,
+  menuSceneKey,
+  subWordGameBeginEvent,
+} from "../common/constants";
+import { ManipulableObject } from "/src/helpers/phaser";
+import { fadeDuration, menuZoneSize } from "/src/scenes/menu/menu-scene-def";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { endEventAnim } from "/src/scenes/menu/end-event-anim";
 
 const buttonSize = 60;
 
@@ -17,7 +22,7 @@ export class MenuScene extends Phaser.Scene {
 
   constructor() {
     super({
-      key: "menu",
+      key: menuSceneKey,
     });
   }
 
@@ -54,31 +59,22 @@ export class MenuScene extends Phaser.Scene {
     return this.addButton(f, { side: "right" });
   }
 
-  create(p: { currentScene: Phaser.Scene; parentScene: Phaser.Scene }) {
-    const spawner = makeSceneSpawner();
-
-    const goToHub: Flow.PhaserNode = Flow.lazy(() => {
-      const manager = this.scene.manager;
-      const scenes = manager.getScenes();
-      const destroyEvents = scenes.map((scene) => {
-        return Flow.wait(fromEvent(scene.events, "destroy"));
-      });
-      const destroyScene = () => {
-        scenes.forEach((scene) => scene.scene.remove());
-      };
-      return Flow.sequence(
-        Flow.parallel(...destroyEvents, Flow.call(destroyScene)),
-        Flow.call(() => manager.start(p.parentScene.scene.key)),
-      );
-    });
-
-    if (p.parentScene) {
+  create({
+    currentScene,
+    parentScene,
+  }: {
+    currentScene: Phaser.Scene;
+    parentScene: Phaser.Scene;
+  }) {
+    if (parentScene) {
       const goBackButton = this.addButton(
         ({ x, y, size }) =>
           this.add.star(x, y, 5, size / 4, size / 2, 0xf5a742, 0.5),
         { side: "left" },
       );
-      goBackButton.on("pointerdown", () => spawner.spawn(goToHub));
+      goBackButton.on("pointerdown", () => globalEvents.goToHub.emit({})(this));
+    } else {
+      this.cameras.main.fadeIn(fadeDuration);
     }
     this.addButton(
       ({ x, y, size }) =>
@@ -90,13 +86,10 @@ export class MenuScene extends Phaser.Scene {
           }),
       { side: "left" },
     );
-    p.currentScene.events.emit(subWordGameBeginEvent);
-    Flow.run(
+    currentScene.events.emit(subWordGameBeginEvent);
+    Flow.runScene(
       this,
-      Flow.parallel(
-        spawner.flow,
-        Flow.observe(menuSceneDef.events.goToHub.subject, () => goToHub),
-      ),
+      Flow.observe(globalEvents.endEventAnim.subject, endEventAnim),
     );
   }
 }

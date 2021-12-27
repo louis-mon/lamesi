@@ -20,9 +20,8 @@ import {
   ManipulableObject,
   placeAt,
 } from "/src/helpers/phaser";
-import _, { remove } from "lodash";
 import { gameWidth, gameHeight } from "../common/constants";
-import { menuHelpers } from "/src/scenes/common/menu-scene-def";
+import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 
 const actionEmptyFrame = "action-empty";
 

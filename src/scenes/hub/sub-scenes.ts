@@ -4,13 +4,28 @@ import Phaser from "phaser";
 import { DungeonScene } from "/src/scenes/dungeon/dungeon";
 import { CreaturesScene } from "/src/scenes/creatures/creatures";
 import { globalData, GlobalDataKey } from "../common/global-data";
-import { gameHeight, gameRatio, gameWidth } from "/src/scenes/common/constants";
-import { MenuScene } from "/src/scenes/common/menu";
+import {
+  creaturesSceneKey,
+  dungeonSceneKey,
+  gameHeight,
+  gameRatio,
+  gameWidth,
+  lightsSceneKey,
+  menuSceneKey,
+} from "/src/scenes/common/constants";
+import { MenuScene } from "/src/scenes/menu/menu-scene";
 import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
 import { observeCommonGoEvent } from "/src/helpers/component";
-import Vector2 = Phaser.Math.Vector2;
-import { isEventSolved } from "/src/scenes/common/progress-dependencies";
+import { isEventSolved } from "/src/scenes/common/event-dependencies";
+import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
+import FADE_IN_COMPLETE = Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE;
+
+const waitForMenuFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
+  Flow.wait(
+    fromEvent(menuHelpers.getMenuScene(scene).cameras.main, FADE_IN_COMPLETE),
+  ),
+);
 
 type SubScene = {
   create: () => Phaser.Scene;
@@ -21,17 +36,17 @@ type SubScene = {
 const subScenes: SubScene[] = [
   {
     create: () => new LightScene(),
-    key: "lights",
+    key: lightsSceneKey,
     conditionKey: "lights1",
   },
   {
     create: () => new DungeonScene(),
-    key: "dungeon",
+    key: dungeonSceneKey,
     conditionKey: "dungeonPhase1",
   },
   {
     create: () => new CreaturesScene(),
-    key: "creatures",
+    key: creaturesSceneKey,
     conditionKey: "creatures1",
   },
 ];
@@ -78,7 +93,7 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
               hubScene.scene.remove(otherScene.key);
             });
             hubScene.scene.setVisible(false);
-            hubScene.scene.remove("menu");
+            hubScene.scene.remove(menuSceneKey);
 
             return Flow.sequence(
               Flow.tween({
@@ -96,7 +111,7 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
               }),
               Flow.call(() => {
                 mainCam.inputEnabled = true;
-                hubScene.scene.add("menu", MenuScene, true, {
+                hubScene.scene.add(menuSceneKey, MenuScene, true, {
                   currentScene: scene,
                   parentScene: hubScene,
                 });
@@ -110,7 +125,11 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
           props: { alpha: 1 },
           duration: 2000,
         });
-        return Flow.sequence(firstTime ? showScene : Flow.noop, clickScene);
+        return Flow.sequence(
+          waitForMenuFadeIn,
+          firstTime ? showScene : Flow.noop,
+          clickScene,
+        );
       });
     }),
   ),

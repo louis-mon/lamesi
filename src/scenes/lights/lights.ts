@@ -11,7 +11,7 @@ import { eventsHelpers } from "../common/global-data";
 import { gameWidth, gameHeight } from "/src/scenes/common/constants";
 import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
 import { solveLight } from "/src/scenes/lights/solve-light";
-import { menuHelpers } from "/src/scenes/common/menu-scene-def";
+import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 
 const goalPlane = 0;
 const shadowPlane = goalPlane + 1;
@@ -156,7 +156,7 @@ export class LightScene extends Phaser.Scene {
       shadow.setScale(scale * scale);
     });
     const oneGoalReached = sceneDef.goals.reduce((found, goalDef) => {
-      const go = this.children.getByName(goalDef.key)!;
+      const go = this.children.getByName(goalDef.key)! as ManipulableObject;
       const reachGoal = goalDef.requires.every(
         ({ materialKey, position, width }) =>
           sceneDef.lights.some((lightDef) => {

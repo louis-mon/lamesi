@@ -3,7 +3,7 @@ import * as Phaser from "phaser";
 import * as Flow from "./flow";
 import _ from "lodash";
 import { FuncOrConst, funcOrConstValue } from "./functional";
-import { fromEventPattern, Observable } from "rxjs";
+import { fromEvent, fromEventPattern, Observable } from "rxjs";
 import { SceneContext } from "./phaser";
 import { makeStatesFlow, StatesFlow } from "./animate/flow-state";
 import { Maybe } from "purify-ts";
@@ -18,6 +18,19 @@ export type PhaserNode = Flow.ActionNode<Context>;
 export type SceneStatesFlow = StatesFlow<Context>;
 export const makeSceneStates = () => makeStatesFlow<Context>();
 export const makeSceneSpawner = () => makeSpawner<Context>();
+
+/**
+ * Runs a flow within a scene, making sure the flow is aborted when the scene is destroyed.
+ * Useful when watching global events
+ */
+export const runScene = (scene: Context, flow: PhaserNode): void =>
+  Flow.run(
+    scene,
+    Flow.withBackground({
+      main: Flow.wait(fromEvent(scene.events, "destroy")),
+      back: flow,
+    }),
+  );
 
 export const tween = (
   configFactory: FuncOrConst<Context, Phaser.Types.Tweens.TweenBuilderConfig>,

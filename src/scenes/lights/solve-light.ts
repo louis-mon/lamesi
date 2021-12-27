@@ -1,33 +1,37 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import { LightSceneGoalDef } from "/src/scenes/lights/lights-def";
-import { solveEvent } from "/src/scenes/common/progress-dependencies";
+import { getEventDependency } from "/src/scenes/common/event-dependencies";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { createImageAt, getObjectPosition } from "/src/helpers/phaser";
 import GameObject = Phaser.GameObjects.GameObject;
-import { menuHelpers, menuSceneDef } from "/src/scenes/common/menu-scene-def";
+import Transform = Phaser.GameObjects.Components.Transform;
 
 export const solveLight = ({
   target,
   goalDef,
 }: {
-  target: GameObject;
+  target: GameObject & Transform;
   goalDef: LightSceneGoalDef;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
+    const keyItem = createImageAt(
+      scene,
+      getObjectPosition(target),
+      "items",
+      getEventDependency(goalDef.eventRequired).keyItem,
+    );
+    scene.children.moveDown(keyItem);
     return Flow.sequence(
       Flow.tween({
         targets: target,
-        props: { scale: 1.4 },
-        repeat: 1,
-        yoyo: true,
-        duration: 700,
+        props: { scale: 2, alpha: 0 },
+        duration: 1400,
       }),
-      Flow.tween({
-        targets: target,
-        props: { alpha: 0.5 },
-      }),
-      Flow.call(solveEvent(goalDef.eventRequired)),
-      Flow.withContext(
-        menuHelpers.getMenuScene,
-        Flow.call(menuSceneDef.events.goToHub.emit({})),
+      Flow.call(
+        globalEvents.endEventAnim.emit({
+          dataSolved: goalDef.eventRequired,
+          fromScene: scene,
+        }),
       ),
     );
   });

@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
-import { HubScene } from "./scenes/hub/hub";
 import { gameWidth, gameHeight } from "./scenes/common/constants";
 import { gamePreBoot } from "/src/scenes/game/pre-boot";
+import { MasterScene } from "/src/scenes/master/master-scene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -16,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
       gravity: { y: 0 },
     },
   },
-  scene: new HubScene(),
+  scene: new MasterScene(),
   callbacks: {
     preBoot: gamePreBoot,
   },

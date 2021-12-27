@@ -78,7 +78,7 @@ const makeAborter = (
 };
 
 /**
- * Completes whenever 'main' completes
+ * Completes whenever 'main' completes.
  * run 'back' in parallel and abort when 'main' completes
  */
 export const withBackground = <C>(params: {
