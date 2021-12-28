@@ -25,6 +25,7 @@ import {
   followPosition,
   followRotation,
 } from "/src/helpers/animate/composite";
+import { globalData } from "/src/scenes/common/global-data";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -97,7 +98,7 @@ const potSceneClass = defineSceneClass({
   data: {},
 });
 
-export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
+const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
   const potCut = createImageAt(scene, potPosition, "pot", "pot-cut").setDepth(
     Def.depths.potCut,
   );
@@ -499,4 +500,9 @@ export const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     budFlows,
     clawMandibles,
   );
+});
+
+export const potFlow = Flow.whenTrueDo({
+  condition: globalData.creatures4.dataSubject,
+  action: createPot,
 });

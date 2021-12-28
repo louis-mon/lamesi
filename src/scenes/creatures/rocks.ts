@@ -1,28 +1,14 @@
 import Phaser from "phaser";
 
-import {
-  createImageAt,
-  createSpriteAt,
-  getObjectPosition,
-  placeAt,
-  vecToXY,
-} from "/src/helpers/phaser";
+import { createImageAt, getObjectPosition, vecToXY } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
-import { declareGoInstance } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
 import _ from "lodash";
-import { Maybe } from "purify-ts";
-import { MovedCurve } from "/src/helpers/math/curves";
-import { makeControlledValue } from "/src/helpers/animate/tween";
 import Vector2 = Phaser.Math.Vector2;
-import {
-  followObject,
-  followPosition,
-  followRotation,
-} from "/src/helpers/animate/composite";
 import { AlgaeController, createAlgae } from "/src/scenes/creatures/algae";
 import { moveTo } from "/src/helpers/animate/move";
+import { globalData } from "/src/scenes/common/global-data";
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;
@@ -93,7 +79,7 @@ const initializeState = (scene: Phaser.Scene): RockState => {
   return state;
 };
 
-export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
+const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
   const rockState = initializeState(scene);
 
   const flowState = Flow.makeSceneStates();
@@ -291,4 +277,9 @@ export const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     ...rockState.eggs.map((egg) => egg.bloomFlow.start()),
     flowState.start(chooseEgg),
   );
+});
+
+export const rockFlow: Flow.PhaserNode = Flow.whenTrueDo({
+  condition: globalData.creatures3.dataSubject,
+  action: createRocks,
 });

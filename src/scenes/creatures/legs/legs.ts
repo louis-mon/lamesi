@@ -10,6 +10,7 @@ import {
 import { legFlow } from "/src/scenes/creatures/legs/legs-leg";
 import { sceneClass } from "/src/scenes/creatures/def";
 import { legsSwingDuration } from "/src/scenes/creatures/legs/legs-defs";
+import { globalData } from "/src/scenes/common/global-data";
 
 const idButton1 = _.uniqueId();
 const idButton2 = _.uniqueId();
@@ -36,7 +37,7 @@ const firstLevelAngle = -Math.PI / 10;
 const secondLevelAngle = 0;
 const thirdLevelAngle = Math.PI / 8;
 
-export const legsFlow: Flow.PhaserNode = Flow.parallel(
+const createLegs: Flow.PhaserNode = Flow.parallel(
   createBloomButton({
     pos: new Vector2(400, 610),
     id: idButton1,
@@ -89,3 +90,8 @@ export const legsFlow: Flow.PhaserNode = Flow.parallel(
     Flow.call(sceneClass.events.syncLegs.emit({})),
   ),
 );
+
+export const legsFlow = Flow.whenTrueDo({
+  condition: globalData.creatures2.dataSubject,
+  action: createLegs,
+});

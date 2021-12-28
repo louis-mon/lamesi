@@ -1,8 +1,8 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import { createTree } from "./tree";
 import { createCentralCreature } from "./central";
-import { createPot } from "./pot";
-import { createRocks } from "/src/scenes/creatures/rocks";
+import { potFlow } from "./pot";
+import { rockFlow } from "/src/scenes/creatures/rocks";
 import { legsFlow } from "/src/scenes/creatures/legs/legs";
 
 export class CreaturesScene extends Phaser.Scene {
@@ -24,12 +24,12 @@ export class CreaturesScene extends Phaser.Scene {
   }
 
   create() {
-    Flow.run(
+    Flow.runScene(
       this,
       Flow.parallel(
         createTree,
-        createPot,
-        createRocks,
+        potFlow,
+        rockFlow,
         createCentralCreature,
         legsFlow,
       ),

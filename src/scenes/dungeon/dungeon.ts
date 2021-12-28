@@ -43,27 +43,6 @@ export class DungeonScene extends Phaser.Scene {
 
     const initActions = Flow.sequence(initSkills);
 
-    const cheatCodeAction: Flow.PhaserNode = Flow.whenTrueDo({
-      condition: globalData.cheatCodes.dataSubject,
-      action: Flow.lazy(() => {
-        const activateAllKey = this.input.keyboard.addKey(
-          Phaser.Input.Keyboard.KeyCodes.PLUS,
-        );
-        const phases = [
-          globalData.dungeonPhase2,
-          globalData.dungeonPhase3,
-          globalData.dungeonPhase4,
-          globalData.dungeonPhase5,
-        ];
-        return Flow.observe(fromEvent(activateAllKey, "down"), () =>
-          Flow.call(() => {
-            const valueToActivate = phases.find((phase) => !phase.value(this));
-            valueToActivate?.setValue(true)(this);
-          }),
-        );
-      }),
-    });
-
     const ambientActions = Flow.parallel(
       playerFlow,
       roomClouds,
@@ -77,7 +56,6 @@ export class DungeonScene extends Phaser.Scene {
       dungeonGoal3,
       dungeonGoal4,
       enableGoal5,
-      cheatCodeAction,
     );
     Flow.run(this, Flow.sequence(initActions, ambientActions));
     Flow.runScene(

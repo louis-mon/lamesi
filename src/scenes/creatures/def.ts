@@ -4,7 +4,6 @@ import {
   defineGoClass,
   defineSceneClass,
 } from "/src/helpers/component";
-import { ManipulableObject } from "/src/helpers/phaser";
 import { annotate } from "/src/helpers/typing";
 
 export const depths = {

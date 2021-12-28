@@ -12,6 +12,14 @@ export const eventDependencies: EventDependencies = {
     triggers: ["creatures1"],
     keyItem: "book",
   },
+  creatures1: {
+    triggers: ["dungeonPhase1"],
+    keyItem: "",
+  },
+  dungeonPhase1: {
+    triggers: ["lights2"],
+    keyItem: "",
+  },
 };
 
 export const isEventSolved = (scene: Scene) => (key: GlobalDataKey) => {

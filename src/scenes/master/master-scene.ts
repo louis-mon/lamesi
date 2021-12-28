@@ -8,6 +8,7 @@ import {
   menuSceneKey,
 } from "/src/scenes/common/constants";
 import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
+import { cheatCodeAction } from "/src/scenes/master/cheat-codes";
 
 export class MasterScene extends Phaser.Scene {
   constructor() {
@@ -45,8 +46,12 @@ export class MasterScene extends Phaser.Scene {
     });
     Flow.run(
       this,
-      Flow.observe(globalEvents.goToHub.subject, () => goToHub),
+      Flow.parallel(
+        Flow.observe(globalEvents.goToHub.subject, () => goToHub),
+        cheatCodeAction,
+      ),
     );
-    this.scene.add(hubSceneKey, new HubScene(), true);
+    this.scene.add(hubSceneKey, new HubScene(), false);
+    this.scene.run(hubSceneKey)
   }
 }
