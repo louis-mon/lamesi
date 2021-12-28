@@ -1,37 +1,13 @@
 import Vector2 = Phaser.Math.Vector2;
 import Color = Phaser.Display.Color;
-import {
-  createSpriteAt,
-  vecToXY,
-  createImageAt,
-  placeAt,
-  addPhysicsFromSprite,
-  ManipulableObject,
-  getObjectPosition,
-  getPointerPosInMainCam,
-} from "/src/helpers/phaser";
-import {
-  subWordGameBeginEvent,
-  gameWidth,
-  gameHeight,
-} from "../common/constants";
+import { getObjectPosition } from "/src/helpers/phaser";
+import { gameWidth, gameHeight } from "../common/constants";
 import * as Flow from "/src/helpers/phaser-flow";
-import { annotate } from "/src/helpers/typing";
-import {
-  defineGoClass,
-  declareGoInstance,
-  customEvent,
-  spriteClassKind,
-  commonGoEvents,
-} from "/src/helpers/component";
-import { combineContext, getProp } from "/src/helpers/functional";
-import { combineLatest, fromEvent } from "rxjs";
-import { map } from "rxjs/operators";
+import { declareGoInstance } from "/src/helpers/component";
+import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
-import _, { flatMap, mapValues } from "lodash";
-import { followPosition, followRotation } from "/src/helpers/animate/composite";
+import _, { flatMap } from "lodash";
 import { Maybe } from "purify-ts";
-import { makeStatesFlow } from "/src/helpers/animate/flow-state";
 import { bodyPartsConfig } from "./def";
 
 export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {

@@ -1,36 +1,23 @@
 import Vector2 = Phaser.Math.Vector2;
 import {
   createSpriteAt,
-  vecToXY,
-  createImageAt,
-  placeAt,
-  addPhysicsFromSprite,
   ManipulableObject,
   getObjectPosition,
   getPointerPosInMainCam,
-  SceneContext,
 } from "/src/helpers/phaser";
 import {
-  subWordGameBeginEvent,
   gameWidth,
   gameHeight,
 } from "../common/constants";
 import * as Flow from "/src/helpers/phaser-flow";
-import { annotate } from "/src/helpers/typing";
 import {
-  defineGoClass,
   declareGoInstance,
-  customEvent,
   spriteClassKind,
   commonGoEvents,
 } from "/src/helpers/component";
-import { combineContext } from "/src/helpers/functional";
-import { combineLatest, fromEvent } from "rxjs";
-import { map } from "rxjs/operators";
 import * as Def from "./def";
 import _ from "lodash";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
-import { number } from "purify-ts";
 
 const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
   Flow.lazy((scene) => {

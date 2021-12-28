@@ -5,31 +5,18 @@ import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Def from "./definitions";
 
-import Vector2 = Phaser.Math.Vector2;
-import {
-  createSpriteAt,
-  vecToXY,
-  createImageAt,
-  placeAt,
-} from "/src/helpers/phaser";
+import { createImageAt } from "/src/helpers/phaser";
 import * as Npc from "./npc";
-import { makeMenu } from "./menu";
-import {
-  subWordGameBeginEvent,
-  gameWidth,
-  gameHeight,
-} from "../common/constants";
 import { annotate } from "/src/helpers/typing";
 import {
   defineGoClass,
   declareGoInstance,
   customEvent,
 } from "/src/helpers/component";
-import { combineContext, getProp } from "/src/helpers/functional";
+import { combineContext } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
-import { map, tap } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { arrowSkillAltar } from "./skills";
-import { tintProxy } from "/src/helpers/animate/tween";
 import { Maybe } from "purify-ts";
 import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
 import { globalData } from "../common/global-data";

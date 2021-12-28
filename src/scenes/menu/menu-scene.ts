@@ -4,7 +4,6 @@ import {
   gameHeight,
   gameWidth,
   menuSceneKey,
-  subWordGameBeginEvent,
 } from "../common/constants";
 import { ManipulableObject } from "/src/helpers/phaser";
 import { fadeDuration, menuZoneSize } from "/src/scenes/menu/menu-scene-def";
@@ -86,7 +85,7 @@ export class MenuScene extends Phaser.Scene {
           }),
       { side: "left" },
     );
-    currentScene.events.emit(subWordGameBeginEvent);
+    globalEvents.subSceneEntered.emit({})(this)
     Flow.runScene(
       this,
       Flow.observe(globalEvents.endEventAnim.subject, endEventAnim),

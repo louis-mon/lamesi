@@ -4,7 +4,6 @@ import { DataMappingDefValues, defineData } from "../../helpers/component";
 export const globalData = defineData(
   {
     lights1: annotate<boolean>(),
-    lightsAvailable: annotate<boolean>(),
     lights2: annotate<boolean>(),
     lights3: annotate<boolean>(),
     lights4: annotate<boolean>(),

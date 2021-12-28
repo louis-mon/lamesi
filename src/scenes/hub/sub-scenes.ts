@@ -18,7 +18,7 @@ import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
 import { observeCommonGoEvent } from "/src/helpers/component";
 import { isEventSolved } from "/src/scenes/common/event-dependencies";
-import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
+import { fadeDuration, menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import FADE_IN_COMPLETE = Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE;
 
 const waitForMenuFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
@@ -74,15 +74,13 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
           ]),
         ).subtract(new Phaser.Math.Vector2(width, height).scale(0.5));
         const mainCam = scene.cameras.main;
-        mainCam.alpha = firstTime ? 0 : 1;
         mainCam.setViewport(x, y, width, height);
         mainCam.zoom = width / gameWidth;
         mainCam.centerOn(gameWidth / 2, gameHeight / 2);
         mainCam.inputEnabled = false;
         const rect = hubScene.add
           .rectangle(x, y, width, height)
-          .setOrigin(0, 0)
-          .setAlpha(firstTime ? 0 : 1);
+          .setOrigin(0, 0);
         rect.setStrokeStyle(3, 0xff0000);
         rect.setInteractive();
         const clickScene = observe(
@@ -120,14 +118,13 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
             );
           },
         );
-        const showScene = Flow.tween({
-          targets: [mainCam, rect],
-          props: { alpha: 1 },
-          duration: 2000,
-        });
+        const showScene = () => {
+          mainCam.fadeIn(fadeDuration);
+          return Flow.wait(fromEvent(mainCam, FADE_IN_COMPLETE));
+        };
         return Flow.sequence(
           waitForMenuFadeIn,
-          firstTime ? showScene : Flow.noop,
+          firstTime ? showScene() : Flow.noop,
           clickScene,
         );
       });

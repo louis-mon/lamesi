@@ -9,18 +9,9 @@ import * as Def from "./definitions";
 import Vector2 = Phaser.Math.Vector2;
 import {
   createSpriteAt,
-  vecToXY,
-  createImageAt,
   getObjectPosition,
   placeAt,
 } from "/src/helpers/phaser";
-import * as Npc from "./npc";
-import { makeMenu } from "./menu";
-import {
-  subWordGameBeginEvent,
-  gameWidth,
-  gameHeight,
-} from "../common/constants";
 import { annotate, ValueOf } from "/src/helpers/typing";
 import {
   declareGoInstance,
@@ -28,9 +19,6 @@ import {
   declareGoInstances,
   defineGoSprite,
 } from "/src/helpers/component";
-import { combineContext, getProp } from "/src/helpers/functional";
-import { combineLatest } from "rxjs";
-import { map, pairwise, auditTime, first, tap } from "rxjs/operators";
 
 const fireballClass = defineGoSprite({
   data: {},

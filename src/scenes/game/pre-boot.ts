@@ -5,7 +5,6 @@ import { DataMappingDefValues } from "/src/helpers/component";
 
 const initialGlobalData: DataMappingDefValues<typeof globalData> = {
   lights1: true,
-  lightsAvailable: false,
   lights2: false,
   lights3: false,
   lights4: false,

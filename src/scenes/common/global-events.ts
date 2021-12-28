@@ -9,6 +9,7 @@ export type EndEventAnim = {
 
 export const globalEvents = defineEvents(
   {
+    subSceneEntered: customEvent(),
     endEventAnim: customEvent<EndEventAnim>(),
     goToHub: customEvent(),
   },
