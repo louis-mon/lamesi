@@ -1,5 +1,5 @@
 import BootCallback = Phaser.Types.Core.BootCallback;
-import { eventsHelpers, globalData } from "/src/scenes/common/global-data";
+import { globalData } from "/src/scenes/common/global-data";
 import _ from "lodash";
 import { DataMappingDefValues } from "/src/helpers/component";
 
@@ -25,7 +25,9 @@ const initialGlobalData: DataMappingDefValues<typeof globalData> = {
   creatures1: false,
   creatures2: false,
   creatures3: false,
+  creatures3Done: false,
   creatures4: false,
+  creatures4Done: false,
 };
 
 export const gamePreBoot: BootCallback = (game) => {

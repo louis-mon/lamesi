@@ -9,12 +9,13 @@ import Vector2 = Phaser.Math.Vector2;
 import { AlgaeController, createAlgae } from "/src/scenes/creatures/algae";
 import { moveTo } from "/src/helpers/animate/move";
 import { globalData } from "/src/scenes/common/global-data";
+import DegToRad = Phaser.Math.DegToRad;
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;
   algae: AlgaeController | null;
   bloomFlow: Flow.SceneStatesFlow;
-  algaeAngle: number;
+  algaeRotation: number;
 };
 
 type ShellRockState = {
@@ -32,10 +33,10 @@ const initializeState = (scene: Phaser.Scene): RockState => {
   const state: RockState = { eggs: [], shells: [] };
   const createEgg = ({
     pos,
-    algaeAngle,
+    algaeRotation,
   }: {
     pos: Vector2;
-    algaeAngle: number;
+    algaeRotation: number;
   }) => {
     const newEgg = scene.add
       .image(pos.x, pos.y, "rocks", "egg")
@@ -45,7 +46,7 @@ const initializeState = (scene: Phaser.Scene): RockState => {
       obj: newEgg,
       algae: null,
       bloomFlow: Flow.makeSceneStates(),
-      algaeAngle,
+      algaeRotation,
     });
   };
   const createShell = ({ pos }: { pos: Vector2 }) => {
@@ -61,10 +62,10 @@ const initializeState = (scene: Phaser.Scene): RockState => {
     state.shells.push({ belowObj: newShell, aboveObj: newShellAbove });
   };
 
-  createEgg({ pos: new Vector2(1400, 430), algaeAngle: -148 });
-  createEgg({ pos: new Vector2(1750, 460), algaeAngle: 90 });
-  createEgg({ pos: new Vector2(1380, 80), algaeAngle: 140 });
-  createEgg({ pos: new Vector2(1750, 90), algaeAngle: 30 });
+  createEgg({ pos: new Vector2(1400, 430), algaeRotation: DegToRad(-148) });
+  createEgg({ pos: new Vector2(1750, 460), algaeRotation: Math.PI / 2 });
+  createEgg({ pos: new Vector2(1380, 80), algaeRotation: DegToRad(140) });
+  createEgg({ pos: new Vector2(1750, 90), algaeRotation: Math.PI / 6 });
 
   createShell({ pos: new Vector2(1470, 150) });
   createShell({ pos: new Vector2(1570, 170) });
@@ -207,8 +208,8 @@ const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
 
     const bloomAlgae = () => {
       egg.algae = createAlgae({
-        pos: getObjectPosition(egg.obj),
-        angle: egg.algaeAngle,
+        pos: () => getObjectPosition(egg.obj),
+        rotation: () => egg.algaeRotation,
       });
       egg.bloomFlow.next(egg.algae.flow);
     };

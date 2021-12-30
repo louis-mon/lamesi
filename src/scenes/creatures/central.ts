@@ -6,9 +6,22 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
-import _, { flatMap } from "lodash";
+import _, { flatMap, mapValues, values } from "lodash";
 import { Maybe } from "purify-ts";
-import { bodyPartsConfig } from "./def";
+import { BodyPart, bodyPartsConfig, CreatureMoveCommand } from "./def";
+import { isEventSolved } from "/src/scenes/common/event-dependencies";
+import { PhaserNode } from "/src/helpers/phaser-flow";
+import { createEye } from "/src/scenes/creatures/eye";
+import { createAlgae } from "/src/scenes/creatures/algae";
+
+const bodyPartsToFlow: {
+  [key in BodyPart]: (p: CreatureMoveCommand) => PhaserNode;
+} = {
+  eye: createEye,
+  algae: (p) => createAlgae(p).flow,
+  leg: () => Flow.noop,
+  mouth: () => Flow.noop,
+};
 
 export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
   const body = scene.add.rope(
@@ -110,6 +123,25 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     leg: flatMap([-1, 1], makeLegPos),
   };
 
+  const getBodyPartMoves = (localRootPos: Vector2, bodyType: BodyPart) => {
+    const bodyTypeConfig = bodyPartsConfig[bodyType];
+    const rootPos = localRootPos.clone().add(getObjectPosition(body));
+
+    return {
+      rootPos,
+      getRotation: (): Maybe<number> => {
+        if (!bodyTypeConfig.needsRotation) return Maybe.empty();
+        return Maybe.of(
+          Phaser.Math.Angle.Wrap(
+            Phaser.Math.Angle.BetweenPoints(getObjectPosition(body), rootPos) +
+              bodyTypeConfig.rotationOffset,
+          ),
+        );
+      },
+      getMove: () => getPointTensionMoveGlobal(rootPos),
+    };
+  };
+
   const catchElement = (
     pickEvent: Def.ElemReadyToPickParams,
   ): Flow.PhaserNode =>
@@ -119,12 +151,18 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         pickEvent.key,
       );
       const bodyPartSlots = availableSlots[pickEvent.bodyPart];
-      const rootPos =
+      const partConfig = bodyPartsConfig[pickEvent.bodyPart];
+      if (isEventSolved(partConfig.requiredEvent)(scene)) return Flow.noop;
+
+      const localRootPos =
         pickEvent.requiredSlot !== undefined
           ? bodyPartSlots[pickEvent.requiredSlot]
           : bodyPartSlots.shift();
-      if (!rootPos) return Flow.noop;
-      rootPos.add(getObjectPosition(body));
+      if (!localRootPos) return Flow.noop;
+      const { getRotation, rootPos, getMove } = getBodyPartMoves(
+        localRootPos,
+        pickEvent.bodyPart,
+      );
       const tentacle = scene.add
         .rope(rootPos.x, rootPos.y, "central", "tentacle")
         .setDepth(Def.depths.tentacle);
@@ -132,22 +170,17 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const tentacleState = Flow.makeSceneStates();
 
-      const getBodyMove = () => getPointTensionMoveGlobal(rootPos);
-
-      const bodyTypeConfig = bodyPartsConfig[pickEvent.bodyPart];
-
       const afterRetractTentacle: Flow.PhaserNode = Flow.lazy(() => {
-        if (!bodyTypeConfig.needsRotation) return Flow.noop;
-        const destRot = Phaser.Math.Angle.Wrap(
-          Phaser.Math.Angle.BetweenPoints(getObjectPosition(body), rootPos) +
-            bodyTypeConfig.rotationOffset,
-        );
-        return Flow.tween({
-          targets: pickableInst.getObj(scene),
-          props: {
-            rotation: destRot,
-          },
-        });
+        return getRotation()
+          .map((rotation) =>
+            Flow.tween({
+              targets: pickableInst.getObj(scene),
+              props: {
+                rotation,
+              },
+            }),
+          )
+          .orDefault(Flow.noop);
       });
 
       const retractTentacle: Flow.PhaserNode = Flow.lazy(() => {
@@ -158,7 +191,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
               if (diff < 2) {
                 tentacle.destroy();
                 pickableInst.data.move.setValue({
-                  pos: () => getBodyMove(),
+                  pos: getMove,
                   rotation: () => 0,
                 })(scene);
                 tentacleState.next(afterRetractTentacle);
@@ -178,7 +211,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         currentPos.add(speed);
         const endPoint = currentPos.clone().subtract(rootPos);
         const path = new Phaser.Curves.Line(
-          getBodyMove().subtract(rootPos),
+          getMove().subtract(rootPos),
           endPoint,
         );
         const points = path.getPoints(undefined, 3).map((point) => {
@@ -221,6 +254,32 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
       );
     });
 
+  const spawnBodyPart = (part: BodyPart): Flow.PhaserNode => {
+    const slots = availableSlots[part];
+    return Flow.parallel(
+      ...slots.map((rootPos, index) => {
+        const bodyPartMoves = getBodyPartMoves(rootPos, part);
+        return bodyPartsToFlow[part]({
+          pos: bodyPartMoves.getMove,
+          rotation: () => bodyPartMoves.getRotation().orDefault(0),
+        });
+      }),
+    );
+  };
+
+  const startBodyParts = Flow.parallel(
+    ...values(
+      mapValues(
+        bodyPartsConfig,
+        (conf, part): Flow.PhaserNode => {
+          if (isEventSolved(conf.requiredEvent)(scene))
+            return spawnBodyPart(part as BodyPart);
+          return Flow.noop;
+        },
+      ),
+    ),
+  );
+
   return Flow.parallel(
     Flow.repeatSequence(
       Flow.waitTimer(650),
@@ -242,5 +301,6 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     ),
     Flow.observe(Def.sceneClass.events.elemReadyToPick.subject, catchElement),
     Flow.handlePostUpdate({ handler: () => updateBodyPoints }),
+    startBodyParts,
   );
 });

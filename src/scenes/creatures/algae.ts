@@ -6,26 +6,18 @@ import { declareGoInstance } from "/src/helpers/component";
 import * as Def from "./def";
 import { followPosition } from "/src/helpers/animate/composite";
 import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
+import { CreatureMoveCommand } from "./def";
 
-export const createAlgae = ({
-  pos,
-  angle,
-}: {
-  pos: Vector2;
-  angle: number;
-}) => {
+export const createAlgae = (moveCommand: CreatureMoveCommand) => {
   const instance = declareGoInstance(Def.movableElementClass, null);
   const mainFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     const root = instance
       .create(scene.add.container())
       .setScale(0.3)
       .setDepth(Def.depths.rocks.algae)
-      .setAngle(angle);
+      .setRotation(moveCommand.rotation());
 
-    instance.data.move.setValue({
-      pos: () => pos,
-      rotation: () => 0,
-    })(scene);
+    instance.data.move.setValue(moveCommand)(scene);
 
     const growAlgae = ({
       parent,

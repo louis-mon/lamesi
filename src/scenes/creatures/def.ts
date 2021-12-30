@@ -5,6 +5,7 @@ import {
   defineSceneClass,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
+import { GlobalDataKey } from "/src/scenes/common/global-data";
 
 export const depths = {
   treeTrunk: 10,
@@ -60,12 +61,33 @@ export const bodyPartsConfig: {
     total: number;
     needsRotation: boolean;
     rotationOffset: number;
+    requiredEvent: GlobalDataKey;
   };
 } = {
-  eye: { total: 8, needsRotation: false, rotationOffset: 0 },
-  mouth: { total: 3, needsRotation: true, rotationOffset: Math.PI / 2 },
-  algae: { total: 4, needsRotation: true, rotationOffset: 0 },
-  leg: { total: 6, needsRotation: false, rotationOffset: 0 },
+  eye: {
+    total: 8,
+    needsRotation: false,
+    rotationOffset: 0,
+    requiredEvent: "creatures1",
+  },
+  mouth: {
+    total: 3,
+    needsRotation: true,
+    rotationOffset: Math.PI / 2,
+    requiredEvent: "creatures4",
+  },
+  algae: {
+    total: 4,
+    needsRotation: true,
+    rotationOffset: 0,
+    requiredEvent: "creatures3",
+  },
+  leg: {
+    total: 6,
+    needsRotation: false,
+    rotationOffset: 0,
+    requiredEvent: "creatures2",
+  },
 };
 
 export type ElemReadyToPickParams = {
