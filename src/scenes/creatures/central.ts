@@ -13,6 +13,7 @@ import { isEventSolved } from "/src/scenes/common/event-dependencies";
 import { PhaserNode } from "/src/helpers/phaser-flow";
 import { createEye } from "/src/scenes/creatures/eye";
 import { createAlgae } from "/src/scenes/creatures/algae";
+import { createMandibles } from "/src/scenes/creatures/pot/mandibles";
 
 const bodyPartsToFlow: {
   [key in BodyPart]: (p: CreatureMoveCommand) => PhaserNode;
@@ -20,7 +21,7 @@ const bodyPartsToFlow: {
   eye: createEye,
   algae: (p) => createAlgae(p).flow,
   leg: () => Flow.noop,
-  mouth: () => Flow.noop,
+  mouth: createMandibles,
 };
 
 export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {

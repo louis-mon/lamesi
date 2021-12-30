@@ -14,18 +14,15 @@ import {
   observeCommonGoEvent,
 } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
-import * as Def from "./def";
+import * as Def from "../def";
 import _ from "lodash";
 import { Maybe } from "purify-ts";
 import { MovedCurve } from "/src/helpers/math/curves";
 import { makeControlledValue } from "/src/helpers/animate/tween";
 import Vector2 = Phaser.Math.Vector2;
-import {
-  followObject,
-  followPosition,
-  followRotation,
-} from "/src/helpers/animate/composite";
 import { globalData } from "/src/scenes/common/global-data";
+import { potSceneClass } from "/src/scenes/creatures/pot/pot-def";
+import { createMandibles } from "/src/scenes/creatures/pot/mandibles";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -90,16 +87,8 @@ const makePathFollower = ({
   });
 };
 
-const potSceneClass = defineSceneClass({
-  events: {
-    pickAllMandibles: customEvent(),
-    syncMandibleClaw: customEvent(),
-  },
-  data: {},
-});
-
 const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
-  const potCut = createImageAt(scene, potPosition, "pot", "pot-cut").setDepth(
+  createImageAt(scene, potPosition, "pot", "pot-cut").setDepth(
     Def.depths.potCut,
   );
   const potFront = createImageAt(
@@ -410,75 +399,17 @@ const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     });
 
   const bloomMandibles = (fromBud: BudState): Flow.PhaserNode => {
-    const mandibleInst = declareGoInstance(Def.movableElementClass, null);
-    const mandibleRoot = mandibleInst.create(
-      scene.add
-        .container(fromBud.sprite.x, fromBud.sprite.y)
-        .setDepth(Def.depths.potMandible),
-    );
-
-    mandibleInst.data.move.setValue({
-      pos: () => getObjectPosition(fromBud.sprite),
-      rotation: () => 0,
-    })(scene);
-
-    const singleMandible = (flip: boolean) => {
-      const mandible = scene.add
-        .image(0, 0, "pot", "mandible")
-        .setScale(0)
-        .setFlipX(flip)
-        .setOrigin(1, 1);
-      mandibleRoot.add(mandible);
-      return Flow.sequence(
-        Flow.tween({
-          targets: mandible,
-          props: {
-            scale: 1,
-          },
-          duration: 740,
-        }),
-        Flow.observe(potSceneClass.events.syncMandibleClaw.subject, () =>
-          Flow.sequence(
-            ..._.range(2).map(() =>
-              Flow.tween({
-                targets: mandible,
-                props: {
-                  angle: -30 * (flip ? -1 : 1),
-                },
-                duration: 340,
-                yoyo: true,
-              }),
-            ),
-          ),
-        ),
-      );
-    };
-
     const retractBud = Flow.tween({
       targets: fromBud.sprite,
       props: { scale: 0 },
       duration: 620,
     });
-
-    return Flow.parallel(
-      followPosition({
-        getPos: () => mandibleInst.data.move.value(scene).pos(),
-        target: () => mandibleRoot,
+    return Flow.sequence(
+      retractBud,
+      createMandibles({
+        pos: () => getObjectPosition(fromBud.sprite),
+        rotation: () => 0,
       }),
-      Flow.sequence(
-        retractBud,
-        Flow.parallel(...[true, false].map(singleMandible)),
-      ),
-      Flow.sequence(
-        Flow.wait(potSceneClass.events.pickAllMandibles.subject),
-        Flow.waitTimer(4000),
-        Flow.call(
-          Def.sceneClass.events.elemReadyToPick.emit({
-            key: mandibleInst.key,
-            bodyPart: "mouth",
-          }),
-        ),
-      ),
     );
   };
 
