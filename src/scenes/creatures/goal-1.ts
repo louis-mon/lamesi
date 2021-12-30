@@ -13,9 +13,9 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const closedBook = scene.add.image(962, -50, "items", "book");
   const openBook = scene.add
-    .image(closedBook.x, 842, "crea-npc", "open-book")
+    .image(closedBook.x, 935, "crea-npc", "open-book")
     .setVisible(false);
-  const manDeskPos = new Vector2(960, 890);
+  const manDeskPos = new Vector2(960, 980);
   const man = scene.add.image(manDeskPos.x, gameHeight + 40, "crea-npc", "man");
   const manSpeed = isSolved ? Number.MAX_SAFE_INTEGER : 0.2;
   const moveMan: (p: { dest: Vector2 }) => Flow.PhaserNode = ({ dest }) =>
