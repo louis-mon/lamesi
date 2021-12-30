@@ -12,30 +12,33 @@ export const swingRotation = ({
 }): Flow.PhaserNode =>
   Flow.lazy(() => {
     const baseRot = target.rotation;
-    return Flow.sequence(
-      Flow.tween(() => ({
-        targets: target,
-        props: { rotation: baseRot - ampl / 2 },
-        ease: Phaser.Math.Easing.Sine.Out,
-        duration,
-      })),
-      Flow.tween({
-        targets: target,
-        props: { rotation: baseRot },
-        ease: Phaser.Math.Easing.Sine.In,
-        duration,
-      }),
-      Flow.tween({
-        targets: target,
-        props: { rotation: baseRot + ampl / 2 },
-        ease: Phaser.Math.Easing.Sine.Out,
-        duration,
-      }),
-      Flow.tween({
-        targets: target,
-        props: { rotation: baseRot },
-        ease: Phaser.Math.Easing.Sine.In,
-        duration,
-      }),
-    );
+    return Flow.withCleanup({
+      cleanup: () => (target.rotation = baseRot),
+      flow: Flow.sequence(
+        Flow.tween(() => ({
+          targets: target,
+          props: { rotation: baseRot - ampl / 2 },
+          ease: Phaser.Math.Easing.Sine.Out,
+          duration,
+        })),
+        Flow.tween({
+          targets: target,
+          props: { rotation: baseRot },
+          ease: Phaser.Math.Easing.Sine.In,
+          duration,
+        }),
+        Flow.tween({
+          targets: target,
+          props: { rotation: baseRot + ampl / 2 },
+          ease: Phaser.Math.Easing.Sine.Out,
+          duration,
+        }),
+        Flow.tween({
+          targets: target,
+          props: { rotation: baseRot },
+          ease: Phaser.Math.Easing.Sine.In,
+          duration,
+        }),
+      ),
+    });
   });
