@@ -11,18 +11,27 @@ import {
   defineGoImage,
   defineGoObject,
 } from "/src/helpers/component";
-import { movableElementClass, sceneClass } from "../def";
-import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
-import { legsSwingDuration } from "/src/scenes/creatures/legs/legs-defs";
+import {
+  CreateBodyPartParams,
+  CreatureMoveCommand,
+  movableElementClass,
+  sceneClass,
+} from "../def";
+import {
+  LegFlowParams,
+  legsConfigBySlot,
+  legsSwingDuration,
+} from "/src/scenes/creatures/legs/legs-defs";
 import { followPosition } from "/src/helpers/animate/composite";
 
-export type LegFlowParams = {
-  startPos: Vector2;
-  startAngle: number;
-  flip?: boolean;
-  requiredSlot: number;
-};
-export const legFlow = ({
+export const createLeg = (moveCommand: CreateBodyPartParams): Flow.PhaserNode =>
+  legFlowFromConfig({
+    startPos: moveCommand.pos(),
+    requiredSlot: moveCommand.slot,
+    ...legsConfigBySlot[moveCommand.slot],
+  });
+
+const legFlowFromConfig = ({
   startPos,
   startAngle,
   flip,

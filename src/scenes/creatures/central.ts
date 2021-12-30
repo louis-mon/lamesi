@@ -8,19 +8,20 @@ import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
 import _, { flatMap, mapValues, values } from "lodash";
 import { Maybe } from "purify-ts";
-import { BodyPart, bodyPartsConfig, CreatureMoveCommand } from "./def";
+import { BodyPart, bodyPartsConfig, CreateBodyPartParams } from "./def";
 import { isEventSolved } from "/src/scenes/common/event-dependencies";
 import { PhaserNode } from "/src/helpers/phaser-flow";
 import { createEye } from "/src/scenes/creatures/eye";
 import { createAlgae } from "/src/scenes/creatures/algae";
 import { createMandibles } from "/src/scenes/creatures/pot/mandibles";
+import { createLeg } from "/src/scenes/creatures/legs/legs-leg";
 
 const bodyPartsToFlow: {
-  [key in BodyPart]: (p: CreatureMoveCommand) => PhaserNode;
+  [key in BodyPart]: (p: CreateBodyPartParams) => PhaserNode;
 } = {
   eye: createEye,
   algae: (p) => createAlgae(p).flow,
-  leg: () => Flow.noop,
+  leg: createLeg,
   mouth: createMandibles,
 };
 
@@ -263,6 +264,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
         return bodyPartsToFlow[part]({
           pos: bodyPartMoves.getMove,
           rotation: () => bodyPartMoves.getRotation().orDefault(0),
+          slot: index,
         });
       }),
     );

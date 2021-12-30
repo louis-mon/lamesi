@@ -44,6 +44,8 @@ export type CreatureMoveCommand = {
   rotation: () => number;
 };
 
+export type CreateBodyPartParams = CreatureMoveCommand & { slot: number };
+
 export const movableElementClass = defineGoClass({
   kind: annotate<
     Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform
