@@ -19,7 +19,7 @@ export const cheatCodeAction: Flow.PhaserNode = Flow.whenTrueDo({
         const activated = (Object.keys(
           eventDependencies,
         ) as GlobalDataKey[]).filter(
-          (key) => globalData[key].value(scene) && !isEventSolved(scene)(key),
+          (key) => globalData[key].value(scene) && !isEventSolved(key)(scene),
         );
         activated.forEach((key) => solveEvent(key)(scene));
       }),

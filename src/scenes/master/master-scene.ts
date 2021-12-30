@@ -52,6 +52,6 @@ export class MasterScene extends Phaser.Scene {
       ),
     );
     this.scene.add(hubSceneKey, new HubScene(), false);
-    this.scene.run(hubSceneKey)
+    this.scene.run(hubSceneKey);
   }
 }

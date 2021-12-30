@@ -55,7 +55,7 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
   Flow.parallel(
     ...subScenes.map((sceneDef, i) => {
       const hasCondition = globalData[sceneDef.conditionKey].value(hubScene);
-      const isSolved = isEventSolved(hubScene)(sceneDef.conditionKey);
+      const isSolved = isEventSolved(sceneDef.conditionKey)(hubScene);
       const firstTime = !isSolved && hasCondition;
       if (!isSolved && !hasCondition) {
         return Flow.noop;

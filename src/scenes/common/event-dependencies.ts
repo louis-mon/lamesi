@@ -22,7 +22,7 @@ export const eventDependencies: EventDependencies = {
   },
 };
 
-export const isEventSolved = (scene: Scene) => (key: GlobalDataKey) => {
+export const isEventSolved = (key: GlobalDataKey) => (scene: Scene) => {
   return eventDependencies[key]?.triggers.every((trigger) =>
     globalData[trigger].value(scene),
   );

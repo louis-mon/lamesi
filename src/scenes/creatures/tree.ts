@@ -5,10 +5,7 @@ import {
   getObjectPosition,
   getPointerPosInMainCam,
 } from "/src/helpers/phaser";
-import {
-  gameWidth,
-  gameHeight,
-} from "../common/constants";
+import { gameWidth, gameHeight } from "../common/constants";
 import * as Flow from "/src/helpers/phaser-flow";
 import {
   declareGoInstance,
