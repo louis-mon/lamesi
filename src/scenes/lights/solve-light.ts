@@ -1,6 +1,6 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import { LightSceneGoalDef } from "/src/scenes/lights/lights-def";
-import { getEventDependency } from "/src/scenes/common/event-dependencies";
+import { getEventDef } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { createImageAt, getObjectPosition } from "/src/helpers/phaser";
 import GameObject = Phaser.GameObjects.GameObject;
@@ -18,7 +18,7 @@ export const solveLight = ({
       scene,
       getObjectPosition(target),
       "items",
-      getEventDependency(goalDef.eventRequired).keyItem,
+      getEventDef(goalDef.eventRequired).keyItem,
     );
     scene.children.moveDown(keyItem);
     return Flow.sequence(

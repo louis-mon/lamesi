@@ -1,8 +1,6 @@
 import * as Phaser from "phaser";
 import { Maybe } from "purify-ts";
-import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import * as globalEvents from "/src/scenes/common/global-data";
 import {
   defineGoClass,
   customEvent,
@@ -12,8 +10,8 @@ import {
   defineSceneClass,
 } from "/src/helpers/component";
 import { annotate, ValueOf } from "/src/helpers/typing";
-import { combineContext, FuncOrConst } from "/src/helpers/functional";
-import { Observable, fromEvent, of } from "rxjs";
+import { combineContext } from "/src/helpers/functional";
+import { Observable, fromEvent } from "rxjs";
 import { startWith, pairwise } from "rxjs/operators";
 import {
   getObjectPosition,
@@ -22,6 +20,10 @@ import {
 } from "/src/helpers/phaser";
 import { gameWidth, gameHeight } from "../common/constants";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
+import {
+  otherGlobalData,
+  OtherGlobalDataKey,
+} from "/src/scenes/common/global-data";
 
 const actionEmptyFrame = "action-empty";
 
@@ -29,7 +31,7 @@ type BindActionParams = {
   action: Flow.PhaserNode;
   key: string;
   disabled?: Observable<boolean>;
-  hintKey: keyof typeof globalEvents.globalData;
+  hintKey: OtherGlobalDataKey;
   create: (params: {
     pos: Phaser.Math.Vector2;
   }) => (scene: Phaser.Scene) => ManipulableObject;
@@ -70,11 +72,11 @@ const showShadowRect = ({
   hintKey,
   targetPos,
 }: {
-  hintKey: keyof typeof globalEvents.globalData;
+  hintKey: OtherGlobalDataKey;
   targetPos: Phaser.Math.Vector2;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    if (globalEvents.globalData[hintKey].value(scene)) return Flow.noop;
+    if (otherGlobalData[hintKey].value(scene)) return Flow.noop;
 
     const pointerCircle = scene.add.graphics();
     pointerCircle.fillCircle(0, 0, 200).setVisible(false);
@@ -90,7 +92,7 @@ const showShadowRect = ({
         action: ({ activated }) =>
           Flow.call(() => {
             if (activated) {
-              globalEvents.globalData[hintKey].setValue(true)(scene);
+              otherGlobalData[hintKey].setValue(true)(scene);
             }
             shadowRect.destroy();
             pointerCircle.destroy();

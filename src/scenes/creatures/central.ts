@@ -9,7 +9,7 @@ import * as Def from "./def";
 import _, { flatMap, mapValues, values } from "lodash";
 import { Maybe } from "purify-ts";
 import { BodyPart, bodyPartsConfig, CreateBodyPartParams } from "./def";
-import { isEventSolved } from "/src/scenes/common/event-dependencies";
+import { isEventSolved } from "/src/scenes/common/events-def";
 import { PhaserNode } from "/src/helpers/phaser-flow";
 import { createEye } from "/src/scenes/creatures/eye";
 import { createAlgae } from "/src/scenes/creatures/algae";

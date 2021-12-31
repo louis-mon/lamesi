@@ -1,9 +1,6 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
-import {
-  getEventDependency,
-  solveEvent,
-} from "/src/scenes/common/event-dependencies";
+import { getEventDef, solveEvent } from "/src/scenes/common/events-def";
 import { EndEventAnim, globalEvents } from "/src/scenes/common/global-events";
 import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
 
@@ -17,7 +14,7 @@ export const endEventAnim: (e: EndEventAnim) => Flow.PhaserNode = ({
         gameWidth / 2,
         gameHeight / 2,
         "items",
-        getEventDependency(dataSolved).keyItem,
+        getEventDef(dataSolved).keyItem,
       )
       .setAlpha(0)
       .setScale(1.7);

@@ -17,9 +17,10 @@ import { MenuScene } from "/src/scenes/menu/menu-scene";
 import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
 import { observeCommonGoEvent } from "/src/helpers/component";
-import { isEventSolved } from "/src/scenes/common/event-dependencies";
+import { getEventsOfScene, isEventSolved } from "/src/scenes/common/events-def";
 import { fadeDuration, menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import FADE_IN_COMPLETE = Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE;
+import { keys } from "lodash";
 
 const waitForMenuFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
   Flow.wait(
@@ -30,36 +31,35 @@ const waitForMenuFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
 type SubScene = {
   create: () => Phaser.Scene;
   key: string;
-  conditionKey: GlobalDataKey;
 };
 
 const subScenes: SubScene[] = [
   {
     create: () => new LightScene(),
     key: lightsSceneKey,
-    conditionKey: "lights1",
   },
   {
     create: () => new DungeonScene(),
     key: dungeonSceneKey,
-    conditionKey: "dungeonPhase1",
   },
   {
     create: () => new CreaturesScene(),
     key: creaturesSceneKey,
-    conditionKey: "creatures1",
   },
 ];
 
 export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
   Flow.parallel(
     ...subScenes.map((sceneDef, i) => {
-      const hasCondition = globalData[sceneDef.conditionKey].value(hubScene);
-      const isSolved = isEventSolved(sceneDef.conditionKey)(hubScene);
-      const firstTime = !isSolved && hasCondition;
-      if (!isSolved && !hasCondition) {
+      const eventsOfScene = getEventsOfScene(sceneDef.key);
+      const eventKeys = keys(eventsOfScene) as GlobalDataKey[];
+      const hasAccess = eventKeys.some((key) =>
+        globalData[key].value(hubScene),
+      );
+      if (!hasAccess) {
         return Flow.noop;
       }
+      const firstTime = eventKeys.every((key) => !isEventSolved(key)(hubScene));
       const scene = hubScene.scene.add(sceneDef.key, sceneDef.create, false);
       hubScene.scene.launch(sceneDef.key);
       const bigRect = new Phaser.Geom.Rectangle(0, 0, gameWidth, gameHeight);
@@ -118,9 +118,12 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
             );
           },
         );
-        const showScene = () => {
-          mainCam.fadeIn(fadeDuration);
-          return Flow.wait(fromEvent(mainCam, FADE_IN_COMPLETE));
+        const showScene = (): Flow.PhaserNode => {
+          mainCam.fadeOut(0);
+          return Flow.lazy(() => {
+            mainCam.fadeIn(fadeDuration);
+            return Flow.wait(fromEvent(mainCam, FADE_IN_COMPLETE));
+          });
         };
         return Flow.sequence(
           waitForMenuFadeIn,

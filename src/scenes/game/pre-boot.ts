@@ -1,39 +1,39 @@
 import BootCallback = Phaser.Types.Core.BootCallback;
-import { globalData } from "/src/scenes/common/global-data";
-import _ from "lodash";
+import { globalData, otherGlobalData } from "/src/scenes/common/global-data";
+import _, { mapValues } from "lodash";
 import { DataMappingDefValues } from "/src/helpers/component";
 
-const initialGlobalData: DataMappingDefValues<typeof globalData> = {
+const defaultGlobalData: Partial<DataMappingDefValues<typeof globalData>> = {
   lights1: true,
-  lights2: false,
-  lights3: false,
-  lights4: false,
-  lights5: false,
+};
 
+const defaultOtherGlobalData: Partial<DataMappingDefValues<
+  typeof otherGlobalData
+>> = {
   cheatCodes: true,
+};
 
-  dungeonActivateHint: false,
-  dungeonTakeHint: false,
-  dungeonSkillHint: false,
-
-  dungeonPhase1: false,
-  dungeonPhase2: false,
-  dungeonPhase3: false,
-  dungeonPhase4: false,
-  dungeonPhase5: false,
-
-  creatures1: false,
-  creatures2: false,
-  creatures3: false,
-  creatures3Done: false,
-  creatures4: false,
-  creatures4Done: false,
+const initialGlobalData = {
+  ...mapValues(
+    {
+      ...globalData,
+      ...otherGlobalData,
+    },
+    () => false,
+  ),
+  ...defaultGlobalData,
+  ...defaultOtherGlobalData,
 };
 
 export const gamePreBoot: BootCallback = (game) => {
   const storageKey = "save";
   const oldSave = localStorage.getItem(storageKey);
-  const initialData = oldSave ? JSON.parse(oldSave) : initialGlobalData;
+  const initialDataFromSave = oldSave ? JSON.parse(oldSave) : initialGlobalData;
+  const fromEnv = JSON.parse(process.env.LAMESI_EVENTS ?? "{}");
+  const initialData = {
+    ...initialDataFromSave,
+    ...fromEnv,
+  };
   _.mapValues(initialData, (value, key) => game.registry.set(key, value));
   game.events.on("changedata", (parent: unknown) => {
     if (parent !== game) return;

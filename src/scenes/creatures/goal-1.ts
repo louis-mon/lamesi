@@ -1,9 +1,8 @@
 import * as Flow from "/src/helpers/phaser-flow";
-import { isEventSolved } from "/src/scenes/common/event-dependencies";
+import { isEventSolved } from "/src/scenes/common/events-def";
 import { createTree } from "/src/scenes/creatures/tree";
 import { gameHeight } from "/src/scenes/common/constants";
 import Vector2 = Phaser.Math.Vector2;
-import { vecToXY } from "/src/helpers/phaser";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { moveTo } from "/src/helpers/animate/move";
 import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";

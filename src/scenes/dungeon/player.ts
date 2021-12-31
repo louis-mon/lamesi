@@ -1,4 +1,4 @@
-import { globalData } from "/src/scenes/common/global-data";
+import { globalData, otherGlobalData } from "/src/scenes/common/global-data";
 import * as Phaser from "phaser";
 import { playerCannotActSubject } from "./definitions";
 import { getWpId } from "./wp";
@@ -6,20 +6,12 @@ import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Def from "./definitions";
 
-import Vector2 = Phaser.Math.Vector2;
 import {
   createSpriteAt,
   vecToXY,
-  createImageAt,
   placeAt,
   addPhysicsFromSprite,
 } from "/src/helpers/phaser";
-import * as Npc from "./npc";
-import { makeMenu } from "./menu";
-import { annotate } from "/src/helpers/typing";
-import { combineContext } from "/src/helpers/functional";
-import { combineLatest } from "rxjs";
-import { map } from "rxjs/operators";
 
 export const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
@@ -46,7 +38,7 @@ export const createPlayer = (scene: Phaser.Scene) => {
     Phaser.Input.Keyboard.KeyCodes.SHIFT,
   );
   const playerSpeed = () =>
-    runKey.isDown && globalData.cheatCodes.value(scene) ? 0.4 : 0.2;
+    runKey.isDown && otherGlobalData.cheatCodes.value(scene) ? 0.4 : 0.2;
   scene.anims.create({
     key: "walk",
     repeat: -1,
