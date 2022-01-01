@@ -5,6 +5,7 @@ import { ManipulableObject } from "/src/helpers/phaser";
 import { fadeDuration, menuZoneSize } from "/src/scenes/menu/menu-scene-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { endEventAnim } from "/src/scenes/menu/end-event-anim";
+import { newEventAnim } from "/src/scenes/menu/new-event-anim";
 
 const buttonSize = 60;
 
@@ -54,13 +55,7 @@ export class MenuScene extends Phaser.Scene {
     return this.addButton(f, { side: "right" });
   }
 
-  create({
-    currentScene,
-    parentScene,
-  }: {
-    currentScene: Phaser.Scene;
-    parentScene: Phaser.Scene;
-  }) {
+  create({ parentScene }: { parentScene: Phaser.Scene }) {
     if (parentScene) {
       const goBackButton = this.addButton(
         ({ x, y, size }) =>
@@ -84,7 +79,10 @@ export class MenuScene extends Phaser.Scene {
     globalEvents.subSceneEntered.emit({})(this);
     Flow.runScene(
       this,
-      Flow.observe(globalEvents.endEventAnim.subject, endEventAnim),
+      Flow.parallel(
+        Flow.observe(globalEvents.endEventAnim.subject, endEventAnim),
+        parentScene ? Flow.noop : newEventAnim,
+      ),
     );
   }
 }

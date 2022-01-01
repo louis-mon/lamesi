@@ -48,6 +48,7 @@ export class LightScene extends Phaser.Scene {
   private goalFound?: Phaser.Time.TimerEvent;
 
   create() {
+    this.cameras.main.setBackgroundColor(0x0);
     const setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
       go.name = def.key;
       if (def.movable || def.movablePath) {

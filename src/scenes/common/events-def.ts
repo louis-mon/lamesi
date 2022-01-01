@@ -26,7 +26,7 @@ export const eventsDef: EventsDef = {
   },
   creatures1: {
     triggers: ["dungeonPhase1"],
-    keyItem: "",
+    keyItem: "woman",
     scene: creaturesSceneKey,
   },
   dungeonPhase1: {

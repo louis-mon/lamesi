@@ -16,10 +16,13 @@ export class HubScene extends Phaser.Scene {
 
   preload() {
     this.load.atlas("items");
+    this.load.image("hub-back");
+    this.load.image("frame");
   }
 
   create() {
-    Flow.run(this, Flow.parallel(subSceneFlow));
+    this.add.image(0, 0, "hub-back").setOrigin(0, 0);
+    Flow.runScene(this, Flow.parallel(subSceneFlow));
     this.scene.add(menuSceneKey, new MenuScene(), true, {
       currentScene: this,
     });

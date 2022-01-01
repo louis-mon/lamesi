@@ -316,7 +316,8 @@ export const withContext = <C, CNew>(
   action: ActionNode<CNew>,
 ): ActionNode<C> => (c) => (p) => action(newContext(c))(p);
 
-export const spawn = <C>(node: ActionNode<C>): ActionNode<C> => call(c => run(c, node))
+export const spawn = <C>(node: ActionNode<C>): ActionNode<C> =>
+  call((c) => run(c, node));
 
 /**
  * Start execution of a flow with a given context

@@ -12,6 +12,7 @@ export const globalEvents = defineEvents(
     subSceneEntered: customEvent(),
     endEventAnim: customEvent<EndEventAnim>(),
     goToHub: customEvent(),
+    subSceneHint: customEvent<{ sceneKey: string }>(),
   },
   "game",
 );

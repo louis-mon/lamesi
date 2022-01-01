@@ -21,6 +21,8 @@ import { getEventsOfScene, isEventSolved } from "/src/scenes/common/events-def";
 import { fadeDuration, menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import FADE_IN_COMPLETE = Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE;
 import { keys } from "lodash";
+import Vector2 = Phaser.Math.Vector2;
+import { globalEvents } from "/src/scenes/common/global-events";
 
 const waitForMenuFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
   Flow.wait(
@@ -48,6 +50,23 @@ const subScenes: SubScene[] = [
   },
 ];
 
+export const isASubScene = (key: string) =>
+  subScenes.some((s) => s.key === key);
+
+export const centerOfSubScene = (key: string) => {
+  const i = subScenes.findIndex((s) => s.key === key);
+  const baseAngle = Math.PI / 10;
+  const basePoint = new Vector2(gameWidth / 2, 2200);
+  return basePoint
+    .clone()
+    .add(
+      new Vector2(0, 0).setToPolar(
+        (i - Math.floor(subScenes.length / 2)) * baseAngle - Math.PI / 2,
+        1860,
+      ),
+    );
+};
+
 export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
   Flow.parallel(
     ...subScenes.map((sceneDef, i) => {
@@ -62,29 +81,25 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
       const firstTime = eventKeys.every((key) => !isEventSolved(key)(hubScene));
       const scene = hubScene.scene.add(sceneDef.key, sceneDef.create, false);
       hubScene.scene.launch(sceneDef.key);
-      const bigRect = new Phaser.Geom.Rectangle(0, 0, gameWidth, gameHeight);
 
       return observe(fromEvent(scene.events, "ready"), () => {
-        const width = 700;
+        const width = 447;
         const height = width * gameRatio;
-        const { x, y } = new Phaser.Math.Vector2(
-          Phaser.Geom.Point.GetCentroid([
-            bigRect.getPoint(i / subScenes.length),
-            new Phaser.Math.Vector2(gameWidth / 2, gameHeight / 2),
-          ]),
-        ).subtract(new Phaser.Math.Vector2(width, height).scale(0.5));
+        const { x, y } = centerOfSubScene(sceneDef.key).subtract(
+          new Phaser.Math.Vector2(width, height).scale(0.5),
+        );
         const mainCam = scene.cameras.main;
         mainCam.setViewport(x, y, width, height);
         mainCam.zoom = width / gameWidth;
         mainCam.centerOn(gameWidth / 2, gameHeight / 2);
         mainCam.inputEnabled = false;
-        const rect = hubScene.add
-          .rectangle(x, y, width, height)
-          .setOrigin(0, 0);
-        rect.setStrokeStyle(3, 0xff0000);
-        rect.setInteractive();
+        const createFrameObj = () => {
+          return hubScene.add.image(x + width / 2, y + height / 2, "frame");
+        };
+        const frameObj = createFrameObj();
+        frameObj.setInteractive();
         const clickScene = observe(
-          observeCommonGoEvent(rect, "pointerdown"),
+          observeCommonGoEvent(frameObj, "pointerdown"),
           () => {
             subScenes.forEach((otherScene) => {
               if (otherScene === sceneDef) return;
@@ -125,10 +140,34 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
             return Flow.wait(fromEvent(mainCam, FADE_IN_COMPLETE));
           });
         };
+
+        const blinkScene: Flow.PhaserNode = Flow.observe(
+          globalEvents.subSceneHint.subject,
+          ({ sceneKey }) => {
+            if (sceneKey !== sceneDef.key) return Flow.noop;
+
+            const genFrameAnim: Flow.PhaserNode = Flow.lazy(() => {
+              const newFrame = createFrameObj();
+              return Flow.parallel(
+                Flow.sequence(
+                  Flow.tween({
+                    targets: newFrame,
+                    props: { scale: 1.5, alpha: 0 },
+                    duration: 1200,
+                  }),
+                  Flow.call(() => newFrame.destroy()),
+                ),
+                Flow.sequence(Flow.waitTimer(500), genFrameAnim),
+              );
+            });
+            return genFrameAnim;
+          },
+        );
+
         return Flow.sequence(
           waitForMenuFadeIn,
           firstTime ? showScene() : Flow.noop,
-          clickScene,
+          Flow.parallel(blinkScene, clickScene),
         );
       });
     }),

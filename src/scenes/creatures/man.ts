@@ -18,9 +18,9 @@ export const moveMan: (p: {
     return Flow.concurrent(
       Flow.repeat(
         swingRotation({
-          duration: 100,
+          duration: 120,
           target: man,
-          ampl: Math.PI / 12,
+          ampl: Math.PI / 16,
         }),
       ),
       moveTo({
