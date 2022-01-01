@@ -1,9 +1,33 @@
 {
   "frames": {
-    "book": {
+    "woman": {
       "frame": {
         "x": 2,
         "y": 2,
+        "w": 36,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 11,
+        "y": 2,
+        "w": 36,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "book": {
+      "frame": {
+        "x": 2,
+        "y": 54,
         "w": 30,
         "h": 36
       },
@@ -31,8 +55,8 @@
     "image": "items.png",
     "format": "RGBA8888",
     "size": {
-      "w": 34,
-      "h": 40
+      "w": 40,
+      "h": 92
     },
     "scale": 1
   }

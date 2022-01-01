@@ -4,8 +4,8 @@ import { createTree } from "/src/scenes/creatures/tree";
 import { gameHeight } from "/src/scenes/common/constants";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
-import { moveTo } from "/src/helpers/animate/move";
-import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
+import { sceneClass } from "/src/scenes/creatures/def";
+import { getTargetTransform, moveMan } from "/src/scenes/creatures/man";
 
 export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const isSolved = isEventSolved("creatures1")(scene);
@@ -14,32 +14,23 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const openBook = scene.add
     .image(closedBook.x, 935, "crea-npc", "open-book")
     .setVisible(false);
-  const manDeskPos = new Vector2(960, 980);
-  const man = scene.add.image(manDeskPos.x, gameHeight + 40, "crea-npc", "man");
-  const manSpeed = isSolved ? Number.MAX_SAFE_INTEGER : 0.2;
-  const moveMan: (p: { dest: Vector2 }) => Flow.PhaserNode = ({ dest }) =>
-    Flow.concurrent(
-      Flow.repeat(
-        swingRotation({
-          duration: 100,
-          target: man,
-          ampl: Math.PI / 12,
-        }),
-      ),
-      moveTo({
-        target: man,
-        dest,
-        speed: manSpeed,
-      }),
-    );
-
+  const manDeskPos = new Vector2(960, 962);
+  const man = scene.add
+    .image(manDeskPos.x, gameHeight + 40, "crea-npc", "man1")
+    .setScale(1.6);
+  sceneClass.data.manObj.setValue(man)(scene);
+  const manStep = getTargetTransform(scene);
+  if (manStep) {
+    man.setFrame(manStep.frameKey);
+  }
   const realTime = (ms: number) => (isSolved ? 0 : ms);
+  const teleport = isSolved;
 
   const goToCreateTree = Flow.sequence(
     Flow.call(() => {
       man.flipX = true;
     }),
-    moveMan({ dest: new Vector2(1540, 992) }),
+    moveMan({ dest: new Vector2(1540, 992), teleport }),
     Flow.waitTimer(600),
     Flow.parallel(
       createTree,
@@ -50,6 +41,7 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
         }),
         moveMan({
           dest: manDeskPos,
+          teleport,
         }),
       ),
     ),
@@ -63,6 +55,7 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
     }),
     moveMan({
       dest: new Vector2({ x: man.x, y: manDeskPos.y }),
+      teleport,
     }),
     Flow.waitTimer(realTime(600)),
     Flow.call(() => {

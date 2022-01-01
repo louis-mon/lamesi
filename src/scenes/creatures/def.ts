@@ -6,6 +6,8 @@ import {
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { GlobalDataKey } from "/src/scenes/common/global-data";
+import Transform = Phaser.GameObjects.Components.Transform;
+import Image = Phaser.GameObjects.Image;
 
 export const depths = {
   treeTrunk: 10,
@@ -101,6 +103,10 @@ export const sceneClass = defineSceneClass({
   events: {
     elemReadyToPick: customEvent<ElemReadyToPickParams>(),
     syncLegs: customEvent(),
+    moveMan: customEvent<{ dest: Vector2; teleport?: boolean }>(),
   },
-  data: {},
+  data: {
+    manObj: annotate<Image>(),
+    creatureObj: annotate<Transform>(),
+  },
 });

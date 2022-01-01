@@ -1,23 +1,23 @@
 {
   "frames": {
-    "man": {
+    "thought": {
       "frame": {
         "x": 2,
         "y": 2,
-        "w": 41,
-        "h": 71
+        "w": 98,
+        "h": 89
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 4,
-        "y": 9,
-        "w": 41,
-        "h": 71
+        "x": 1,
+        "y": 10,
+        "w": 98,
+        "h": 89
       },
       "sourceSize": {
-        "w": 50,
-        "h": 80
+        "w": 100,
+        "h": 100
       },
       "pivot": {
         "x": 0.5,
@@ -26,8 +26,8 @@
     },
     "open-book": {
       "frame": {
-        "x": 2,
-        "y": 77,
+        "x": 104,
+        "y": 2,
         "w": 60,
         "h": 43
       },
@@ -47,6 +47,78 @@
         "x": 0.5,
         "y": 0.5
       }
+    },
+    "light-ring": {
+      "frame": {
+        "x": 168,
+        "y": 2,
+        "w": 50,
+        "h": 21
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 14,
+        "w": 50,
+        "h": 21
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "man2": {
+      "frame": {
+        "x": 222,
+        "y": 2,
+        "w": 30,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 7,
+        "y": 11,
+        "w": 30,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "man1": {
+      "frame": {
+        "x": 168,
+        "y": 27,
+        "w": 28,
+        "h": 69
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 8,
+        "y": 11,
+        "w": 28,
+        "h": 69
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 80
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {
@@ -55,8 +127,8 @@
     "image": "crea-npc.png",
     "format": "RGBA8888",
     "size": {
-      "w": 64,
-      "h": 122
+      "w": 254,
+      "h": 98
     },
     "scale": 1
   }

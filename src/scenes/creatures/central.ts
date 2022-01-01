@@ -8,13 +8,19 @@ import { getProp } from "/src/helpers/functional";
 import * as Def from "./def";
 import _, { flatMap, mapValues, values } from "lodash";
 import { Maybe } from "purify-ts";
-import { BodyPart, bodyPartsConfig, CreateBodyPartParams } from "./def";
+import {
+  BodyPart,
+  bodyPartsConfig,
+  CreateBodyPartParams,
+  sceneClass,
+} from "./def";
 import { isEventSolved } from "/src/scenes/common/events-def";
 import { PhaserNode } from "/src/helpers/phaser-flow";
 import { createEye } from "/src/scenes/creatures/eye";
 import { createAlgae } from "/src/scenes/creatures/algae";
 import { createMandibles } from "/src/scenes/creatures/pot/mandibles";
 import { createLeg } from "/src/scenes/creatures/legs/legs-leg";
+import { solveCreatureEvent } from "/src/scenes/creatures/solve-creature-event";
 
 const bodyPartsToFlow: {
   [key in BodyPart]: (p: CreateBodyPartParams) => PhaserNode;
@@ -32,6 +38,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     "central",
     "central",
   );
+  sceneClass.data.creatureObj.setValue(body)(scene);
 
   type Spasm = { pos: number; t: number };
   const spasms: Array<Spasm> = [];
@@ -103,6 +110,11 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     );
 
+  const filledSlotCount: { [key in Def.BodyPart]: number } = mapValues(
+    Def.bodyPartsConfig,
+    () => 0,
+  );
+
   const availableSlots: { [key in Def.BodyPart]: Vector2[] } = {
     eye: _.range(Def.bodyPartsConfig.eye.total).map((i) =>
       new Vector2().setToPolar(
@@ -161,6 +173,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
           ? bodyPartSlots[pickEvent.requiredSlot]
           : bodyPartSlots.shift();
       if (!localRootPos) return Flow.noop;
+
       const { getRotation, rootPos, getMove } = getBodyPartMoves(
         localRootPos,
         pickEvent.bodyPart,
@@ -172,8 +185,16 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const tentacleState = Flow.makeSceneStates();
 
+      const sendSolveEvent: Flow.PhaserNode = Flow.lazy(() => {
+        ++filledSlotCount[pickEvent.bodyPart];
+        if (filledSlotCount[pickEvent.bodyPart] < partConfig.total)
+          return Flow.noop;
+
+        return solveCreatureEvent(pickEvent.bodyPart);
+      });
+
       const afterRetractTentacle: Flow.PhaserNode = Flow.lazy(() => {
-        return getRotation()
+        const finalRotation = getRotation()
           .map((rotation) =>
             Flow.tween({
               targets: pickableInst.getObj(scene),
@@ -183,6 +204,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
             }),
           )
           .orDefault(Flow.noop);
+        return Flow.sequence(finalRotation, sendSolveEvent);
       });
 
       const retractTentacle: Flow.PhaserNode = Flow.lazy(() => {
