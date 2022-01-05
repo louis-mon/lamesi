@@ -12,9 +12,9 @@ export const roomClouds: Flow.PhaserNode = Flow.lazy((scene) => {
     (wp, id) => {
       const pos = Wp.wpPos(wp);
       return scene.add
-        .image(pos.x, pos.y, "npc", "clouds")
+        .image(pos.x, pos.y - 20, "npc", "clouds")
         .setDepth(Def.depths.clouds)
-        .setScale(2);
+        .setScale(2.5, 3.4);
     },
   );
   return Flow.observe(
