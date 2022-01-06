@@ -32,6 +32,7 @@ export class DungeonScene extends Phaser.Scene {
     this.load.atlas("menu");
     this.load.atlas("dragon");
     this.load.image("rooms");
+    this.load.aseprite('dungeon-player')
   }
 
   create() {

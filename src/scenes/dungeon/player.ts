@@ -15,15 +15,13 @@ import {
 
 export const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
+  scene.anims.createFromAseprite("dungeon-player");
   const player = addPhysicsFromSprite(
     scene,
     Def.player.create(
-      createSpriteAt(
-        scene,
-        Wp.wpPos(initialWp),
-        "npc",
-        "player-still",
-      ).setDepth(Def.depths.npc),
+      createSpriteAt(scene, Wp.wpPos(initialWp), "dungeon-player").setDepth(
+        Def.depths.npc,
+      ),
     ),
   );
   const currentPosData = Def.player.data.currentPos;
@@ -39,17 +37,6 @@ export const createPlayer = (scene: Phaser.Scene) => {
   );
   const playerSpeed = () =>
     runKey.isDown && otherGlobalData.cheatCodes.value(scene) ? 0.4 : 0.2;
-  scene.anims.create({
-    key: "walk",
-    repeat: -1,
-    duration: 500,
-    frames: scene.anims.generateFrameNames("npc", {
-      start: 1,
-      end: 2,
-      prefix: "player-move-",
-      zeroPad: 2,
-    }),
-  });
   Def.scene.data.playerCheckpoint.setValue(getWpId(initialWp))(scene);
   setPlayerWp(Wp.getWpId(initialWp));
   isMovingData.setValue(false)(scene);
@@ -57,6 +44,7 @@ export const createPlayer = (scene: Phaser.Scene) => {
 
   const movePlayerNext = (wpId: Wp.WpId) => {
     const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
+    const currentPos = () => Wp.wpPos(Wp.getWpDef(currentPosData.value(scene)));
     return Flow.lazy(() =>
       movePlayerCanceled.value(scene) || cannotAct.value(scene)
         ? Flow.noop
@@ -66,13 +54,15 @@ export const createPlayer = (scene: Phaser.Scene) => {
               action: Flow.noop,
             }),
             Flow.sequence(
+              Flow.call(() => {
+                const dx = wpPos.x - currentPos().x;
+                if (dx === 0) return;
+                player.setFlipX(dx < 0);
+              }),
               Flow.tween({
                 targets: player,
                 props: vecToXY(wpPos),
-                duration:
-                  wpPos.distance(
-                    Wp.wpPos(Wp.getWpDef(currentPosData.value(scene))),
-                  ) / playerSpeed(),
+                duration: wpPos.distance(currentPos()) / playerSpeed(),
               }),
               Flow.call(() => setPlayerWp(wpId)),
             ),
@@ -88,12 +78,12 @@ export const createPlayer = (scene: Phaser.Scene) => {
       if (cannotAct.value(scene)) return Flow.noop;
       isMovingData.setValue(true)(scene);
       movePlayerCanceled.setValue(false)(scene);
-      player.anims.play("walk");
+      player.anims.play({ key: "walk", repeat: -1 });
       return Flow.sequence(
         ...path.map(movePlayerNext),
         Flow.call(() => {
           player.anims.stop();
-          player.setFrame("player-still");
+          player.play("idle");
           isMovingData.setValue(false)(scene);
         }),
       );
