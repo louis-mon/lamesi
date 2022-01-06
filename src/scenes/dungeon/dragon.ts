@@ -311,7 +311,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         props: { alpha: 0 },
       }),
       Flow.call(toggleForbiddenPos(false)),
-      endGoalAltarPlaceholder({ n: 5, wp: goalPos }),
+      endGoalAltarPlaceholder({ eventToSolve: "dungeonPhase5", wp: goalPos }),
     );
 
   const downBody = (): Flow.PhaserNode =>

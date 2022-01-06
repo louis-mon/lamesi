@@ -83,7 +83,6 @@ export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
       Flow.waitTimer(1800),
       Flow.call(
         globalEvents.endEventAnim.emit({
-          fromScene: scene,
           dataSolved,
         }),
       ),

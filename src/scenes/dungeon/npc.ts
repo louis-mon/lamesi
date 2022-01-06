@@ -21,8 +21,9 @@ import {
 import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
-import { gameWidth, gameHeight } from "../common/constants";
-import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
+import { GlobalDataKey } from "/src/scenes/common/global-data";
+import { getEventDef } from "/src/scenes/common/events-def";
+import { globalEvents } from "/src/scenes/common/global-events";
 
 const createNpcAnimations = (scene: Phaser.Scene) => {
   scene.anims.create({
@@ -322,39 +323,26 @@ export const altarComponent = (
   );
 };
 
-export const endGoalAltarPlaceholder = (params: { n: number; wp: Wp.WpDef }) =>
+export const endGoalAltarPlaceholder = (params: {
+  eventToSolve: GlobalDataKey;
+  wp: Wp.WpDef;
+}) =>
   altarComponent({
     createItem: ({ pos }) => (scene) =>
-      createSpriteAt(scene, pos, "menu", "goal-1"),
-    key: "goal-1",
+      createSpriteAt(
+        scene,
+        pos,
+        "items",
+        getEventDef(params.eventToSolve).keyItem,
+      ),
+    key: "goal-altar",
     wp: params.wp,
-    action: Flow.withContext(
-      menuHelpers.getMenuScene,
-      Flow.lazy((scene) => {
-        scene.add
-          .text(gameWidth / 2, 50, `Objectif ${params.n} atteint`)
-          .setFontSize(30);
-        const moon = scene.add.sprite(
-          gameWidth / 2,
-          gameHeight / 2,
-          "menu",
-          "goal-1",
-        );
-        return Flow.sequence(
-          Flow.tween({ targets: moon, props: { scale: 5 }, duration: 1700 }),
-          Flow.tween({
-            targets: moon,
-            props: { angle: -20 },
-            duration: 1000,
-          }),
-          Flow.tween({
-            targets: moon,
-            props: { angle: 20 },
-            yoyo: true,
-            loop: -1,
-            duration: 2000,
-          }),
-        );
-      }),
+    action: Flow.sequence(
+      Flow.waitTimer(2000),
+      Flow.call(
+        globalEvents.endEventAnim.emit({
+          dataSolved: params.eventToSolve,
+        }),
+      ),
     ),
   });

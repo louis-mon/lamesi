@@ -30,7 +30,6 @@ export const solveLight = ({
       Flow.call(
         globalEvents.endEventAnim.emit({
           dataSolved: goalDef.eventRequired,
-          fromScene: scene,
         }),
       ),
     );

@@ -248,7 +248,7 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
   })(scene);
   const goalAltar = Npc.endGoalAltarPlaceholder({
     wp: { room: 4, x: 2, y: 1 },
-    n: 1,
+    eventToSolve: "dungeonPhase1",
   });
   const setGoalSpikes = (open: boolean) =>
     Wp.setGroundObstacleRect({

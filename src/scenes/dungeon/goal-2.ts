@@ -204,7 +204,11 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
   createTiles(scene);
   const checkSolve = Flow.observe(
     checkSolveSwappingTiles([0, 1, 2, 4, 6, 7, 8, 10].map((i) => i + 3)),
-    () => Npc.endGoalAltarPlaceholder({ wp: { room: 2, x: 3, y: 0 }, n: 2 }),
+    () =>
+      Npc.endGoalAltarPlaceholder({
+        wp: { room: 2, x: 3, y: 0 },
+        eventToSolve: "dungeonPhase2",
+      }),
   );
   return Flow.parallel(swappingTileBellActions(firstSwappingTiles), checkSolve);
 });

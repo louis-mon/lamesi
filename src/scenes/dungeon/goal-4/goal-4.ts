@@ -66,7 +66,7 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
           ),
         ).pipe(map((values) => values.every((x) => x))),
         action: Npc.endGoalAltarPlaceholder({
-          n: 4,
+          eventToSolve: "dungeonPhase4",
           wp: { room: 4, x: 1, y: 4 },
         }),
       }),

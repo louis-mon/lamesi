@@ -6,9 +6,9 @@ import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
 
 export const endEventAnim: (e: EndEventAnim) => Flow.PhaserNode = ({
   dataSolved,
-  fromScene,
 }) =>
   Flow.lazy((scene) => {
+    const fromScene = scene.scene.get(getEventDef(dataSolved).scene);
     const keyItem = scene.add
       .image(
         gameWidth / 2,

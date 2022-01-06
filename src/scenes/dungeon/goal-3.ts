@@ -163,7 +163,8 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
     }),
     bellHiddenAction({
       wp: { room: 0, x: 4, y: 0 },
-      action: ({ wp }) => endGoalAltarPlaceholder({ n: 3, wp }),
+      action: ({ wp }) =>
+        endGoalAltarPlaceholder({ eventToSolve: "dungeonPhase3", wp }),
     }),
     ...switchesToFire.map((conf) =>
       Flow.parallel(
