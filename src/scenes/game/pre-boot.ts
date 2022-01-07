@@ -7,9 +7,9 @@ const defaultGlobalData: Partial<DataMappingDefValues<typeof globalData>> = {
   lights1: true,
 };
 
-const defaultOtherGlobalData: Partial<DataMappingDefValues<
-  typeof otherGlobalData
->> = {
+const defaultOtherGlobalData: Partial<
+  DataMappingDefValues<typeof otherGlobalData>
+> = {
   cheatCodes: true,
 };
 

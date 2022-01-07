@@ -6,6 +6,7 @@ import { fadeDuration, menuZoneSize } from "/src/scenes/menu/menu-scene-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { endEventAnim } from "/src/scenes/menu/end-event-anim";
 import { newEventAnim } from "/src/scenes/menu/new-event-anim";
+import { openGoBackMenu } from "/src/scenes/menu/go-back-menu";
 
 const buttonSize = 60;
 
@@ -55,22 +56,20 @@ export class MenuScene extends Phaser.Scene {
     return this.addButton(f, { side: "right" });
   }
 
-  create({ parentScene }: { parentScene: Phaser.Scene }) {
-    if (parentScene) {
+  create({ fromHub }: { fromHub: boolean }) {
+    if (fromHub) {
       const goBackButton = this.addButton(
-        ({ x, y, size }) =>
-          this.add.star(x, y, 5, size / 4, size / 2, 0xf5a742, 0.5),
+        ({ x, y, size }) => this.add.image(x, y, "items", "menu-back"),
         { side: "left" },
       );
-      goBackButton.on("pointerdown", () => globalEvents.goToHub.emit({})(this));
+      goBackButton.on("pointerdown", () => openGoBackMenu(this));
     } else {
       this.cameras.main.fadeIn(fadeDuration);
     }
     this.addButton(
       ({ x, y, size }) =>
         this.add
-          .rectangle(x, y, size, size, 0xffffff, 0.5)
-          .setStrokeStyle(2)
+          .image(x, y, "items", "menu-fullscreen")
           .on("pointerdown", () => {
             this.scale.toggleFullscreen();
           }),
@@ -81,7 +80,7 @@ export class MenuScene extends Phaser.Scene {
       this,
       Flow.parallel(
         Flow.observe(globalEvents.endEventAnim.subject, endEventAnim),
-        parentScene ? Flow.noop : newEventAnim,
+        fromHub ? Flow.noop : newEventAnim,
       ),
     );
   }

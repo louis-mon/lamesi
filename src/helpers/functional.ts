@@ -14,6 +14,7 @@ export const combineContext = <C>(
     f(c);
   });
 
-export const getProp = <T, P extends keyof T>(prop: P): ((t: T) => T[P]) => (
-  obj,
-) => obj[prop];
+export const getProp =
+  <T, P extends keyof T>(prop: P): ((t: T) => T[P]) =>
+  (obj) =>
+    obj[prop];

@@ -64,22 +64,20 @@ type SkillDef = {
   }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
 };
 
-const skillAltar = (skillDef: SkillDef) => ({
-  wp,
-}: {
-  wp: Wp.WpDef;
-}): Flow.PhaserNode =>
-  Npc.altarComponent({
-    ...skillDef,
-    infinite: true,
-    wp,
-    action: Flow.call(
-      combineContext(
-        Def.scene.data.currentSkillInUse.setValue(false),
-        Def.scene.data.currentSkill.setValue(skillDef.key),
+const skillAltar =
+  (skillDef: SkillDef) =>
+  ({ wp }: { wp: Wp.WpDef }): Flow.PhaserNode =>
+    Npc.altarComponent({
+      ...skillDef,
+      infinite: true,
+      wp,
+      action: Flow.call(
+        combineContext(
+          Def.scene.data.currentSkillInUse.setValue(false),
+          Def.scene.data.currentSkill.setValue(skillDef.key),
+        ),
       ),
-    ),
-  });
+    });
 
 const arrowDef = declareGoInstance(arrowClass, "player-arrow");
 
@@ -221,8 +219,10 @@ const arrowUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
 
 const arrowSkillDef: SkillDef = {
   key: "arrow-skill",
-  createItem: ({ pos }) => (scene) =>
-    createSpriteAt(scene, pos, "menu", "magic-arrow"),
+  createItem:
+    ({ pos }) =>
+    (scene) =>
+      createSpriteAt(scene, pos, "menu", "magic-arrow"),
   useAction: arrowUseAction,
 };
 
@@ -288,11 +288,8 @@ export const bellHiddenAction = ({
   Flow.lazy((scene) => {
     const { x, y } = Wp.wpPos(wp);
     const zoneScale = 0.8;
-    const updateAlpha: Phaser.Types.GameObjects.Particles.EmitterOpOnUpdateCallback = (
-      p,
-      k,
-      t,
-    ) => Phaser.Math.Interpolation.Bezier([0, 1, 0.5], t);
+    const updateAlpha: Phaser.Types.GameObjects.Particles.EmitterOpOnUpdateCallback =
+      (p, k, t) => Phaser.Math.Interpolation.Bezier([0, 1, 0.5], t);
     const emitter = bellParticlesDef.getObj(scene).createEmitter({
       scale: {
         start: 1,
@@ -324,8 +321,10 @@ export const bellHiddenAction = ({
 
 const bellSkillDef: SkillDef = {
   key: "bell-skill",
-  createItem: ({ pos }) => (scene) =>
-    createSpriteAt(scene, pos, "menu", "bell"),
+  createItem:
+    ({ pos }) =>
+    (scene) =>
+      createSpriteAt(scene, pos, "menu", "bell"),
   useAction: bellUseAction,
 };
 
@@ -352,8 +351,10 @@ const amuletUseAction: Flow.PhaserNode = Flow.sequence(
 
 export const amuletSkillDef: SkillDef = {
   key: Def.amuletSkillKey,
-  createItem: ({ pos }) => (scene) =>
-    createSpriteAt(scene, pos, "npc", "amulet"),
+  createItem:
+    ({ pos }) =>
+    (scene) =>
+      createSpriteAt(scene, pos, "npc", "amulet"),
   useAction: amuletUseAction,
 };
 
@@ -364,12 +365,12 @@ export const bellSkillAltar = skillAltar(bellSkillDef);
 export const amuletSkillAltar = skillAltar(amuletSkillDef);
 
 export const skillsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
-  const hasThisSkill = (key: string): SceneContext<Observable<boolean>> => (
-    scene,
-  ) =>
-    Def.scene.data.currentSkill
-      .dataSubject(scene)
-      .pipe(map((currentSkill) => currentSkill === key));
+  const hasThisSkill =
+    (key: string): SceneContext<Observable<boolean>> =>
+    (scene) =>
+      Def.scene.data.currentSkill
+        .dataSubject(scene)
+        .pipe(map((currentSkill) => currentSkill === key));
   return Flow.parallel(
     Flow.observe(Def.scene.events.sendMagicArrow.subject, fireArrow),
     ...skillDefs.map((skillDef) =>

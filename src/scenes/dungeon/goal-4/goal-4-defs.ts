@@ -121,10 +121,10 @@ export const moveFlameTo = ({
     Flow.call(instance.data.currentPos.setValue(newPos)),
   );
 
-export const playerIsOnFlame = (
-  instance: GreenFlameInst,
-): SceneContext<Observable<boolean>> => (scene) =>
-  Def.playerIsOnPos(instance.data.currentPos.value(scene))(scene);
+export const playerIsOnFlame =
+  (instance: GreenFlameInst): SceneContext<Observable<boolean>> =>
+  (scene) =>
+    Def.playerIsOnPos(instance.data.currentPos.value(scene))(scene);
 
 export const hintFlameRoom5 = makeGreenFlame({
   pos: { room: 4, x: 3, y: 4 },

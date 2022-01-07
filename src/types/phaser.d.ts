@@ -1,8 +1,13 @@
 import * as P from "phaser";
 import Pointer = P.Input.Pointer;
+import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin";
 
 declare module "phaser" {
   namespace Phaser {
+    export interface Scene {
+      rexUI: RexUIPlugin;
+    }
+
     type EventGameObjectMapping = {
       drag: (pointer: Pointer, dragX: number, dragY: number) => void;
       dragstart: (pointer: Pointer, dragX: number, dragY: number) => void;
@@ -11,6 +16,11 @@ declare module "phaser" {
         localX: number,
         localY: number,
         event: P.Types.Input.EventData,
+      ) => void;
+      "button.click": (
+        button: Phaser.GameObjects.GameObject,
+        groupName: string,
+        index: number,
       ) => void;
     };
 

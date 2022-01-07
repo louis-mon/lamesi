@@ -32,30 +32,36 @@ export const runScene = (scene: Context, flow: PhaserNode): void =>
     }),
   );
 
-export const tween = (
-  configFactory: FuncOrConst<Context, Phaser.Types.Tweens.TweenBuilderConfig>,
-): PhaserNode => (scene) => (params) => {
-  const config = funcOrConstValue(scene, configFactory);
-  const abortHandler = () => tween.stop();
-  const tween = scene.tweens.add({
-    ...config,
-    onComplete: (t, targets, param) => {
-      params.unregisterAbort(abortHandler);
-      if (config.onComplete) config.onComplete(t, targets, param);
-      params.onComplete();
-    },
-  });
-  params.registerAbort(abortHandler);
-};
+export const tween =
+  (
+    configFactory: FuncOrConst<Context, Phaser.Types.Tweens.TweenBuilderConfig>,
+  ): PhaserNode =>
+  (scene) =>
+  (params) => {
+    const config = funcOrConstValue(scene, configFactory);
+    const abortHandler = () => tween.stop();
+    const tween = scene.tweens.add({
+      ...config,
+      onComplete: (t, targets, param) => {
+        params.unregisterAbort(abortHandler);
+        if (config.onComplete) config.onComplete(t, targets, param);
+        params.onComplete();
+      },
+    });
+    params.registerAbort(abortHandler);
+  };
 
-export const waitTimer = (ms: number): PhaserNode => (scene) => (p) => {
-  const abortHandler = () => timer.remove();
-  const timer = scene.time.delayedCall(ms, () => {
-    p.unregisterAbort(abortHandler);
-    p.onComplete();
-  });
-  p.registerAbort(abortHandler);
-};
+export const waitTimer =
+  (ms: number): PhaserNode =>
+  (scene) =>
+  (p) => {
+    const abortHandler = () => timer.remove();
+    const timer = scene.time.delayedCall(ms, () => {
+      p.unregisterAbort(abortHandler);
+      p.onComplete();
+    });
+    p.registerAbort(abortHandler);
+  };
 
 /**
  * Standard tween does not work with angles, use this one instead
@@ -106,39 +112,45 @@ type ArcadeCollisionParams = {
   getObjects(): Phaser.GameObjects.GameObject[];
 };
 
-const arcadeGenericCollideSubject = (
-  method: "overlap" | "collider",
-) => (params: {
-  object1: ArcadeCollisionObject;
-  object2: ArcadeCollisionObject;
-  processCallback?: ArcadePhysicsCallback | undefined;
-}): SceneContext<Observable<ArcadeCollisionParams>> => (scene) => {
-  return fromEventPattern(
-    (handler) =>
-      scene.physics.add[method](params.object1, params.object2, handler),
-    (handler, collider) => collider.destroy(),
-    (object1, object2) => ({
-      object1,
-      object2,
-      getObjects: () => [object1, object2],
-    }),
-  );
-};
+const arcadeGenericCollideSubject =
+  (method: "overlap" | "collider") =>
+  (params: {
+    object1: ArcadeCollisionObject;
+    object2: ArcadeCollisionObject;
+    processCallback?: ArcadePhysicsCallback | undefined;
+  }): SceneContext<Observable<ArcadeCollisionParams>> =>
+  (scene) => {
+    return fromEventPattern(
+      (handler) =>
+        scene.physics.add[method](params.object1, params.object2, handler),
+      (handler, collider) => collider.destroy(),
+      (object1, object2) => ({
+        object1,
+        object2,
+        getObjects: () => [object1, object2],
+      }),
+    );
+  };
 
 export const arcadeOverlapSubject = arcadeGenericCollideSubject("overlap");
 
 export const arcadeColliderSubject = arcadeGenericCollideSubject("collider");
 
-export const handleEvent = (makeParams: {
-  handler: SceneContext<() => void>;
-  emitter: SceneContext<Phaser.Events.EventEmitter>;
-  event: any;
-}): PhaserNode => (scene) => (params) => {
-  const handler = makeParams.handler(scene);
-  const emitter = makeParams.emitter(scene);
-  emitter.on(makeParams.event, handler);
-  params.registerAbort(() => emitter.removeListener(makeParams.event, handler));
-};
+export const handleEvent =
+  (makeParams: {
+    handler: SceneContext<() => void>;
+    emitter: SceneContext<Phaser.Events.EventEmitter>;
+    event: any;
+  }): PhaserNode =>
+  (scene) =>
+  (params) => {
+    const handler = makeParams.handler(scene);
+    const emitter = makeParams.emitter(scene);
+    emitter.on(makeParams.event, handler);
+    params.registerAbort(() =>
+      emitter.removeListener(makeParams.event, handler),
+    );
+  };
 
 export const handlePostUpdate = (makeParams: {
   handler: SceneContext<() => void>;

@@ -294,14 +294,11 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const startBodyParts = Flow.parallel(
     ...values(
-      mapValues(
-        bodyPartsConfig,
-        (conf, part): Flow.PhaserNode => {
-          if (isEventSolved(conf.requiredEvent)(scene))
-            return spawnBodyPart(part as BodyPart);
-          return Flow.noop;
-        },
-      ),
+      mapValues(bodyPartsConfig, (conf, part): Flow.PhaserNode => {
+        if (isEventSolved(conf.requiredEvent)(scene))
+          return spawnBodyPart(part as BodyPart);
+        return Flow.noop;
+      }),
     ),
   );
 

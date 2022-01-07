@@ -153,101 +153,111 @@ export const setGraphWpDisabled = ({
   }));
 
 type ObstacleKind = "none" | "wall" | "spike";
-export const setGroundObstacleLink = ({
-  wp1,
-  wp2,
-  kind,
-}: WpLink & {
-  kind: ObstacleKind;
-}): SceneContext<void> => (scene) => {
-  const wpGraph = Def.scene.data.wpGraph.value(scene);
-  if (!wpGraph[wp1] || !wpGraph[wp2]) {
-    return;
-  }
-  const open = kind === "none";
-  setGraphLinkData({ wp2, wp1, open })(scene);
-  const wpDef1 = getWpDef(wp1);
-  const wpDef2 = getWpDef(wp2);
-  const pos = wpPos(wpDef1).add(wpPos(wpDef2)).scale(0.5);
-  const sameXCoord = wpDef1.x === wpDef2.x;
-  const key = _.sortBy([wp1, wp2]).join("--");
-  const oldObj = scene.children.getByName(key);
-  if (kind === "spike" && !oldObj) {
-    createImageAt(scene, pos, "npc", sameXCoord ? "spikes-h" : "spikes-v")
-      .setDepth(Def.depths.npc)
-      .setName(key);
-  } else if (kind === "wall" && !oldObj) {
-    const wall =
-      wpDef1.room === wpDef2.room
-        ? createImageAt(scene, pos, "npc", sameXCoord ? "wall-h" : "wall-v")
-            .setDepth(Def.depths.npc)
-            .setName(key)
-        : scene.add
-            .zone(
-              pos.x,
-              pos.y,
-              sameXCoord ? wpHalfSize.x * 2 : roomMargin.x,
-              sameXCoord ? roomMargin.y : wpHalfSize.y * 2,
-            )
-            .setName(key);
-    Def.scene.data.wallGroup.value(scene).add(wall);
-  } else if (kind === "none" && oldObj) {
-    oldObj.destroy();
-  }
-};
-
-export const setGroundObstacleLine = ({
-  line,
-  kind,
-  room,
-}: {
-  line: Phaser.Geom.Line;
-  room: number;
-  kind: ObstacleKind;
-}): SceneContext<void> => (scene) => {
-  const points = line.getPoints(0, 1);
-  const norm = new Vector2(line.getPointA())
-    .subtract(new Vector2(line.getPointB()))
-    .normalizeLeftHand()
-    .normalize();
-  points.forEach(({ x, y }) => {
-    setGroundObstacleLink({
-      wp1: getWpId({ room, x: x - Math.abs(norm.x), y: y - Math.abs(norm.y) }),
-      wp2: getWpId({ room, x, y }),
-      kind,
-    })(scene);
-  });
-};
-
-export const setGroundObstacleRect = ({
-  wp1,
-  wp2,
-  kind,
-  room,
-}: {
-  wp1: Phaser.Types.Math.Vector2Like;
-  wp2: Phaser.Types.Math.Vector2Like;
-  room: number;
-  kind: ObstacleKind;
-}): SceneContext<void> => (scene) => {
-  const { left, right, top, bottom } = Phaser.Geom.Rectangle.FromPoints([
+export const setGroundObstacleLink =
+  ({
     wp1,
     wp2,
-  ]);
-  const lines = [
-    new Phaser.Geom.Line(left, top, right, top),
-    new Phaser.Geom.Line(right, top, right, bottom),
-    new Phaser.Geom.Line(left, top, left, bottom),
-    new Phaser.Geom.Line(left, bottom, right, bottom),
-  ];
-  lines.forEach((line) =>
-    setGroundObstacleLine({
-      line,
-      kind,
-      room,
-    })(scene),
-  );
-};
+    kind,
+  }: WpLink & {
+    kind: ObstacleKind;
+  }): SceneContext<void> =>
+  (scene) => {
+    const wpGraph = Def.scene.data.wpGraph.value(scene);
+    if (!wpGraph[wp1] || !wpGraph[wp2]) {
+      return;
+    }
+    const open = kind === "none";
+    setGraphLinkData({ wp2, wp1, open })(scene);
+    const wpDef1 = getWpDef(wp1);
+    const wpDef2 = getWpDef(wp2);
+    const pos = wpPos(wpDef1).add(wpPos(wpDef2)).scale(0.5);
+    const sameXCoord = wpDef1.x === wpDef2.x;
+    const key = _.sortBy([wp1, wp2]).join("--");
+    const oldObj = scene.children.getByName(key);
+    if (kind === "spike" && !oldObj) {
+      createImageAt(scene, pos, "npc", sameXCoord ? "spikes-h" : "spikes-v")
+        .setDepth(Def.depths.npc)
+        .setName(key);
+    } else if (kind === "wall" && !oldObj) {
+      const wall =
+        wpDef1.room === wpDef2.room
+          ? createImageAt(scene, pos, "npc", sameXCoord ? "wall-h" : "wall-v")
+              .setDepth(Def.depths.npc)
+              .setName(key)
+          : scene.add
+              .zone(
+                pos.x,
+                pos.y,
+                sameXCoord ? wpHalfSize.x * 2 : roomMargin.x,
+                sameXCoord ? roomMargin.y : wpHalfSize.y * 2,
+              )
+              .setName(key);
+      Def.scene.data.wallGroup.value(scene).add(wall);
+    } else if (kind === "none" && oldObj) {
+      oldObj.destroy();
+    }
+  };
+
+export const setGroundObstacleLine =
+  ({
+    line,
+    kind,
+    room,
+  }: {
+    line: Phaser.Geom.Line;
+    room: number;
+    kind: ObstacleKind;
+  }): SceneContext<void> =>
+  (scene) => {
+    const points = line.getPoints(0, 1);
+    const norm = new Vector2(line.getPointA())
+      .subtract(new Vector2(line.getPointB()))
+      .normalizeLeftHand()
+      .normalize();
+    points.forEach(({ x, y }) => {
+      setGroundObstacleLink({
+        wp1: getWpId({
+          room,
+          x: x - Math.abs(norm.x),
+          y: y - Math.abs(norm.y),
+        }),
+        wp2: getWpId({ room, x, y }),
+        kind,
+      })(scene);
+    });
+  };
+
+export const setGroundObstacleRect =
+  ({
+    wp1,
+    wp2,
+    kind,
+    room,
+  }: {
+    wp1: Phaser.Types.Math.Vector2Like;
+    wp2: Phaser.Types.Math.Vector2Like;
+    room: number;
+    kind: ObstacleKind;
+  }): SceneContext<void> =>
+  (scene) => {
+    const { left, right, top, bottom } = Phaser.Geom.Rectangle.FromPoints([
+      wp1,
+      wp2,
+    ]);
+    const lines = [
+      new Phaser.Geom.Line(left, top, right, top),
+      new Phaser.Geom.Line(right, top, right, bottom),
+      new Phaser.Geom.Line(left, top, left, bottom),
+      new Phaser.Geom.Line(left, bottom, right, bottom),
+    ];
+    lines.forEach((line) =>
+      setGroundObstacleLine({
+        line,
+        kind,
+        room,
+      })(scene),
+    );
+  };
 
 const disabledScale = 0.2;
 

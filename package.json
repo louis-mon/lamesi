@@ -15,8 +15,10 @@
     "tex-pack": "cd raw-assets && ts-node pack.ts"
   },
   "dependencies": {
+    "i18next": "^21.6.5",
     "lodash": "^4.17.20",
     "phaser": "3.52.0",
+    "phaser3-rex-plugins": "^1.1.65",
     "purify-ts": "^0.15.1",
     "rxjs": "^6.5.5"
   },
@@ -24,14 +26,14 @@
     "@types/jest": "^25.2.3",
     "@types/lodash": "4.14.150",
     "free-tex-packer-cli": "^0.2.8",
-    "jest": "^26.0.1",
+    "jest": "^27.4.7",
     "jest-canvas-mock": "^2.3.0",
     "parcel-bundler": "^1.6.1",
     "parcel-plugin-static-files-copy": "^2.3.1",
-    "prettier": "2.0.5",
-    "ts-jest": "^26.0.0",
-    "ts-node": "^10.0.0",
-    "typescript": "^3.8.3"
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.2",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
   },
   "keywords": []
 }

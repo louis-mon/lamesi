@@ -48,6 +48,8 @@ export type WithRequiredEvent = {
 };
 
 export const eventsHelpers = {
-  getEventFilter: (scene: Phaser.Scene) => (e: WithRequiredEvent): boolean =>
-    e.eventRequired ? globalData[e.eventRequired].value(scene) : true,
+  getEventFilter:
+    (scene: Phaser.Scene) =>
+    (e: WithRequiredEvent): boolean =>
+      e.eventRequired ? globalData[e.eventRequired].value(scene) : true,
 };

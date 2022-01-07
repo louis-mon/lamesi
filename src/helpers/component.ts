@@ -37,7 +37,7 @@ type HelperFactory<kind extends ObjectKind, E> = "go" extends kind
 
 export type EventMappingDef<
   O extends DefineEventMappingParams,
-  Kind extends ObjectKind
+  Kind extends ObjectKind,
 > = {
   [Key in keyof O]: HelperFactory<
     Kind,
@@ -47,27 +47,26 @@ export type EventMappingDef<
 
 type EventEmitterFactory = SceneContext<Phaser.Events.EventEmitter | null>;
 
-const makeEventHelper = (emitterFactory: EventEmitterFactory) => <T>({
-  key,
-  selector,
-}: { key: string } & WithSelector): EventHelper<T> => ({
-  subject: (scene) =>
-    Maybe.fromNullable(emitterFactory(scene)).mapOrDefault(
-      (emitter) => fromEvent(emitter, key, selector),
-      empty(),
-    ),
-  emit: (value) => (scene) =>
-    Maybe.fromNullable(emitterFactory(scene)).ifJust((emitter) =>
-      emitter.emit(key, value),
-    ),
-});
+const makeEventHelper =
+  (emitterFactory: EventEmitterFactory) =>
+  <T>({ key, selector }: { key: string } & WithSelector): EventHelper<T> => ({
+    subject: (scene) =>
+      Maybe.fromNullable(emitterFactory(scene)).mapOrDefault(
+        (emitter) => fromEvent(emitter, key, selector),
+        empty(),
+      ),
+    emit: (value) => (scene) =>
+      Maybe.fromNullable(emitterFactory(scene)).ifJust((emitter) =>
+        emitter.emit(key, value),
+      ),
+  });
 
 const sceneEmitterFactory: EventEmitterFactory = getProp("events");
 export const makeSceneEventHelper = makeEventHelper(sceneEmitterFactory);
 
 export const defineEvents = <
   O extends DefineEventMappingParams,
-  Kind extends ObjectKind
+  Kind extends ObjectKind,
 >(
   data: O,
   kind: Kind,
@@ -87,41 +86,42 @@ type DefineDataMappingParams = { [Key: string]: unknown };
 
 type DataMappingDef<
   O extends DefineDataMappingParams,
-  Kind extends ObjectKind
+  Kind extends ObjectKind,
 > = { [Key in keyof O]: HelperFactory<Kind, DataHelper<O[Key]>> };
 
-export type DataMappingDefValues<
-  T extends DataMappingDef<any, any>
-> = T extends DataMappingDef<infer O, any> ? O : never;
+export type DataMappingDefValues<T extends DataMappingDef<any, any>> =
+  T extends DataMappingDef<infer O, any> ? O : never;
 
-const makeDataHelper = (
-  emitterFactory: SceneContext<Maybe<Phaser.Events.EventEmitter>>,
-  managerFactory: SceneContext<Maybe<Phaser.Data.DataManager>>,
-) => <T>(key: string): DataHelper<T> => {
-  const eventKey = `changedata-${key}`;
-  const updateValue: DataHelper<T>["updateValue"] = (f) => (scene) => {
-    return managerFactory(scene).ifJust((manager) =>
-      manager.set(key, f(manager.get(key))),
-    );
+const makeDataHelper =
+  (
+    emitterFactory: SceneContext<Maybe<Phaser.Events.EventEmitter>>,
+    managerFactory: SceneContext<Maybe<Phaser.Data.DataManager>>,
+  ) =>
+  <T>(key: string): DataHelper<T> => {
+    const eventKey = `changedata-${key}`;
+    const updateValue: DataHelper<T>["updateValue"] = (f) => (scene) => {
+      return managerFactory(scene).ifJust((manager) =>
+        manager.set(key, f(manager.get(key))),
+      );
+    };
+    const value: DataHelper<T>["value"] = (scene) =>
+      managerFactory(scene).mapOrDefault(
+        (manager) => manager.get(key),
+        undefined,
+      );
+    const subject: DataHelper<T>["subject"] = (scene) =>
+      emitterFactory(scene).mapOrDefault(
+        (emitter) => fromEvent(emitter, eventKey, (p, value) => value),
+        empty(),
+      );
+    return {
+      subject,
+      dataSubject: (scene) => subject(scene).pipe(startWith(value(scene))),
+      value,
+      setValue: (v) => updateValue(() => v),
+      updateValue,
+    };
   };
-  const value: DataHelper<T>["value"] = (scene) =>
-    managerFactory(scene).mapOrDefault(
-      (manager) => manager.get(key),
-      undefined,
-    );
-  const subject: DataHelper<T>["subject"] = (scene) =>
-    emitterFactory(scene).mapOrDefault(
-      (emitter) => fromEvent(emitter, eventKey, (p, value) => value),
-      empty(),
-    );
-  return {
-    subject,
-    dataSubject: (scene) => subject(scene).pipe(startWith(value(scene))),
-    value,
-    setValue: (v) => updateValue(() => v),
-    updateValue,
-  };
-};
 
 export const makeSceneDataHelper = makeDataHelper(
   (scene) => Maybe.of(scene.events),
@@ -130,7 +130,7 @@ export const makeSceneDataHelper = makeDataHelper(
 
 export const defineData = <
   O extends DefineDataMappingParams,
-  Kind extends ObjectKind
+  Kind extends ObjectKind,
 >(
   data: O,
   kind: Kind,
@@ -159,7 +159,7 @@ type GoClassDef<
   Cl extends Phaser.GameObjects.GameObject,
   Events extends DefineEventMappingParams,
   Data extends DefineDataMappingParams,
-  Config extends object
+  Config extends object,
 > = {
   kind?: Cl;
   events: EventMappingDef<Events, "go">;
@@ -172,7 +172,7 @@ export const defineGoClass = <
   Cl extends Phaser.GameObjects.GameObject,
   Events extends DefineEventMappingParams,
   Data extends DefineDataMappingParams,
-  Config extends object
+  Config extends object,
 >({
   events,
   data,
@@ -191,34 +191,34 @@ export const defineGoClass = <
   getObj: (key) => (scene) => scene.children.getByName(key) as Cl,
 });
 
-const defineGoClassKind = <Cl extends Phaser.GameObjects.GameObject>() => <
-  Events extends DefineEventMappingParams,
-  Data extends DefineDataMappingParams,
-  Config extends object
->(p: {
-  events: Events;
-  data: Data;
-  config?: Config;
-}) => defineGoClass({ ...p, kind: annotate<Cl>() });
+const defineGoClassKind =
+  <Cl extends Phaser.GameObjects.GameObject>() =>
+  <
+    Events extends DefineEventMappingParams,
+    Data extends DefineDataMappingParams,
+    Config extends object,
+  >(p: {
+    events: Events;
+    data: Data;
+    config?: Config;
+  }) =>
+    defineGoClass({ ...p, kind: annotate<Cl>() });
 
 const defineDefaultGoClass = <Cl extends Phaser.GameObjects.GameObject>() =>
   defineGoClass({ events: {}, data: {}, kind: annotate<Cl>() });
 
 export const defineGoSprite = defineGoClassKind<Phaser.GameObjects.Sprite>();
-export const spriteClassKind = defineDefaultGoClass<
-  Phaser.GameObjects.Sprite
->();
+export const spriteClassKind =
+  defineDefaultGoClass<Phaser.GameObjects.Sprite>();
 
 export const defineGoImage = defineGoClassKind<Phaser.GameObjects.Image>();
 
 export const defineGoObject = defineGoClassKind();
 
-export const physicsImageClassKind = defineDefaultGoClass<
-  Phaser.Physics.Arcade.Image
->();
-export const particleEmitterManagerClassKind = defineDefaultGoClass<
-  Phaser.GameObjects.Particles.ParticleEmitterManager
->();
+export const physicsImageClassKind =
+  defineDefaultGoClass<Phaser.Physics.Arcade.Image>();
+export const particleEmitterManagerClassKind =
+  defineDefaultGoClass<Phaser.GameObjects.Particles.ParticleEmitterManager>();
 
 export const commonGoEvents = defineEvents(
   {
@@ -237,7 +237,7 @@ export const declareGoInstance = <
   Cl extends Phaser.GameObjects.GameObject,
   Events extends DefineEventMappingParams,
   Data extends DefineDataMappingParams,
-  Config extends object
+  Config extends object,
 >(
   goClass: GoClassDef<Cl, Events, Data, Config>,
   keyOrNull: string | null,
@@ -257,7 +257,7 @@ export const declareGoInstance = <
     events: _.mapValues(goClass.events, (value) => value(key)) as {
       [Key in keyof Events]: EventHelper<ReturnType<Events[Key]["selector"]>>;
     },
-    data: (_.mapValues(goClass.data, (value) => value(key)) as unknown) as {
+    data: _.mapValues(goClass.data, (value) => value(key)) as unknown as {
       [Key in keyof Data]: DataHelper<Data[Key]>;
     },
   };
@@ -268,7 +268,7 @@ export const declareGoInstances = <
   Events extends DefineEventMappingParams,
   Data extends DefineDataMappingParams,
   Config extends object,
-  Mapping extends { [Key: string]: Config }
+  Mapping extends { [Key: string]: Config },
 >(
   goClass: GoClassDef<Cl, Events, Data, Config>,
   prefix: string,
@@ -280,7 +280,7 @@ export const declareGoInstances = <
 
 export const defineSceneClass = <
   Events extends DefineEventMappingParams,
-  Data extends DefineDataMappingParams
+  Data extends DefineDataMappingParams,
 >({
   data,
   events,

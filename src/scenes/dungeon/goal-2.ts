@@ -128,9 +128,8 @@ const hintSymbol = bellHiddenAction({
 });
 
 type Room2FloorState = { [key: string]: boolean };
-const room2floorState = makeSceneDataHelper<Room2FloorState>(
-  "room2-floor-state",
-);
+const room2floorState =
+  makeSceneDataHelper<Room2FloorState>("room2-floor-state");
 
 export const swappingTileBellActions = (tileWps: Wp.WpDef[]): Flow.PhaserNode =>
   Flow.lazy((scene) =>
@@ -185,18 +184,18 @@ const createTiles = (scene: Phaser.Scene) => {
   });
 };
 
-export const checkSolveSwappingTiles = (
-  solutionIds: number[],
-): SceneContext<Observable<unknown>> => (scene) =>
-  room2floorState.dataSubject(scene).pipe(
-    auditTime(1000),
-    first((state) => {
-      const solution = solutionIds.map((i) => Wp.getWpId(allTileWps[i]));
-      return allTileWps.every(
-        (wp) => solution.includes(Wp.getWpId(wp)) === !!state[Wp.getWpId(wp)],
-      );
-    }),
-  );
+export const checkSolveSwappingTiles =
+  (solutionIds: number[]): SceneContext<Observable<unknown>> =>
+  (scene) =>
+    room2floorState.dataSubject(scene).pipe(
+      auditTime(1000),
+      first((state) => {
+        const solution = solutionIds.map((i) => Wp.getWpId(allTileWps[i]));
+        return allTileWps.every(
+          (wp) => solution.includes(Wp.getWpId(wp)) === !!state[Wp.getWpId(wp)],
+        );
+      }),
+    );
 
 const tileName = (wp: Def.WpDef) => `room2-floor-tile-${Wp.getWpId(wp)}`;
 export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {

@@ -25,23 +25,27 @@ export class MasterScene extends Phaser.Scene {
   }
 
   create() {
+    const startHub = () => {
+      this.scene.add(hubSceneKey, new HubScene(), true);
+    };
     const goToHub: Flow.PhaserNode = Flow.lazy(() => {
       const manager = this.scene.manager;
-      const scenes = manager.getScenes().filter((scene) => scene !== this);
+      const scenes = manager.getScenes(false).filter((scene) => scene !== this);
       const destroyEvents = scenes.map((scene) => {
         return Flow.wait(fromEvent(scene.events, "destroy"));
       });
       const destroyScene = () => {
         scenes.forEach((scene) => scene.scene.remove());
       };
-      const camera = manager.getScene(menuSceneKey).cameras.main;
+      const topScene = manager.getScenes(true, true)[0];
+      const camera = topScene.cameras.main;
       camera.fade(fadeDuration);
       return Flow.sequence(
         Flow.wait(
           fromEvent(camera, Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE),
         ),
         Flow.parallel(...destroyEvents, Flow.call(destroyScene)),
-        Flow.call(() => manager.start("hub")),
+        Flow.call(startHub),
       );
     });
     Flow.run(
@@ -51,7 +55,6 @@ export class MasterScene extends Phaser.Scene {
         cheatCodeAction,
       ),
     );
-    this.scene.add(hubSceneKey, new HubScene(), false);
-    this.scene.run(hubSceneKey);
+    startHub();
   }
 }

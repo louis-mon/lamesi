@@ -125,10 +125,9 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
               Flow.call(() => {
                 mainCam.inputEnabled = true;
                 hubScene.scene.add(menuSceneKey, MenuScene, true, {
-                  currentScene: scene,
-                  parentScene: hubScene,
+                  fromHub: true,
                 });
-                hubScene.scene.setActive(false);
+                hubScene.scene.remove();
               }),
             );
           },

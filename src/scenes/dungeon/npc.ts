@@ -44,21 +44,20 @@ export const initNpc: SceneContext<void> = (scene) => {
   Def.scene.data.wallGroup.setValue(scene.physics.add.staticGroup())(scene);
 };
 
-const canPlayerDoAction = (params: {
-  pos: Wp.WpId;
-  disabled: SceneContext<Observable<boolean>>;
-}) => (scene: Phaser.Scene) =>
-  combineLatest([
-    Def.player.data.currentPos.dataSubject(scene),
-    Def.player.data.isMoving.dataSubject(scene),
-    playerCannotActSubject(scene),
-    params.disabled(scene),
-  ]).pipe(
-    map(
-      ([pos, isMoving, cannotAct, disabled]) =>
-        !disabled && !isMoving && !cannotAct && pos === params.pos,
-    ),
-  );
+const canPlayerDoAction =
+  (params: { pos: Wp.WpId; disabled: SceneContext<Observable<boolean>> }) =>
+  (scene: Phaser.Scene) =>
+    combineLatest([
+      Def.player.data.currentPos.dataSubject(scene),
+      Def.player.data.isMoving.dataSubject(scene),
+      playerCannotActSubject(scene),
+      params.disabled(scene),
+    ]).pipe(
+      map(
+        ([pos, isMoving, cannotAct, disabled]) =>
+          !disabled && !isMoving && !cannotAct && pos === params.pos,
+      ),
+    );
 export const bindAttackButton = ({
   pos,
   disabled = () => of(false),
@@ -78,8 +77,10 @@ export const bindAttackButton = ({
         hintKey: "dungeonActivateHint",
         action: action,
         key: `activate-attack-${pos}`,
-        create: ({ pos }) => (scene) =>
-          createSpriteAt(scene, pos, "menu", "action-attack"),
+        create:
+          ({ pos }) =>
+          (scene) =>
+            createSpriteAt(scene, pos, "menu", "action-attack"),
       },
     ),
   );
@@ -172,40 +173,43 @@ const doorPositions = (doorKey: DoorKey, open: boolean) => {
   const wp1 = Wp.wpPos(Wp.getWpDef(doorDef.wp1));
   const wp2 = Wp.wpPos(Wp.getWpDef(doorDef.wp2));
   const middlePos = wp1.clone().add(wp2).scale(0.5);
-  const doorSep = (isDoorHorizontal(doorKey)
-    ? doorSepBase.clone().rotate(Math.PI / 2)
-    : doorSepBase
+  const doorSep = (
+    isDoorHorizontal(doorKey)
+      ? doorSepBase.clone().rotate(Math.PI / 2)
+      : doorSepBase
   )
     .clone()
     .scale(open ? 2 : 1);
   return [middlePos.clone().add(doorSep), middlePos.clone().subtract(doorSep)];
 };
 
-const activateDoor = (open: boolean) => (doorKey: DoorKey): Flow.PhaserNode =>
-  Flow.lazy((scene) => {
-    const doorDef = doors[doorKey];
-    const actions: Flow.PhaserNode[] = [
-      Flow.parallel(
-        ...doorPositions(doorKey, open).map(({ x, y }, i) => {
-          const doorObj = scene.children.getByName(
-            doorObjectKey(doorKey, i),
-          ) as Phaser.GameObjects.Sprite;
-          return Flow.tween({
-            targets: doorObj,
-            props: { x, y },
-            duration: 750,
-          });
-        }),
-      ),
-      Flow.call(
-        Wp.setGroundObstacleLink({
-          ...doorDef,
-          kind: open ? "none" : "wall",
-        }),
-      ),
-    ];
-    return Flow.sequence(...(open ? actions : actions.slice().reverse()));
-  });
+const activateDoor =
+  (open: boolean) =>
+  (doorKey: DoorKey): Flow.PhaserNode =>
+    Flow.lazy((scene) => {
+      const doorDef = doors[doorKey];
+      const actions: Flow.PhaserNode[] = [
+        Flow.parallel(
+          ...doorPositions(doorKey, open).map(({ x, y }, i) => {
+            const doorObj = scene.children.getByName(
+              doorObjectKey(doorKey, i),
+            ) as Phaser.GameObjects.Sprite;
+            return Flow.tween({
+              targets: doorObj,
+              props: { x, y },
+              duration: 750,
+            });
+          }),
+        ),
+        Flow.call(
+          Wp.setGroundObstacleLink({
+            ...doorDef,
+            kind: open ? "none" : "wall",
+          }),
+        ),
+      ];
+      return Flow.sequence(...(open ? actions : actions.slice().reverse()));
+    });
 
 export const openDoor = activateDoor(true);
 
@@ -307,8 +311,10 @@ export const altarComponent = (
             {
               hintKey: "dungeonTakeHint",
               key: "action-take-item",
-              create: ({ pos }) => (scene) =>
-                createImageAt(scene, pos, "menu", "action-take"),
+              create:
+                ({ pos }) =>
+                (scene) =>
+                  createImageAt(scene, pos, "menu", "action-take"),
               action: Flow.sequence(
                 params.infinite
                   ? Flow.noop
@@ -328,13 +334,15 @@ export const endGoalAltarPlaceholder = (params: {
   wp: Wp.WpDef;
 }) =>
   altarComponent({
-    createItem: ({ pos }) => (scene) =>
-      createSpriteAt(
-        scene,
-        pos,
-        "items",
-        getEventDef(params.eventToSolve).keyItem,
-      ),
+    createItem:
+      ({ pos }) =>
+      (scene) =>
+        createSpriteAt(
+          scene,
+          pos,
+          "items",
+          getEventDef(params.eventToSolve).keyItem,
+        ),
     key: "goal-altar",
     wp: params.wp,
     action: Flow.sequence(

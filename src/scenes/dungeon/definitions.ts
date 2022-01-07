@@ -78,12 +78,12 @@ export const playerCannotActSubject: MakeObservable<boolean> = (scene) =>
     map(([isDead]) => isDead),
   );
 
-export const playerIsOnPos = (wp: Wp.WpDef): MakeObservable<boolean> => (
-  scene,
-) =>
-  player.data.currentPos
-    .subject(scene)
-    .pipe(map((pos) => pos === Wp.getWpId(wp)));
+export const playerIsOnPos =
+  (wp: Wp.WpDef): MakeObservable<boolean> =>
+  (scene) =>
+    player.data.currentPos
+      .subject(scene)
+      .pipe(map((pos) => pos === Wp.getWpId(wp)));
 
 export const placeCheckpoint = (wp: Wp.WpDef): Flow.PhaserNode =>
   Flow.whenTrueDo({

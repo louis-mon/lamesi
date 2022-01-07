@@ -22,15 +22,16 @@ export function sequence<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   return actions.reduce(sequence2);
 }
 
-const sequence2 = <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> => (
-  c,
-) => (p) =>
-  a1(c)({
-    ...p,
-    onComplete: () => {
-      a2(c)({ ...p });
-    },
-  });
+const sequence2 =
+  <C>(a1: ActionNode<C>, a2: ActionNode<C>): ActionNode<C> =>
+  (c) =>
+  (p) =>
+    a1(c)({
+      ...p,
+      onComplete: () => {
+        a2(c)({ ...p });
+      },
+    });
 
 export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
   return (c) => (p) => {
@@ -52,13 +53,16 @@ export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
 /**
  * Executes a cleanup action even when the flow aborts
  */
-export const withCleanup = <C>(params: {
-  flow: ActionNode<C>;
-  cleanup: (c: C) => void;
-}): ActionNode<C> => (c) => (p) => {
-  sequence(params.flow, call(params.cleanup))(c)(p);
-  p.registerAbort(() => params.cleanup(c));
-};
+export const withCleanup =
+  <C>(params: {
+    flow: ActionNode<C>;
+    cleanup: (c: C) => void;
+  }): ActionNode<C> =>
+  (c) =>
+  (p) => {
+    sequence(params.flow, call(params.cleanup))(c)(p);
+    p.registerAbort(() => params.cleanup(c));
+  };
 
 const makeAborter = (
   p: ActionRunParams,
@@ -81,51 +85,53 @@ const makeAborter = (
  * Completes whenever 'main' completes.
  * run 'back' in parallel and abort when 'main' completes
  */
-export const withBackground = <C>(params: {
-  main: ActionNode<C>;
-  back: ActionNode<C>;
-}): ActionNode<C> => (c) => (p) => {
-  const aborter = makeAborter(p);
-  params.back(c)(aborter.childParams);
-  params.main(c)({
-    ...p,
-    onComplete: () => {
-      aborter.abort();
-      p.onComplete();
-    },
-  });
-};
+export const withBackground =
+  <C>(params: { main: ActionNode<C>; back: ActionNode<C> }): ActionNode<C> =>
+  (c) =>
+  (p) => {
+    const aborter = makeAborter(p);
+    params.back(c)(aborter.childParams);
+    params.main(c)({
+      ...p,
+      onComplete: () => {
+        aborter.abort();
+        p.onComplete();
+      },
+    });
+  };
 
 /** Completes whenever any of the actions complete, aborting the others */
-export const concurrent = <C>(...actions: ActionNode<C>[]): ActionNode<C> => (
-  c,
-) => (p) => {
-  const aborter = makeAborter(p);
-  let completed = false;
-  actions.forEach((action) =>
-    action(c)({
-      ...aborter.childParams,
-      onComplete: () => {
-        if (!completed) {
-          completed = true;
-          aborter.abort();
-          aborter.childParams.onComplete();
-          p.onComplete();
-        }
-      },
-    }),
-  );
-};
+export const concurrent =
+  <C>(...actions: ActionNode<C>[]): ActionNode<C> =>
+  (c) =>
+  (p) => {
+    const aborter = makeAborter(p);
+    let completed = false;
+    actions.forEach((action) =>
+      action(c)({
+        ...aborter.childParams,
+        onComplete: () => {
+          if (!completed) {
+            completed = true;
+            aborter.abort();
+            aborter.childParams.onComplete();
+            p.onComplete();
+          }
+        },
+      }),
+    );
+  };
 
 /**
  * Encapsulate a simple function call
  */
-export const call = <C>(f: (context: C) => void): ActionNode<C> => (
-  context,
-) => (p) => {
-  f(context);
-  p.onComplete();
-};
+export const call =
+  <C>(f: (context: C) => void): ActionNode<C> =>
+  (context) =>
+  (p) => {
+    f(context);
+    p.onComplete();
+  };
 
 export const noop = call(() => {});
 
@@ -135,10 +141,13 @@ export const noop = call(() => {});
 export const infinite: ActionNode<unknown> = (c) => (p) => {};
 
 type ObservableFactory<C, T> = FuncOrConst<C, Observable<T>>;
-export const composeObservable = <C, T, U>(
-  factory: ObservableFactory<C, T>,
-  f: (t: Observable<T>) => Observable<U>,
-): ObservableFactory<C, U> => (c) => f(funcOrConstValue(c, factory));
+export const composeObservable =
+  <C, T, U>(
+    factory: ObservableFactory<C, T>,
+    f: (t: Observable<T>) => Observable<U>,
+  ): ObservableFactory<C, U> =>
+  (c) =>
+    f(funcOrConstValue(c, factory));
 
 export function observe<C>(
   observable: ObservableFactory<C, ActionNode<C>>,
@@ -191,27 +200,31 @@ export function observe<C, T>(
 /**
  * Run the action when the condition is true and completes after
  */
-export const whenTrueDo = <C>(params: {
-  condition: ObservableFactory<C, boolean>;
-  action: ActionNode<C>;
-}): ActionNode<C> => (c) =>
-  observe(
-    funcOrConstValue(c, params.condition).pipe(
-      first((x) => x),
-      map(() => params.action),
-    ),
-  )(c);
+export const whenTrueDo =
+  <C>(params: {
+    condition: ObservableFactory<C, boolean>;
+    action: ActionNode<C>;
+  }): ActionNode<C> =>
+  (c) =>
+    observe(
+      funcOrConstValue(c, params.condition).pipe(
+        first((x) => x),
+        map(() => params.action),
+      ),
+    )(c);
 
 /**
  * Run the action when there is a value and completes after
  */
-export const whenValueDo = <C, T>(params: {
-  condition: ObservableFactory<C, T>;
-  action: (t: T) => ActionNode<C>;
-}): ActionNode<C> => (c) =>
-  observe(
-    funcOrConstValue(c, params.condition).pipe(first(), map(params.action)),
-  )(c);
+export const whenValueDo =
+  <C, T>(params: {
+    condition: ObservableFactory<C, T>;
+    action: (t: T) => ActionNode<C>;
+  }): ActionNode<C> =>
+  (c) =>
+    observe(
+      funcOrConstValue(c, params.condition).pipe(first(), map(params.action)),
+    )(c);
 
 /**
  * Run the action when the condition is true and repeat, sequentially
@@ -239,23 +252,24 @@ export const waitTrue = <C>(observable: ObservableFactory<C, boolean>) =>
 /**
  * Execute sequentially the same flow again and again
  */
-export const repeat = <C>(action: ActionNode<C>): ActionNode<C> => (
-  context,
-) => (p) => {
-  let aborted = false;
-  const rec = () => {
-    if (!aborted) {
-      return action(context)({
-        ...p,
-        onComplete: rec,
-      });
-    }
+export const repeat =
+  <C>(action: ActionNode<C>): ActionNode<C> =>
+  (context) =>
+  (p) => {
+    let aborted = false;
+    const rec = () => {
+      if (!aborted) {
+        return action(context)({
+          ...p,
+          onComplete: rec,
+        });
+      }
+    };
+    p.registerAbort(() => {
+      aborted = true;
+    });
+    rec();
   };
-  p.registerAbort(() => {
-    aborted = true;
-  });
-  rec();
-};
 
 /**
  * Executes sequentially a sequence of flows
@@ -307,14 +321,20 @@ export const observeSentinel = <C, T>(
 /**
  * Generate a flow dynamically depending on the context
  */
-export const lazy = <C>(action: (c: C) => ActionNode<C>): ActionNode<C> => (
-  c,
-) => (p) => action(c)(c)(p);
+export const lazy =
+  <C>(action: (c: C) => ActionNode<C>): ActionNode<C> =>
+  (c) =>
+  (p) =>
+    action(c)(c)(p);
 
-export const withContext = <C, CNew>(
-  newContext: (old: C) => CNew,
-  action: ActionNode<CNew>,
-): ActionNode<C> => (c) => (p) => action(newContext(c))(p);
+export const withContext =
+  <C, CNew>(
+    newContext: (old: C) => CNew,
+    action: ActionNode<CNew>,
+  ): ActionNode<C> =>
+  (c) =>
+  (p) =>
+    action(newContext(c))(p);
 
 export const spawn = <C>(node: ActionNode<C>): ActionNode<C> =>
   call((c) => run(c, node));
