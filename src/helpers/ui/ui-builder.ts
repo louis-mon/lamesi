@@ -2,14 +2,32 @@ import { Scene } from "phaser";
 import Dialog from "phaser3-rex-plugins/templates/ui/dialog/Dialog";
 
 export const uiBuilder = (scene: Scene) => {
+  const colors = {
+    primary: 0x2e762a,
+    buttonPrimary: 0x4abe44,
+  };
+  const containerBack = () =>
+    scene.rexUI.add.roundRectangleCanvas(0, 0, 0, 0, 20, colors.primary);
+  const spaceBase = 4;
+  const borderSpacing = (n: number) => ({
+    top: n * spaceBase,
+    left: n * spaceBase,
+    right: n * spaceBase,
+    bottom: n * spaceBase,
+  });
+  const bodyText = (text: string) =>
+    scene.add.text(0, 0, text, { fontSize: "28px" });
   return {
+    containerBack,
+    bodyText,
+    borderSpacing,
     title: ({ text }: { text: string }) =>
       scene.rexUI.add.label({
         text: scene.add.text(0, 0, text, { fontSize: "35px" }),
       }),
     content: ({ text }: { text: string }) =>
       scene.rexUI.add.label({
-        text: scene.add.text(0, 0, text, { fontSize: "28px" }),
+        text: bodyText(text),
       }),
     button: ({ text }: { text: string }) =>
       scene.rexUI.add.label({
@@ -19,31 +37,16 @@ export const uiBuilder = (scene: Scene) => {
           0,
           0,
           10,
-          0x4abe44,
+          colors.buttonPrimary,
         ),
-        text: scene.add.text(0, 0, text, { fontSize: "24px" }),
-        space: {
-          top: 10,
-          left: 10,
-          right: 10,
-          bottom: 10,
-        },
+        text: bodyText(text),
+        space: borderSpacing(3),
       }),
     dialog: (props: () => Dialog.IConfig) =>
       scene.rexUI.add.dialog({
-        background: scene.rexUI.add.roundRectangleCanvas(
-          0,
-          0,
-          0,
-          0,
-          20,
-          0x2e762a,
-        ),
+        background: containerBack(),
         space: {
-          top: 20,
-          left: 20,
-          right: 20,
-          bottom: 20,
+          ...borderSpacing(5),
           title: 100,
           content: 100,
           action: 80,

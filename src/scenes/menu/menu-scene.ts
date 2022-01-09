@@ -56,15 +56,13 @@ export class MenuScene extends Phaser.Scene {
     return this.addButton(f, { side: "right" });
   }
 
-  create({ fromHub }: { fromHub: boolean }) {
-    if (fromHub) {
+  create({ inSubScene }: { inSubScene: boolean }) {
+    if (inSubScene) {
       const goBackButton = this.addButton(
         ({ x, y, size }) => this.add.image(x, y, "items", "menu-back"),
         { side: "left" },
       );
       goBackButton.on("pointerdown", () => openGoBackMenu(this));
-    } else {
-      this.cameras.main.fadeIn(fadeDuration);
     }
     this.addButton(
       ({ x, y, size }) =>
@@ -80,7 +78,7 @@ export class MenuScene extends Phaser.Scene {
       this,
       Flow.parallel(
         Flow.observe(globalEvents.endEventAnim.subject, endEventAnim),
-        fromHub ? Flow.noop : newEventAnim,
+        inSubScene ? Flow.noop : newEventAnim,
       ),
     );
   }

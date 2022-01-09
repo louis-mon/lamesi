@@ -26,7 +26,9 @@ export class MasterScene extends Phaser.Scene {
 
   create() {
     const startHub = () => {
-      this.scene.add(hubSceneKey, new HubScene(), true);
+      this.scene.add(hubSceneKey, new HubScene(), false);
+      this.scene.run(hubSceneKey);
+      this.cameras.main.fadeIn(fadeDuration);
     };
     const goToHub: Flow.PhaserNode = Flow.lazy(() => {
       const manager = this.scene.manager;
@@ -37,8 +39,7 @@ export class MasterScene extends Phaser.Scene {
       const destroyScene = () => {
         scenes.forEach((scene) => scene.scene.remove());
       };
-      const topScene = manager.getScenes(true, true)[0];
-      const camera = topScene.cameras.main;
+      const camera = this.cameras.main;
       camera.fade(fadeDuration);
       return Flow.sequence(
         Flow.wait(
@@ -56,5 +57,9 @@ export class MasterScene extends Phaser.Scene {
       ),
     );
     startHub();
+  }
+
+  update() {
+    this.scene.bringToTop();
   }
 }
