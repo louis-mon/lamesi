@@ -6,7 +6,7 @@ import {
   hubSceneKey,
   lightsSceneKey,
 } from "/src/scenes/common/constants";
-import { pickBy } from "lodash";
+import { compact, first, keys, pickBy } from "lodash";
 
 type EventDef = {
   triggers: GlobalDataKey[];
@@ -19,6 +19,11 @@ type EventsDef = {
 };
 
 export const eventsDef: EventsDef = {
+  firstEvent: {
+    triggers: ["lights1"],
+    keyItem: "circle-gem",
+    scene: hubSceneKey,
+  },
   lights1: {
     triggers: ["creatures1"],
     keyItem: "book",
@@ -111,6 +116,9 @@ export const eventsDef: EventsDef = {
   },
 };
 
+export const isEventReady = (key: GlobalDataKey) => (scene: Scene) =>
+  globalData[key].value(scene);
+
 export const isEventSolved = (key: GlobalDataKey) => (scene: Scene) => {
   return eventsDef[key]?.triggers.every((trigger) =>
     globalData[trigger].value(scene),
@@ -126,3 +134,16 @@ export const getEventDef = (key: GlobalDataKey): EventDef => eventsDef[key];
 
 export const getEventsOfScene = (scene: string) =>
   pickBy(eventsDef, (def) => def.scene === scene);
+
+export const allEvents = keys(globalData) as GlobalDataKey[];
+
+export const findPreviousEvent = (targetKey: GlobalDataKey): GlobalDataKey => {
+  return first(
+    compact(
+      allEvents.map((key) => {
+        const eventDef = getEventDef(key);
+        return eventDef.triggers.includes(targetKey) ? key : null;
+      }),
+    ),
+  )!;
+};

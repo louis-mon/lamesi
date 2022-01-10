@@ -120,10 +120,34 @@
         "y": 0.5
       }
     },
-    "book": {
+    "circle-gem": {
       "frame": {
         "x": 42,
         "y": 192,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 5,
+        "y": 5,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "book": {
+      "frame": {
+        "x": 58,
+        "y": 130,
         "w": 30,
         "h": 36
       },
@@ -151,7 +175,7 @@
     "image": "items.png",
     "format": "RGBA8888",
     "size": {
-      "w": 74,
+      "w": 90,
       "h": 286
     },
     "scale": 1

@@ -5,21 +5,14 @@ import {
   sceneDef,
   LightSceneMaterialDef,
   ObjectCreationDef,
-  LightSceneSourceDef,
+  sourcesPlane,
+  goalPlane,
+  shadowName,
 } from "./lights-def";
 import { eventsHelpers } from "../common/global-data";
-import { gameWidth, gameHeight } from "/src/scenes/common/constants";
-import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
 import { solveLight } from "/src/scenes/lights/solve-light";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
-
-const goalPlane = 0;
-const shadowPlane = goalPlane + 1;
-const materialsPlane = shadowPlane + 1;
-const sourcesPlane = materialsPlane + 1;
-
-const shadowName = (matKey: string, sourceDef: LightSceneSourceDef) =>
-  `${matKey}-${sourceDef.key}-shadow`;
+import { createMaterial } from "/src/scenes/lights/materials";
 
 export class LightScene extends Phaser.Scene {
   constructor() {
@@ -39,7 +32,7 @@ export class LightScene extends Phaser.Scene {
     this.load.image("rope");
   }
 
-  private shadows: Array<{
+  public shadows: Array<{
     source: ManipulableObject;
     material: ManipulableObject;
     shadow: ManipulableObject;
@@ -47,99 +40,57 @@ export class LightScene extends Phaser.Scene {
   }> = [];
   private goalFound?: Phaser.Time.TimerEvent;
 
+  setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
+    go.name = def.key;
+    if (def.movable || def.movablePath) {
+      go.setInteractive();
+      this.input.setDraggable(go);
+      if (def.movablePath) {
+        const path = def.movablePath.path;
+        path.draw(this.add.graphics().lineStyle(4, 0xffffff));
+        let pos = def.movablePath.pos;
+        const length = path.getLength();
+        const setPathPos = () => {
+          const np = path.getPoint(pos / length);
+          go.setPosition(np.x, np.y);
+        };
+        setPathPos();
+        go.on("drag", (p, x, y) => {
+          const tangent = path.getTangent(pos / length);
+          const dir = new Phaser.Math.Vector2(x, y).subtract(
+            getObjectPosition(go),
+          );
+          pos = Phaser.Math.Clamp(pos + tangent.dot(dir), 0, length);
+          setPathPos();
+        });
+      } else {
+        go.on("drag", (p, x, y) => {
+          go.x = x;
+          go.y = y;
+          menuHelpers.ensureOutsideMenu(go);
+        });
+      }
+    }
+  };
+
   create() {
     this.cameras.main.setBackgroundColor(0x0);
-    const setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
-      go.name = def.key;
-      if (def.movable || def.movablePath) {
-        go.setInteractive();
-        this.input.setDraggable(go);
-        if (def.movablePath) {
-          const path = def.movablePath.path;
-          path.draw(this.add.graphics().lineStyle(4, 0xffffff));
-          let pos = def.movablePath.pos;
-          const length = path.getLength();
-          const setPathPos = () => {
-            const np = path.getPoint(pos / length);
-            go.setPosition(np.x, np.y);
-          };
-          setPathPos();
-          go.on("drag", (p, x, y) => {
-            const tangent = path.getTangent(pos / length);
-            const dir = new Phaser.Math.Vector2(x, y).subtract(
-              getObjectPosition(go),
-            );
-            pos = Phaser.Math.Clamp(pos + tangent.dot(dir), 0, length);
-            setPathPos();
-          });
-        } else {
-          go.on("drag", (p, x, y) => {
-            go.x = x;
-            go.y = y;
-            menuHelpers.ensureOutsideMenu(go);
-          });
-        }
-      }
-    };
     sceneDef.lights
       .filter(eventsHelpers.getEventFilter(this))
       .forEach((lightDef) => {
         const go = lightDef.create(this);
         go.depth = sourcesPlane;
-        setCommonProps(go, lightDef);
+        this.setCommonProps(go, lightDef);
       });
-    sceneDef.materials
-      .filter(eventsHelpers.getEventFilter(this))
-      .forEach((matDef, i) => {
-        const go = matDef.create(this);
-        setCommonProps(go, matDef);
-        let depth = matDef.depth;
-        go.scale = 1 / depth;
-        go.depth = materialsPlane;
-        sceneDef.lights.forEach((lightDef) => {
-          const lightObj = this.children.getByName(lightDef.key);
-          if (!lightObj) return;
-          const shadow = matDef.create(this);
-          debugObjectPos(this, shadow);
-          shadow.name = shadowName(matDef.key, lightDef);
-          shadow.depth = shadowPlane;
-          shadow.alpha = 0.5;
-          this.shadows.push({
-            source: lightObj as ManipulableObject,
-            material: go,
-            shadow,
-            def: matDef,
-          });
-        });
-        if (matDef.rope && eventsHelpers.getEventFilter(this)(matDef.rope)) {
-          const { minDepth, maxDepth } = matDef.rope;
-          const ropeObj = this.add.image(gameWidth - 30 * i - 20, 0, "rope");
-          const ropeIcon = matDef.create(this);
-          ropeIcon.scale = 25 / ropeIcon.width;
-          ropeObj.setOrigin(0.5, 1);
-          ropeObj.setInteractive();
-          this.input.setDraggable(ropeObj);
-          const yposMin = 50;
-          const yAmpl = gameHeight - 50;
-          this.events.on("update", () => {
-            go.scale = 1 / depth;
-            ropeObj.y = Phaser.Math.Linear(yposMin, yposMin + yAmpl, 1 - depth);
-            ropeIcon.setPosition(ropeObj.x, ropeObj.y + 30);
-          });
-          ropeObj.on("drag", (pointer, x, y) => {
-            depth = Phaser.Math.Clamp(
-              depth - (y - ropeObj.y) / yAmpl,
-              minDepth,
-              maxDepth,
-            );
-          });
-        }
-      });
+    Flow.runScene(
+      this,
+      Flow.parallel(...sceneDef.materials.map(createMaterial)),
+    );
     sceneDef.goals
       .filter(eventsHelpers.getEventFilter(this))
       .forEach((goalDef) => {
         const go = goalDef.create(this);
-        setCommonProps(go, goalDef);
+        this.setCommonProps(go, goalDef);
         go.depth = goalPlane;
       });
   }

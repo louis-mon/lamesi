@@ -1,18 +1,27 @@
 import * as Flow from "/src/helpers/phaser-flow";
-import { isEventSolved } from "/src/scenes/common/events-def";
+import {
+  findPreviousEvent,
+  isEventSolved,
+} from "/src/scenes/common/events-def";
 import { createTree } from "/src/scenes/creatures/tree";
 import { gameHeight } from "/src/scenes/common/constants";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
-import { sceneClass } from "/src/scenes/creatures/def";
+import { bodyPartsConfig, sceneClass } from "/src/scenes/creatures/def";
 import { getTargetTransform, moveMan } from "/src/scenes/creatures/man";
+import { createKeyItem } from "/src/scenes/common/key-item";
+import { getObjectPosition } from "/src/helpers/phaser";
 
 export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
-  const isSolved = isEventSolved("creatures1")(scene);
+  const eyeConfig = bodyPartsConfig.eye;
+  const isSolved = isEventSolved(eyeConfig.requiredEvent)(scene);
 
-  const closedBook = scene.add.image(962, -50, "items", "book");
+  const closedBook = createKeyItem(
+    findPreviousEvent(eyeConfig.requiredEvent),
+    scene,
+  );
   const openBook = scene.add
-    .image(closedBook.x, 935, "crea-npc", "open-book")
+    .image(962, 935, "crea-npc", "open-book")
     .setVisible(false);
   const manDeskPos = new Vector2(960, 962);
   const man = scene.add
@@ -48,18 +57,14 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   );
   return Flow.sequence(
     isSolved ? Flow.noop : Flow.wait(globalEvents.subSceneEntered.subject),
-    Flow.tween({
-      targets: closedBook,
-      props: { y: openBook.y },
-      duration: realTime(3000),
-    }),
+    closedBook.downAnim({ dest: getObjectPosition(openBook), teleport }),
     moveMan({
       dest: new Vector2({ x: man.x, y: manDeskPos.y }),
       teleport,
     }),
     Flow.waitTimer(realTime(600)),
     Flow.call(() => {
-      closedBook.destroy();
+      closedBook.obj.destroy();
       openBook.setVisible(true);
     }),
     Flow.waitTimer(realTime(1000)),

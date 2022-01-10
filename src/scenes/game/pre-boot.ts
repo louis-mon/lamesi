@@ -4,6 +4,7 @@ import _, { mapValues } from "lodash";
 import { DataMappingDefValues } from "/src/helpers/component";
 
 const defaultGlobalData: Partial<DataMappingDefValues<typeof globalData>> = {
+  firstEvent: true,
   lights1: true,
 };
 

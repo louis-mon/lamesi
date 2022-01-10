@@ -17,6 +17,8 @@ export type OtherGlobalDataKey = keyof typeof otherGlobalData;
 
 export const globalData = defineData(
   {
+    firstEvent: annotate<boolean>(),
+
     lights1: annotate<boolean>(),
     lights2: annotate<boolean>(),
     lights3: annotate<boolean>(),

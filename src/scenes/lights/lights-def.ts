@@ -35,6 +35,14 @@ export type LightSceneDef = {
 
 const lightSourceSize = 30;
 
+export const goalPlane = 0;
+export const shadowPlane = goalPlane + 1;
+export const materialsPlane = shadowPlane + 1;
+export const sourcesPlane = materialsPlane + 1;
+
+export const shadowName = (matKey: string, sourceDef: LightSceneSourceDef) =>
+  `${matKey}-${sourceDef.key}-shadow`;
+
 export const sceneDef: LightSceneDef = {
   lights: [
     {
