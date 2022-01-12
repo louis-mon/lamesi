@@ -128,6 +128,7 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
                 hubScene.scene.add(menuSceneKey, MenuScene, true, {
                   inSubScene: true,
                 });
+                globalEvents.subSceneEntered.emit({})(scene);
                 hubScene.scene.remove();
               }),
             );

@@ -73,7 +73,6 @@ export class MenuScene extends Phaser.Scene {
           }),
       { side: "left" },
     );
-    globalEvents.subSceneEntered.emit({})(this);
     Flow.runScene(
       this,
       Flow.parallel(

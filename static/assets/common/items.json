@@ -1,33 +1,9 @@
 {
   "frames": {
-    "menu-fullscreen": {
-      "frame": {
-        "x": 2,
-        "y": 2,
-        "w": 60,
-        "h": 60
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 60,
-        "h": 60
-      },
-      "sourceSize": {
-        "w": 60,
-        "h": 60
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "menu-options": {
       "frame": {
         "x": 2,
-        "y": 66,
+        "y": 2,
         "w": 60,
         "h": 60
       },
@@ -51,7 +27,7 @@
     "menu-back": {
       "frame": {
         "x": 2,
-        "y": 130,
+        "y": 66,
         "w": 52,
         "h": 58
       },
@@ -72,10 +48,34 @@
         "y": 0.5
       }
     },
-    "woman": {
+    "menu-fullscreen": {
       "frame": {
         "x": 2,
-        "y": 192,
+        "y": 128,
+        "w": 54,
+        "h": 54
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 3,
+        "y": 3,
+        "w": 54,
+        "h": 54
+      },
+      "sourceSize": {
+        "w": 60,
+        "h": 60
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "woman": {
+      "frame": {
+        "x": 58,
+        "y": 66,
         "w": 36,
         "h": 48
       },
@@ -98,8 +98,8 @@
     },
     "triangle-gem": {
       "frame": {
-        "x": 2,
-        "y": 244,
+        "x": 66,
+        "y": 2,
         "w": 46,
         "h": 40
       },
@@ -122,8 +122,8 @@
     },
     "circle-gem": {
       "frame": {
-        "x": 42,
-        "y": 192,
+        "x": 2,
+        "y": 186,
         "w": 40,
         "h": 40
       },
@@ -146,8 +146,8 @@
     },
     "book": {
       "frame": {
-        "x": 58,
-        "y": 130,
+        "x": 2,
+        "y": 230,
         "w": 30,
         "h": 36
       },
@@ -175,8 +175,8 @@
     "image": "items.png",
     "format": "RGBA8888",
     "size": {
-      "w": 90,
-      "h": 286
+      "w": 114,
+      "h": 268
     },
     "scale": 1
   }
