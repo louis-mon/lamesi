@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { ManipulableObject } from "/src/helpers/phaser";
 import { WithRequiredEvent } from "../common/global-data";
+import Image = Phaser.GameObjects.Image;
 
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
@@ -19,7 +20,8 @@ export type LightSceneMaterialDef = ObjectCreationDef & {
   };
 };
 
-export type LightSceneGoalDef = ObjectCreationDef & {
+export type LightSceneGoalDef = Omit<ObjectCreationDef, "create"> & {
+  create: (scene: Phaser.Scene) => Image;
   requires: Array<{
     materialKey: string;
     position: Phaser.Math.Vector2;
@@ -108,7 +110,7 @@ export const sceneDef: LightSceneDef = {
     {
       key: "g1",
       eventRequired: "lights1",
-      create: (scene) => scene.add.circle(1340, 253, 92, 0x4a4a4a),
+      create: (scene) => scene.add.image(1340, 253, "goal-1"),
       requires: [
         {
           materialKey: "m-ball-1",

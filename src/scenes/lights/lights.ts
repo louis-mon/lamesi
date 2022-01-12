@@ -6,13 +6,11 @@ import {
   LightSceneMaterialDef,
   ObjectCreationDef,
   sourcesPlane,
-  goalPlane,
-  shadowName,
 } from "./lights-def";
 import { eventsHelpers } from "../common/global-data";
-import { solveLight } from "/src/scenes/lights/solve-light";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import { createMaterial } from "/src/scenes/lights/materials";
+import { createGoal } from "/src/scenes/lights/goals";
 
 export class LightScene extends Phaser.Scene {
   constructor() {
@@ -25,6 +23,7 @@ export class LightScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image("goal-1");
     this.load.image("goal-2");
     this.load.image("goal-3");
     this.load.image("goal-4");
@@ -84,15 +83,11 @@ export class LightScene extends Phaser.Scene {
       });
     Flow.runScene(
       this,
-      Flow.parallel(...sceneDef.materials.map(createMaterial)),
+      Flow.parallel(
+        ...sceneDef.materials.map(createMaterial),
+        ...sceneDef.goals.map(createGoal),
+      ),
     );
-    sceneDef.goals
-      .filter(eventsHelpers.getEventFilter(this))
-      .forEach((goalDef) => {
-        const go = goalDef.create(this);
-        this.setCommonProps(go, goalDef);
-        go.depth = goalPlane;
-      });
   }
 
   update() {
@@ -107,41 +102,5 @@ export class LightScene extends Phaser.Scene {
       shadow.setPosition(x, y);
       shadow.setScale(scale * scale);
     });
-    const oneGoalReached = sceneDef.goals.reduce((found, goalDef) => {
-      const go = this.children.getByName(goalDef.key)! as ManipulableObject;
-      const reachGoal = goalDef.requires.every(
-        ({ materialKey, position, width }) =>
-          sceneDef.lights.some((lightDef) => {
-            const shadow = this.children.getByName(
-              shadowName(materialKey, lightDef),
-            ) as ManipulableObject;
-            if (!shadow) return false;
-            const sizeMatch = Phaser.Math.Within(
-              shadow.displayWidth,
-              width,
-              10,
-            );
-            return (
-              sizeMatch &&
-              new Phaser.Geom.Circle(position.x, position.y, 10).contains(
-                shadow.x,
-                shadow.y,
-              )
-            );
-          }),
-      );
-      if (reachGoal && !this.goalFound) {
-        this.goalFound = this.time.delayedCall(2000, () => {
-          if (go.getData("done")) return;
-          go.toggleData("done");
-          Flow.run(this, solveLight({ goalDef, target: go }));
-        });
-      }
-      return found || reachGoal;
-    }, false);
-    if (!oneGoalReached && this.goalFound) {
-      this.goalFound.remove();
-      this.goalFound = undefined;
-    }
   }
 }
