@@ -63,6 +63,7 @@ export class MenuScene extends Phaser.Scene {
         { side: "left" },
       );
       goBackButton.on("pointerdown", () => openGoBackMenu(this));
+      globalEvents.subSceneEntered.emit({})(this);
     }
     this.addButton(
       ({ x, y, size }) =>
