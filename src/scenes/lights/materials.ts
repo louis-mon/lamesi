@@ -8,16 +8,13 @@ import {
 } from "/src/scenes/lights/lights-def";
 import { LightScene } from "/src/scenes/lights/lights";
 import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
-import { getObjectPosition, ManipulableObject } from "/src/helpers/phaser";
+import { ManipulableObject } from "/src/helpers/phaser";
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
 import Phaser from "phaser";
-import {
-  findPreviousEvent,
-  isEventReady,
-  isEventSolved,
-} from "/src/scenes/common/events-def";
-import { createKeyItem } from "/src/scenes/common/key-item";
+import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
+import { compact } from "lodash";
+import TweenBuilderConfig = Phaser.Types.Tweens.TweenBuilderConfig;
 
 export const createMaterial = (
   matDef: LightSceneMaterialDef,
@@ -27,46 +24,59 @@ export const createMaterial = (
     const eventRequired = matDef.eventRequired;
     if (!isEventReady(eventRequired)(s)) return Flow.noop;
     const scene = s as LightScene;
-    const go = matDef.create(scene).setScale(0);
-    scene.setCommonProps(go, matDef);
-    go.depth = materialsPlane;
     let depth = matDef.depth;
-    const initialScale = 1 / depth;
+    const go = matDef
+      .create(scene)
+      .setScale(1 / depth)
+      .setAlpha(0)
+      .setDepth(materialsPlane);
+    scene.setCommonProps(go, matDef);
+
+    const shadowTargetAlpha = 0.5;
+    const shadows = compact(
+      sceneDef.lights.map((lightDef) => {
+        const lightObj = scene.children.getByName(lightDef.key);
+        if (!lightObj) return null;
+        const shadow = matDef.create(scene).setAlpha(0);
+        debugObjectPos(scene, shadow);
+        shadow.name = shadowName(matDef.key, lightDef);
+        shadow.depth = shadowPlane;
+        scene.shadows.push({
+          source: lightObj as ManipulableObject,
+          material: go,
+          shadow,
+          def: matDef,
+        });
+        return shadow;
+      }),
+    );
+
     const appearCinematic = () => {
-      const keyItem = createKeyItem(findPreviousEvent(eventRequired), scene);
+      const tweenParams: Omit<TweenBuilderConfig, "targets"> = {
+        duration: 2000,
+        ease: Phaser.Math.Easing.Sine.Out,
+      };
       return Flow.sequence(
         Flow.wait(globalEvents.subSceneEntered.subject),
-        keyItem.downAnim({ dest: getObjectPosition(go) }),
         Flow.parallel(
           Flow.tween({
             targets: go,
-            props: { scale: initialScale },
-            duration: 2000,
-            ease: Phaser.Math.Easing.Sine.InOut,
+            props: { alpha: 1 },
+            ...tweenParams,
           }),
-          keyItem.disappearAnim(),
+          ...shadows.map((shadow) =>
+            Flow.tween({
+              targets: shadow,
+              props: { alpha: shadowTargetAlpha },
+              ...tweenParams,
+            }),
+          ),
         ),
       );
     };
-    const showMaterial = Flow.lazy(() => {
-      go.scale = initialScale;
-      return Flow.parallel(
-        ...sceneDef.lights.map((lightDef) => {
-          const lightObj = scene.children.getByName(lightDef.key);
-          if (!lightObj) return Flow.noop;
-          const shadow = matDef.create(scene).setAlpha(0);
-          debugObjectPos(scene, shadow);
-          shadow.name = shadowName(matDef.key, lightDef);
-          shadow.depth = shadowPlane;
-          scene.shadows.push({
-            source: lightObj as ManipulableObject,
-            material: go,
-            shadow,
-            def: matDef,
-          });
-          return Flow.tween({ targets: shadow, props: { alpha: 0.5 } });
-        }),
-      );
+    const showMaterial = Flow.call(() => {
+      go.alpha = 1;
+      shadows.forEach((shadow) => shadow.setAlpha(shadowTargetAlpha));
     });
     if (matDef.rope && isEventReady(matDef.rope.eventRequired)(scene)) {
       const { minDepth, maxDepth } = matDef.rope;

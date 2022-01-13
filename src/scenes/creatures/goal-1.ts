@@ -10,7 +10,7 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { bodyPartsConfig, sceneClass } from "/src/scenes/creatures/def";
 import { getTargetTransform, moveMan } from "/src/scenes/creatures/man";
 import { createKeyItem } from "/src/scenes/common/key-item";
-import { getObjectPosition } from "/src/helpers/phaser";
+import { getObjectPosition, placeAt } from "/src/helpers/phaser";
 
 export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const eyeConfig = bodyPartsConfig.eye;
@@ -33,13 +33,12 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
     man.setFrame(manStep.frameKey);
   }
   const realTime = (ms: number) => (isSolved ? 0 : ms);
-  const teleport = isSolved;
 
   const goToCreateTree = Flow.sequence(
     Flow.call(() => {
       man.flipX = true;
     }),
-    moveMan({ dest: new Vector2(1540, 992), teleport }),
+    moveMan({ dest: new Vector2(1540, 992) }),
     Flow.waitTimer(600),
     Flow.parallel(
       createTree,
@@ -50,20 +49,24 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
         }),
         moveMan({
           dest: manDeskPos,
-          teleport,
         }),
       ),
     ),
   );
+  const manDest = new Vector2({ x: man.x, y: manDeskPos.y });
   return Flow.sequence(
-    isSolved ? Flow.noop : Flow.wait(globalEvents.subSceneEntered.subject),
-    closedBook.downAnim({ dest: getObjectPosition(openBook), teleport }),
-    moveMan({
-      dest: new Vector2({ x: man.x, y: manDeskPos.y }),
-      teleport,
-    }),
-    Flow.waitTimer(realTime(600)),
+    isSolved
+      ? Flow.noop
+      : Flow.sequence(
+          Flow.wait(globalEvents.subSceneEntered.subject),
+          closedBook.downAnim(getObjectPosition(openBook)),
+          moveMan({
+            dest: manDest,
+          }),
+          Flow.waitTimer(realTime(600)),
+        ),
     Flow.call(() => {
+      placeAt(man, manDest);
       closedBook.obj.destroy();
       openBook.setVisible(true);
     }),

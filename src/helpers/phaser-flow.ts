@@ -11,6 +11,7 @@ import { observeCommonGoEvent } from "/src/helpers/component";
 import { makeSpawner } from "/src/helpers/flow/spawner";
 
 export * from "./flow";
+export * from "./animate/move";
 
 export type Context = Phaser.Scene;
 export type PhaserNode = Flow.ActionNode<Context>;

@@ -8,12 +8,9 @@ import { Scene } from "phaser";
 import { isEventSolved } from "/src/scenes/common/events-def";
 import { range } from "lodash";
 
-export const moveMan: (p: {
-  dest: Vector2;
-  teleport: boolean;
-}) => Flow.PhaserNode = ({ dest, teleport }) =>
+export const moveMan: (p: { dest: Vector2 }) => Flow.PhaserNode = ({ dest }) =>
   Flow.lazy((scene) => {
-    const manSpeed = teleport ? Number.MAX_SAFE_INTEGER : 0.2;
+    const manSpeed = 0.2;
     const man = sceneClass.data.manObj.value(scene);
     return Flow.concurrent(
       Flow.repeat(

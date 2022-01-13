@@ -37,7 +37,9 @@ export type LightSceneDef = {
 
 const lightSourceSize = 30;
 
-export const goalPlane = 0;
+export const vortexPlane = 0;
+export const goalHiddenObjectPlane = vortexPlane;
+export const goalPlane = vortexPlane + 1;
 export const shadowPlane = goalPlane + 1;
 export const materialsPlane = shadowPlane + 1;
 export const sourcesPlane = materialsPlane + 1;
