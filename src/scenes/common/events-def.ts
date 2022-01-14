@@ -36,7 +36,7 @@ export const eventsDef: EventsDef = {
   },
   dungeonPhase1: {
     triggers: ["lights2"],
-    keyItem: "triangle-gem",
+    keyItem: "drop",
     scene: dungeonSceneKey,
   },
   lights2: {

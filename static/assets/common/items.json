@@ -72,20 +72,20 @@
         "y": 0.5
       }
     },
-    "woman": {
+    "drop": {
       "frame": {
         "x": 58,
         "y": 66,
-        "w": 36,
-        "h": 48
+        "w": 33,
+        "h": 50
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 11,
-        "y": 2,
-        "w": 36,
-        "h": 48
+        "x": 8,
+        "y": 0,
+        "w": 33,
+        "h": 50
       },
       "sourceSize": {
         "w": 50,
@@ -96,20 +96,20 @@
         "y": 0.5
       }
     },
-    "triangle-gem": {
+    "woman": {
       "frame": {
         "x": 66,
         "y": 2,
-        "w": 46,
-        "h": 40
+        "w": 36,
+        "h": 48
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 1,
-        "y": 5,
-        "w": 46,
-        "h": 40
+        "x": 11,
+        "y": 2,
+        "w": 36,
+        "h": 48
       },
       "sourceSize": {
         "w": 50,
@@ -175,7 +175,7 @@
     "image": "items.png",
     "format": "RGBA8888",
     "size": {
-      "w": 114,
+      "w": 104,
       "h": 268
     },
     "scale": 1
