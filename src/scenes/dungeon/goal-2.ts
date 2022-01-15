@@ -5,11 +5,7 @@ import {
   spriteClassKind,
 } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
-import {
-  createSpriteAt,
-  ManipulableObject,
-  SceneContext,
-} from "/src/helpers/phaser";
+import { createSpriteAt, SceneContext } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import _ from "lodash";
 import * as Phaser from "phaser";
@@ -20,8 +16,14 @@ import * as Npc from "./npc";
 import { arrowSkillAltar, bellHiddenAction, bellSkillAltar } from "./skills";
 import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
-import Vector2Like = Phaser.Types.Math.Vector2Like;
-import * as globalEvents from "/src/scenes/common/global-data";
+import { doorCenterPos, DoorKey } from "./npc";
+import {
+  findPreviousEvent,
+  isEventSolved,
+} from "/src/scenes/common/events-def";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { globalData } from "/src/scenes/common/global-data";
+import { createKeyItem } from "/src/scenes/common/key-item";
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -212,14 +214,42 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
   return Flow.parallel(swappingTileBellActions(firstSwappingTiles), checkSolve);
 });
 
-const enableGoal2 = Flow.whenTrueDo({
-  condition: globalEvents.globalData.dungeonPhase2.dataSubject,
+const newDoorsToOpen: DoorKey[] = ["door5To2", "door4To3"];
+
+const openNewDoorsAnim = Flow.whenTrueDo({
+  condition: globalEvents.subSceneEntered.subject,
   action: Flow.parallel(
-    Npc.openDoor("door4To3"),
-    Npc.openDoor("door5To2"),
-    Npc.openDoor("door4To5"),
-    arrowSkillAltar({ wp: { room: 4, x: 0, y: 4 } }),
+    ...newDoorsToOpen.map(
+      (doorKey): Flow.PhaserNode =>
+        Flow.lazy((scene) => {
+          const keyItem = createKeyItem(
+            findPreviousEvent("dungeonPhase2"),
+            scene,
+          );
+          keyItem.obj.setDepth(Def.depths.keyItems);
+          return Flow.sequence(
+            keyItem.downAnim(doorCenterPos(doorKey)),
+            keyItem.disappearAnim(),
+            Npc.openDoor(doorKey),
+          );
+        }),
+    ),
   ),
+});
+
+const enableGoal2 = Flow.whenTrueDo({
+  condition: globalData.dungeonPhase2.dataSubject,
+  action: Flow.lazy((scene) => {
+    const isSolved = isEventSolved("dungeonPhase2")(scene);
+    return Flow.parallel(
+      Flow.sequence(
+        Npc.openDoor("door4To5"),
+        isSolved ? Flow.noop : openNewDoorsAnim,
+      ),
+      ...(isSolved ? newDoorsToOpen.map(Npc.openDoor) : []),
+      arrowSkillAltar({ wp: { room: 4, x: 0, y: 4 } }),
+    );
+  }),
 });
 
 export const dungeonGoal2 = Flow.parallel(

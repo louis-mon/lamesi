@@ -161,7 +161,7 @@ const doors = {
   door3To0: Wp.getWpLink(3, 0),
 };
 
-type DoorKey = keyof typeof doors;
+export type DoorKey = keyof typeof doors;
 
 const doorObjectKey = (doorKey: DoorKey, pos: number) => `${doorKey}-${pos}`;
 const isDoorHorizontal = (doorKey: DoorKey): boolean =>
@@ -182,6 +182,11 @@ const doorPositions = (doorKey: DoorKey, open: boolean) => {
     .scale(open ? 2 : 1);
   return [middlePos.clone().add(doorSep), middlePos.clone().subtract(doorSep)];
 };
+
+export const doorCenterPos = (doorKey: DoorKey) =>
+  doorPositions(doorKey, false)
+    .reduce((acc, p) => acc.add(p))
+    .scale(0.5);
 
 const activateDoor =
   (open: boolean) =>

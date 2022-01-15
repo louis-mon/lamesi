@@ -46,7 +46,7 @@ export const newEventAnim: Flow.PhaserNode = Flow.lazy((scene) => {
     );
   };
 
-  return Flow.sequence(
+  return Flow.parallel(
     waitTimer(fadeDuration * 2),
     ...unsolvedEvents.map(itemAnim),
   );

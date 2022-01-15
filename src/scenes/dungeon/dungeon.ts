@@ -1,13 +1,11 @@
 import { createAllFlameThrowers } from "/src/scenes/dungeon/fireball";
 import { dungeonGoal3 } from "/src/scenes/dungeon/goal-3";
 import { createPlayer } from "/src/scenes/dungeon/player";
-import { globalData, eventsHelpers } from "/src/scenes/common/global-data";
 import * as Phaser from "phaser";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as Npc from "./npc";
 import { makeMenu } from "./menu";
-import { fromEvent } from "rxjs";
 import { initSkills, skillsFlow } from "./skills";
 import { dungeonGoal2 } from "./goal-2";
 import { dungeonGoal1 } from "./goal-1";

@@ -41,7 +41,7 @@ export const eventsDef: EventsDef = {
   },
   lights2: {
     triggers: ["creatures4", "dungeonPhase2"],
-    keyItem: "",
+    keyItem: "seeds",
     scene: lightsSceneKey,
   },
   dungeonPhase2: {
