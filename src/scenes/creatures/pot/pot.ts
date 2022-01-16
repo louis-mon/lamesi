@@ -7,22 +7,29 @@ import {
   placeAt,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
-import {
-  customEvent,
-  declareGoInstance,
-  defineSceneClass,
-  observeCommonGoEvent,
-} from "/src/helpers/component";
+import { observeCommonGoEvent } from "/src/helpers/component";
 import { getProp } from "/src/helpers/functional";
 import * as Def from "../def";
-import _ from "lodash";
+import _, { sortBy } from "lodash";
 import { Maybe } from "purify-ts";
 import { MovedCurve } from "/src/helpers/math/curves";
 import { makeControlledValue } from "/src/helpers/animate/tween";
 import Vector2 = Phaser.Math.Vector2;
-import { globalData } from "/src/scenes/common/global-data";
 import { potSceneClass } from "/src/scenes/creatures/pot/pot-def";
 import { createMandibles } from "/src/scenes/creatures/pot/mandibles";
+import { bodyPartsConfig } from "../def";
+import {
+  findPreviousEvent,
+  isEventReady,
+  isEventSolved,
+} from "/src/scenes/common/events-def";
+import { createKeyItem } from "/src/scenes/common/key-item";
+import { globalEvents } from "/src/scenes/common/global-events";
+import {
+  manDeskPos,
+  moveMan,
+  setToWaitingState,
+} from "/src/scenes/creatures/man";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -87,7 +94,7 @@ const makePathFollower = ({
   });
 };
 
-const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
+export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   createImageAt(scene, potPosition, "pot", "pot-cut").setDepth(
     Def.depths.potCut,
   );
@@ -126,6 +133,7 @@ const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
       )
         .setOrigin(0.5, 1)
         .setDepth(Def.depths.potBud)
+        .setScale(0)
         .setInteractive(),
       initialPos,
       hasBloomed: false,
@@ -426,14 +434,54 @@ const createPot: Flow.PhaserNode = Flow.lazy((scene) => {
     ...budStates.map((bud) => bud.flowState.start()),
   );
 
-  return Flow.parallel(
-    potState.start(waitForBulbClicked()),
-    budFlows,
-    clawMandibles,
-  );
-});
+  const growBulbs = (): Flow.PhaserNode => {
+    const eventKey = bodyPartsConfig.mouth.requiredEvent;
+    if (!isEventReady(eventKey)(scene)) return Flow.noop;
+    const targetScale = 1;
+    if (isEventSolved(eventKey)(scene)) {
+      budStates.forEach((bud) => bud.sprite.setScale(targetScale));
+      return Flow.noop;
+    }
+    const budsOrder = sortBy(budStates, (b) => b.sprite.x).reverse();
+    const seeds = budsOrder.map(() =>
+      createKeyItem(findPreviousEvent(eventKey), scene),
+    );
+    const manItinerary: Vector2[] = [
+      new Vector2(670, 950),
+      potFront.getTopRight().clone().add(new Vector2(0, -30)),
+    ];
+    return Flow.sequence(
+      Flow.wait(globalEvents.subSceneEntered.subject),
+      ...manItinerary.map((dest) => moveMan({ dest })),
+      Flow.parallel(
+        ...budsOrder.map((budState, i) => {
+          const keyItem = seeds[i];
+          keyItem.obj.setDepth(Def.depths.potFront);
+          return keyItem.downAnim(budState.sprite.getBottomCenter());
+        }),
+      ),
+      ...budsOrder.map((budState, i) =>
+        Flow.lazy(() => {
+          const keyItem = seeds[i];
+          return Flow.sequence(
+            moveMan({ dest: keyItem.obj.getTopCenter() }),
+            keyItem.disappearAnim(),
+            Flow.tween({
+              targets: budState.sprite,
+              props: { scale: targetScale },
+            }),
+          );
+        }),
+      ),
+      ...manItinerary
+        .slice()
+        .reverse()
+        .concat(manDeskPos)
+        .map((dest) => moveMan({ dest })),
+      setToWaitingState,
+      potState.nextFlow(waitForBulbClicked()),
+    );
+  };
 
-export const potFlow = Flow.whenTrueDo({
-  condition: globalData.creatures4.dataSubject,
-  action: createPot,
+  return Flow.parallel(potState.start(growBulbs()), budFlows, clawMandibles);
 });

@@ -8,10 +8,19 @@ import { Scene } from "phaser";
 import { isEventSolved } from "/src/scenes/common/events-def";
 import { range } from "lodash";
 
+export const manDeskPos = new Vector2(960, 962);
+
+export const setToWaitingState: Flow.PhaserNode = Flow.lazy((scene) => {
+  const man = sceneClass.data.manObj.value(scene);
+  return Flow.call(() => man.setFlipX(false));
+});
+
 export const moveMan: (p: { dest: Vector2 }) => Flow.PhaserNode = ({ dest }) =>
   Flow.lazy((scene) => {
     const manSpeed = 0.2;
     const man = sceneClass.data.manObj.value(scene);
+    const dx = dest.x - man.x;
+    if (dx !== 0) man.setFlipX(dx > 0);
     return Flow.concurrent(
       Flow.repeat(
         swingRotation({

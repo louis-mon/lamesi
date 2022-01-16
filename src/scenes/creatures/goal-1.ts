@@ -8,7 +8,11 @@ import { gameHeight } from "/src/scenes/common/constants";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
 import { bodyPartsConfig, sceneClass } from "/src/scenes/creatures/def";
-import { getTargetTransform, moveMan } from "/src/scenes/creatures/man";
+import {
+  getTargetTransform,
+  manDeskPos,
+  moveMan,
+} from "/src/scenes/creatures/man";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import { getObjectPosition, placeAt } from "/src/helpers/phaser";
 
@@ -23,7 +27,6 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const openBook = scene.add
     .image(962, 935, "crea-npc", "open-book")
     .setVisible(false);
-  const manDeskPos = new Vector2(960, 962);
   const man = scene.add
     .image(manDeskPos.x, gameHeight + 40, "crea-npc", "man1")
     .setScale(1.6);
