@@ -1,7 +1,7 @@
 import { Observable } from "rxjs";
 import Phaser from "phaser";
 import _ from "lodash";
-import { startWith, pairwise, map, flatMap, first } from "rxjs/operators";
+import { map, first } from "rxjs/operators";
 import { FuncOrConst, funcOrConstValue } from "./functional";
 
 export type ActionRunParams = {
@@ -49,20 +49,6 @@ export function parallel<C>(...actions: ActionNode<C>[]): ActionNode<C> {
     });
   };
 }
-
-/**
- * Executes a cleanup action even when the flow aborts
- */
-export const withCleanup =
-  <C>(params: {
-    flow: ActionNode<C>;
-    cleanup: (c: C) => void;
-  }): ActionNode<C> =>
-  (c) =>
-  (p) => {
-    sequence(params.flow, call(params.cleanup))(c)(p);
-    p.registerAbort(() => params.cleanup(c));
-  };
 
 const makeAborter = (
   p: ActionRunParams,

@@ -43,6 +43,9 @@ export class DungeonScene extends Phaser.Scene {
     const initActions = Flow.sequence(initSkills);
 
     const ambientActions = Flow.parallel(
+      Flow.observe(globalEvents.subSceneEntered.subject, () =>
+        Flow.call(makeMenu),
+      ),
       playerFlow,
       roomClouds,
       Wp.wpsAction,
@@ -56,15 +59,7 @@ export class DungeonScene extends Phaser.Scene {
       dungeonGoal4,
       enableGoal5,
     );
-    Flow.run(this, Flow.sequence(initActions, ambientActions));
-    Flow.runScene(
-      this,
-      Flow.observe(globalEvents.subSceneEntered.subject, () =>
-        Flow.call(() => {
-          makeMenu(this);
-        }),
-      ),
-    );
+    Flow.runScene(this, Flow.sequence(initActions, ambientActions));
   }
 
   update() {

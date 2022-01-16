@@ -9,6 +9,7 @@ import { makeStatesFlow, StatesFlow } from "./animate/flow-state";
 import { Maybe } from "purify-ts";
 import { observeCommonGoEvent } from "/src/helpers/component";
 import { makeSpawner } from "/src/helpers/flow/spawner";
+import { call, sequence } from "./flow";
 
 export * from "./flow";
 export * from "./animate/move";
@@ -50,6 +51,19 @@ export const tween =
       },
     });
     params.registerAbort(abortHandler);
+  };
+
+/**
+ * Executes a cleanup action even when the flow aborts, unless scene is already destroyed
+ */
+export const withCleanup =
+  (params: { flow: PhaserNode; cleanup: (c: Context) => void }): PhaserNode =>
+  (c) =>
+  (p) => {
+    sequence(params.flow, call(params.cleanup))(c)(p);
+    p.registerAbort(() => {
+      if (c.scene.scene) params.cleanup(c);
+    });
   };
 
 export const waitTimer =
