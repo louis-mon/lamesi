@@ -7,6 +7,7 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { endEventAnim } from "/src/scenes/menu/end-event-anim";
 import { newEventAnim } from "/src/scenes/menu/new-event-anim";
 import { openGoBackMenu } from "/src/scenes/menu/go-back-menu";
+import { openOptionsMenu } from "/src/scenes/menu/options-menu";
 
 const buttonSize = 60;
 
@@ -72,6 +73,13 @@ export class MenuScene extends Phaser.Scene {
           .on("pointerdown", () => {
             this.scale.toggleFullscreen();
           }),
+      { side: "left" },
+    );
+    this.addButton(
+      ({ x, y }) =>
+        this.add
+          .image(x, y, "items", "menu-options")
+          .on("pointerdown", () => openOptionsMenu(this)),
       { side: "left" },
     );
     Flow.runScene(

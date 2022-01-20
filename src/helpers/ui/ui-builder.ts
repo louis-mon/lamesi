@@ -4,10 +4,20 @@ import Dialog from "phaser3-rex-plugins/templates/ui/dialog/Dialog";
 export const uiBuilder = (scene: Scene) => {
   const colors = {
     primary: 0x2e762a,
+    primaryDark: 0x194c28,
     buttonPrimary: 0x4abe44,
   };
   const containerBack = () =>
-    scene.rexUI.add.roundRectangleCanvas(0, 0, 0, 0, 20, colors.primary);
+    scene.rexUI.add.roundRectangleCanvas(
+      0,
+      0,
+      0,
+      0,
+      20,
+      colors.primary,
+      colors.primaryDark,
+      3,
+    );
   const spaceBase = 4;
   const borderSpacing = (n: number) => ({
     top: n * spaceBase,

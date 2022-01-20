@@ -2,6 +2,7 @@ import BootCallback = Phaser.Types.Core.BootCallback;
 import { globalData, otherGlobalData } from "/src/scenes/common/global-data";
 import _, { mapValues } from "lodash";
 import { DataMappingDefValues } from "/src/helpers/component";
+import { Game } from "phaser";
 
 const defaultGlobalData: Partial<DataMappingDefValues<typeof globalData>> = {
   firstEvent: true,
@@ -26,6 +27,10 @@ const initialGlobalData = {
   ...defaultOtherGlobalData,
 };
 
+export const resetGameData = (game: Game) => {
+  game.registry.merge(initialGlobalData)
+}
+
 export const gamePreBoot: BootCallback = (game) => {
   const storageKey = "save";
   const oldSave = localStorage.getItem(storageKey);
@@ -35,7 +40,7 @@ export const gamePreBoot: BootCallback = (game) => {
     ...initialDataFromSave,
     ...fromEnv,
   };
-  _.mapValues(initialData, (value, key) => game.registry.set(key, value));
+  game.registry.merge(initialData)
   game.events.on("changedata", (parent: unknown) => {
     if (parent !== game) return;
     localStorage.setItem(storageKey, JSON.stringify(game.registry.getAll()));

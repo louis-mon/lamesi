@@ -6,6 +6,12 @@ export type TranslationKeys = {
   general: {
     ok: string;
     cancel: string;
+    close: string;
+  };
+  options: {
+    title: string;
+    eraseData: string;
+    confirmEraseData: string;
   };
 };
 
