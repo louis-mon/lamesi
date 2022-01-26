@@ -43,6 +43,7 @@ const waveFlow: Flow.PhaserNode = Flow.lazy((scene) => {
 
 export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
   Flow.lazy((scene) => {
+    scene.input.enabled = false;
     const bodyDef = bodyPartsConfig[part];
     const dataSolved = bodyDef.requiredEvent;
     solveEvent(dataSolved)(scene);

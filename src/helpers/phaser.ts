@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import _ from "lodash";
 
 import Vector2Like = Phaser.Types.Math.Vector2Like;
 import Vector2 = Phaser.Math.Vector2;
@@ -15,10 +14,8 @@ export const placeAt = <T extends Phaser.GameObjects.Components.Transform>(
   pos: Vector2Like,
 ) => obj.setPosition(pos.x, pos.y);
 
-export const getObjectPosition = ({
-  x,
-  y,
-}: Phaser.GameObjects.Components.Transform) => new Phaser.Math.Vector2(x, y);
+export const getObjectPosition = ({ x, y }: { x: number; y: number }) =>
+  new Phaser.Math.Vector2(x, y);
 
 export const createSpriteAt = (
   scene: Phaser.Scene,

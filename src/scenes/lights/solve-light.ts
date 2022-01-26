@@ -3,11 +3,11 @@ import {
   goalHiddenObjectPlane,
   LightSceneGoalDef,
 } from "/src/scenes/lights/lights-def";
-import { getEventDef } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
-import { createImageAt, getObjectPosition } from "/src/helpers/phaser";
+import { getObjectPosition, placeAt } from "/src/helpers/phaser";
 import GameObject = Phaser.GameObjects.GameObject;
 import Transform = Phaser.GameObjects.Components.Transform;
+import { createKeyItem } from "/src/scenes/common/key-item";
 
 export const solveLight = ({
   target,
@@ -17,12 +17,9 @@ export const solveLight = ({
   goalDef: LightSceneGoalDef;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    const keyItem = createImageAt(
-      scene,
-      getObjectPosition(target),
-      "items",
-      getEventDef(goalDef.eventRequired).keyItem,
-    ).setDepth(goalHiddenObjectPlane);
+    scene.input.enabled = false;
+    const { obj } = createKeyItem(goalDef.eventRequired, scene);
+    placeAt(obj.setDepth(goalHiddenObjectPlane), getObjectPosition(target));
     return Flow.sequence(
       Flow.tween({
         targets: target,

@@ -7,6 +7,8 @@ import { GlobalDataKey } from "/src/scenes/common/global-data";
 import { Scene } from "phaser";
 import { isEventSolved } from "/src/scenes/common/events-def";
 import { range } from "lodash";
+import { gameHeight, gameWidth } from "/src/scenes/common/constants";
+import { panCameraTo } from "/src/helpers/animate/tween/camera";
 
 export const manDeskPos = new Vector2(960, 962);
 
@@ -60,10 +62,17 @@ export const transformMan: Flow.PhaserNode = Flow.lazy((scene) => {
   const targetTransform = getTargetTransform(scene);
   if (!targetTransform) return Flow.noop;
 
+  const zoom = 3;
   const totalFrames = 30;
   const duration = 300;
   const oldFrame = man.frame.name;
   return Flow.sequence(
+    Flow.parallel(
+      panCameraTo({
+        target: new Vector2(gameWidth / 2, gameHeight * (1 - 1 / 2 / zoom)),
+        zoom,
+      }),
+    ),
     ...range(7, totalFrames - 7).map((i) =>
       Flow.sequence(
         Flow.call(() => man.setFrame(oldFrame)),

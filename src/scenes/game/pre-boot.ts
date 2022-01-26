@@ -28,8 +28,8 @@ const initialGlobalData = {
 };
 
 export const resetGameData = (game: Game) => {
-  game.registry.merge(initialGlobalData)
-}
+  game.registry.merge(initialGlobalData);
+};
 
 export const gamePreBoot: BootCallback = (game) => {
   const storageKey = "save";
@@ -40,7 +40,7 @@ export const gamePreBoot: BootCallback = (game) => {
     ...initialDataFromSave,
     ...fromEnv,
   };
-  game.registry.merge(initialData)
+  game.registry.merge(initialData);
   game.events.on("changedata", (parent: unknown) => {
     if (parent !== game) return;
     localStorage.setItem(storageKey, JSON.stringify(game.registry.getAll()));
