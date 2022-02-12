@@ -1,6 +1,7 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import {
   LightSceneMaterialDef,
+  materialClass,
   materialsPlane,
   sceneDef,
   shadowName,
@@ -9,28 +10,30 @@ import {
 import { LightScene } from "/src/scenes/lights/lights";
 import { debugObjectPos } from "/src/helpers/debug/debug-object-pos";
 import { ManipulableObject } from "/src/helpers/phaser";
-import { gameHeight, gameWidth } from "/src/scenes/common/constants";
 import Phaser from "phaser";
 import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { compact } from "lodash";
 import TweenBuilderConfig = Phaser.Types.Tweens.TweenBuilderConfig;
+import { projectorFlow } from "/src/scenes/lights/projectors";
+import { declareGoInstance } from "/src/helpers/component";
 
 export const createMaterial = (
   matDef: LightSceneMaterialDef,
-  i: number,
 ): Flow.PhaserNode =>
   Flow.lazy((s) => {
     const eventRequired = matDef.eventRequired;
     if (!isEventReady(eventRequired)(s)) return Flow.noop;
     const scene = s as LightScene;
-    let depth = matDef.depth;
     const go = matDef
       .create(scene)
-      .setScale(1 / depth)
+      .setScale(1 / matDef.depth)
       .setAlpha(0)
       .setDepth(materialsPlane);
     scene.setCommonProps(go, matDef);
+    const goInst = declareGoInstance(materialClass, matDef.key);
+    goInst.create(go as any);
+    goInst.data.depth.setValue(matDef.depth)(scene);
 
     const shadowTargetAlpha = 0.5;
     const shadows = compact(
@@ -78,32 +81,10 @@ export const createMaterial = (
       go.alpha = 1;
       shadows.forEach((shadow) => shadow.setAlpha(shadowTargetAlpha));
     });
-    if (matDef.rope && isEventReady(matDef.rope.eventRequired)(scene)) {
-      const { minDepth, maxDepth } = matDef.rope;
-      const ropeObj = scene.add.image(gameWidth - 30 * i - 20, 0, "rope");
-      const ropeIcon = matDef.create(scene);
-      ropeIcon.scale = 25 / ropeIcon.width;
-      ropeObj.setOrigin(0.5, 1);
-      ropeObj.setInteractive();
-      scene.input.setDraggable(ropeObj);
-      const yposMin = 50;
-      const yAmpl = gameHeight - 50;
-      scene.events.on("update", () => {
-        go.scale = 1 / depth;
-        ropeObj.y = Phaser.Math.Linear(yposMin, yposMin + yAmpl, 1 - depth);
-        ropeIcon.setPosition(ropeObj.x, ropeObj.y + 30);
-      });
-      ropeObj.on("drag", (pointer, x, y) => {
-        depth = Phaser.Math.Clamp(
-          depth - (y - ropeObj.y) / yAmpl,
-          minDepth,
-          maxDepth,
-        );
-      });
-    }
 
     return Flow.sequence(
       isEventSolved(eventRequired)(scene) ? Flow.noop : appearCinematic(),
       showMaterial,
+      projectorFlow(matDef),
     );
   });

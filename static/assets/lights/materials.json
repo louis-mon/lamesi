@@ -1,0 +1,39 @@
+{
+  "frames": {
+    "zoom-track": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 32,
+        "h": 400
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 9,
+        "y": 0,
+        "w": 32,
+        "h": 400
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 400
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "materials.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 36,
+      "h": 404
+    },
+    "scale": 1
+  }
+}

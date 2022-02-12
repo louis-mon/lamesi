@@ -2,6 +2,17 @@ import * as Phaser from "phaser";
 import { ManipulableObject } from "/src/helpers/phaser";
 import { WithRequiredEvent } from "../common/global-data";
 import Image = Phaser.GameObjects.Image;
+import Vector2 = Phaser.Math.Vector2;
+import { gameHeight, gameWidth } from "/src/scenes/common/constants";
+import { defineGoImage } from "/src/helpers/component";
+import { annotate } from "/src/helpers/typing";
+
+export const materialClass = defineGoImage({
+  data: {
+    depth: annotate<number>(),
+  },
+  events: {},
+});
 
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
@@ -12,12 +23,15 @@ export type ObjectCreationDef = WithRequiredEvent & {
 
 export type LightSceneSourceDef = ObjectCreationDef;
 
+export type LightSceneZoomDef = WithRequiredEvent & {
+  pos: Vector2;
+  minDepth: number;
+  maxDepth: number;
+};
+
 export type LightSceneMaterialDef = ObjectCreationDef & {
   depth: number;
-  rope?: WithRequiredEvent & {
-    minDepth: number;
-    maxDepth: number;
-  };
+  zoom?: LightSceneZoomDef;
 };
 
 export type LightSceneGoalDef = Omit<ObjectCreationDef, "create"> & {
@@ -76,7 +90,8 @@ export const sceneDef: LightSceneDef = {
       depth: 0.5,
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true,
-      rope: {
+      zoom: {
+        pos: new Vector2(gameWidth - 50, 50),
         eventRequired: "lights3",
         minDepth: 0.4,
         maxDepth: 0.8,
@@ -87,7 +102,8 @@ export const sceneDef: LightSceneDef = {
       depth: 0.7,
       movable: true,
       eventRequired: "lights2",
-      rope: {
+      zoom: {
+        pos: new Vector2(gameWidth - 50, gameHeight / 2 + 50),
         eventRequired: "lights3",
         minDepth: 0.2,
         maxDepth: 0.9,
@@ -100,7 +116,8 @@ export const sceneDef: LightSceneDef = {
       depth: 0.5,
       movable: true,
       eventRequired: "lights5",
-      rope: {
+      zoom: {
+        pos: new Vector2(gameWidth - 80, gameHeight * 0.28),
         eventRequired: "lights3",
         minDepth: 0.4,
         maxDepth: 0.9,
