@@ -28,7 +28,7 @@ export class LightScene extends Phaser.Scene {
     this.load.image("goal-3");
     this.load.image("goal-4");
     this.load.image("goal-5");
-    this.load.atlas('materials');
+    this.load.atlas("materials");
   }
 
   public shadows: Array<{
