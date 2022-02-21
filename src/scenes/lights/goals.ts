@@ -20,6 +20,7 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import Vector2 = Phaser.Math.Vector2;
+import { presentZoomTrack } from "/src/scenes/lights/zoomTracks";
 
 export const createGoal = (goalDef: LightSceneGoalDef): Flow.PhaserNode =>
   Flow.lazy((s) => {
@@ -57,6 +58,7 @@ export const createGoal = (goalDef: LightSceneGoalDef): Flow.PhaserNode =>
       go.y += go.height + vortex.height;
       return Flow.sequence(
         Flow.wait(globalEvents.subSceneEntered.subject),
+        presentZoomTrack,
         keyItem.appearAt(new Vector2(gameWidth, gameHeight).scale(0.5)),
         keyItem.moveTo(vortex.getCenter()),
         Flow.parallel(

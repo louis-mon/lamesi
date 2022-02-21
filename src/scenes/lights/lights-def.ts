@@ -4,8 +4,17 @@ import { WithRequiredEvent } from "../common/global-data";
 import Image = Phaser.GameObjects.Image;
 import Vector2 = Phaser.Math.Vector2;
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
-import { defineGoImage } from "/src/helpers/component";
+import { customEvent, defineGoImage, defineSceneClass } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
+
+export const sceneClass = defineSceneClass({
+  events: {
+    showZoomTracks: customEvent(),
+  },
+  data: {
+    hiddenZoomTracks: annotate<number>(),
+  }
+})
 
 export const materialClass = defineGoImage({
   data: {
@@ -57,6 +66,7 @@ export const goalPlane = vortexPlane + 1;
 export const shadowPlane = goalPlane + 1;
 export const materialsPlane = shadowPlane + 1;
 export const sourcesPlane = materialsPlane + 1;
+export const curtainsPlane = sourcesPlane + 1;
 
 export const shadowName = (matKey: string, sourceDef: LightSceneSourceDef) =>
   `${matKey}-${sourceDef.key}-shadow`;

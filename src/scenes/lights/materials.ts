@@ -15,7 +15,7 @@ import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { compact } from "lodash";
 import TweenBuilderConfig = Phaser.Types.Tweens.TweenBuilderConfig;
-import { projectorFlow } from "/src/scenes/lights/projectors";
+import { zoomTrackFlow } from "/src/scenes/lights/zoomTracks";
 import { declareGoInstance } from "/src/helpers/component";
 
 export const createMaterial = (
@@ -85,6 +85,6 @@ export const createMaterial = (
     return Flow.sequence(
       isEventSolved(eventRequired)(scene) ? Flow.noop : appearCinematic(),
       showMaterial,
-      projectorFlow(matDef),
+      zoomTrackFlow(matDef),
     );
   });

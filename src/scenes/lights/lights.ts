@@ -5,7 +5,7 @@ import {
   sceneDef,
   LightSceneMaterialDef,
   ObjectCreationDef,
-  sourcesPlane,
+  sourcesPlane, sceneClass,
 } from "./lights-def";
 import { eventsHelpers } from "../common/global-data";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
@@ -72,6 +72,7 @@ export class LightScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor(0x0);
+    sceneClass.data.hiddenZoomTracks.setValue(0)(this);
     sceneDef.lights
       .filter(eventsHelpers.getEventFilter(this))
       .forEach((lightDef) => {
