@@ -8,8 +8,9 @@ export const debugObjectPos = (scene: Scene, obj: ManipulableObject) => {
   scene.events.on("update", () => {
     const { x, y } = obj.getBottomCenter(undefined, true);
     text.setPosition(x, y);
+    const depth = Math.sqrt(obj.width / obj.displayWidth).toPrecision(2);
     text.text = `${Math.round(obj.x)}, ${Math.round(obj.y)}, ${Math.round(
       obj.displayWidth,
-    )}, ${Math.round(obj.displayHeight)}`;
+    )}, ${Math.round(obj.displayHeight)}, ${depth}`;
   });
 };

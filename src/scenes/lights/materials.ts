@@ -15,7 +15,7 @@ import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { compact } from "lodash";
 import TweenBuilderConfig = Phaser.Types.Tweens.TweenBuilderConfig;
-import { zoomTrackFlow } from "/src/scenes/lights/zoomTracks";
+import { zoomTrackFlow } from "/src/scenes/lights/zoom-tracks";
 import { declareGoInstance } from "/src/helpers/component";
 
 export const createMaterial = (

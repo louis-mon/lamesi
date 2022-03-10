@@ -20,7 +20,7 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import Vector2 = Phaser.Math.Vector2;
-import { presentZoomTrack } from "/src/scenes/lights/zoomTracks";
+import { presentZoomTrack } from "/src/scenes/lights/zoom-tracks";
 
 export const createGoal = (goalDef: LightSceneGoalDef): Flow.PhaserNode =>
   Flow.lazy((s) => {

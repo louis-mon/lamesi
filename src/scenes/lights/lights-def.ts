@@ -4,7 +4,11 @@ import { WithRequiredEvent } from "../common/global-data";
 import Image = Phaser.GameObjects.Image;
 import Vector2 = Phaser.Math.Vector2;
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
-import { customEvent, defineGoImage, defineSceneClass } from "/src/helpers/component";
+import {
+  customEvent,
+  defineGoImage,
+  defineSceneClass,
+} from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 
 export const sceneClass = defineSceneClass({
@@ -13,8 +17,8 @@ export const sceneClass = defineSceneClass({
   },
   data: {
     hiddenZoomTracks: annotate<number>(),
-  }
-})
+  },
+});
 
 export const materialClass = defineGoImage({
   data: {
@@ -34,8 +38,7 @@ export type LightSceneSourceDef = ObjectCreationDef;
 
 export type LightSceneZoomDef = WithRequiredEvent & {
   pos: Vector2;
-  minDepth: number;
-  maxDepth: number;
+  depths: number[];
 };
 
 export type LightSceneMaterialDef = ObjectCreationDef & {
@@ -71,6 +74,19 @@ export const curtainsPlane = sourcesPlane + 1;
 export const shadowName = (matKey: string, sourceDef: LightSceneSourceDef) =>
   `${matKey}-${sourceDef.key}-shadow`;
 
+const makeZoomDepths = (other: number[], widths: number[], refWidth: number) =>
+  other.concat(widths.map((w) => Math.sqrt(refWidth / w)));
+
+const g3BallWidth = 271;
+const g4BallWidth = 132;
+const g5BallWidth = 94;
+
+const g3TriangleWidth = 138;
+const g4TriangleWidth = 134;
+const g5TriangleWidth = 133;
+
+const g5BarWidth = 64;
+
 export const sceneDef: LightSceneDef = {
   lights: [
     {
@@ -103,8 +119,11 @@ export const sceneDef: LightSceneDef = {
       zoom: {
         pos: new Vector2(gameWidth - 50, 50),
         eventRequired: "lights3",
-        minDepth: 0.4,
-        maxDepth: 0.8,
+        depths: makeZoomDepths(
+          [0.35, 0.75],
+          [g3BallWidth, g4BallWidth, g5BallWidth],
+          46,
+        ),
       },
     },
     {
@@ -115,8 +134,11 @@ export const sceneDef: LightSceneDef = {
       zoom: {
         pos: new Vector2(gameWidth - 50, gameHeight / 2 + 50),
         eventRequired: "lights3",
-        minDepth: 0.2,
-        maxDepth: 0.9,
+        depths: makeZoomDepths(
+          [0.66, 0.8],
+          [g3TriangleWidth, g4TriangleWidth, g5TriangleWidth],
+          82,
+        ),
       },
       create: (scene) =>
         scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03),
@@ -129,8 +151,7 @@ export const sceneDef: LightSceneDef = {
       zoom: {
         pos: new Vector2(gameWidth - 80, gameHeight * 0.28),
         eventRequired: "lights3",
-        minDepth: 0.4,
-        maxDepth: 0.9,
+        depths: makeZoomDepths([0.4, 0.9], [g5BarWidth], 46),
       },
       create: (scene) => scene.add.rectangle(500, 500, 46, 92, 0x4afc03),
     },
@@ -173,12 +194,12 @@ export const sceneDef: LightSceneDef = {
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(973, 135),
-          width: 271,
+          width: g3BallWidth,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(975, 278),
-          width: 138,
+          width: g3TriangleWidth,
         },
       ],
     },
@@ -190,17 +211,17 @@ export const sceneDef: LightSceneDef = {
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(315, 268),
-          width: 132,
+          width: g4BallWidth,
         },
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(435, 268),
-          width: 132,
+          width: g4BallWidth,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(377, 146),
-          width: 134,
+          width: g4TriangleWidth,
         },
       ],
     },
@@ -212,32 +233,32 @@ export const sceneDef: LightSceneDef = {
         {
           materialKey: "m-bar-1",
           position: new Phaser.Math.Vector2(1695, 246),
-          width: 64,
+          width: g5BarWidth,
         },
         {
           materialKey: "m-bar-1",
           position: new Phaser.Math.Vector2(1695, 342),
-          width: 64,
+          width: g5BarWidth,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(1695, 82),
-          width: 133,
+          width: g5TriangleWidth,
         },
         {
           materialKey: "m-triangle-1",
           position: new Phaser.Math.Vector2(1695, 228),
-          width: 133,
+          width: g5TriangleWidth,
         },
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(1695, 131),
-          width: 94,
+          width: g5BallWidth,
         },
         {
           materialKey: "m-ball-1",
           position: new Phaser.Math.Vector2(1695, 360),
-          width: 94,
+          width: g5BallWidth,
         },
       ],
     },

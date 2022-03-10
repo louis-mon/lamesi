@@ -10,11 +10,13 @@ import {
 } from "/src/scenes/lights/lights-def";
 import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import Phaser from "phaser";
-import { min } from "lodash";
+import { max, min, minBy } from "lodash";
 import { gameHeight } from "/src/scenes/common/constants";
 import { map } from "rxjs/operators";
 
 export const presentZoomTrack: Flow.PhaserNode = Flow.lazy((scene) => {
+  if (sceneClass.data.hiddenZoomTracks.value(scene) === 0) return Flow.noop;
+  scene.input.enabled = false;
   const rectWidth =
     min(
       sceneDef.materials.map(
@@ -35,6 +37,7 @@ export const presentZoomTrack: Flow.PhaserNode = Flow.lazy((scene) => {
     ),
     Flow.tween({ targets: blackRect, duration: 2000, props: { alpha: 0 } }),
     Flow.call(() => blackRect.destroy()),
+    Flow.call(() => (scene.input.enabled = true)),
   );
 });
 
@@ -47,35 +50,63 @@ export const zoomTrackFlow = (matDef: LightSceneMaterialDef): Flow.PhaserNode =>
     const startHidden =
       !isEventSolved(zoomDef.eventRequired)(scene) &&
       zoomDef.eventRequired === "lights3";
+    const initialAlpha = startHidden ? 0 : 1;
     const track = scene.add
       .image(zoomDef.pos.x, zoomDef.pos.y, "materials", "zoom-track")
       .setOrigin(0.5, 0)
-      .setAlpha(startHidden ? 0 : 1)
+      .setAlpha(initialAlpha)
       .setDepth(shadowPlane);
     const yposMin = track.getTopRight().y;
     const yAmpl = track.displayHeight;
-    const dMin = zoomDef.minDepth;
-    const dAmpl = zoomDef.maxDepth - dMin;
+    const dMin = min(zoomDef.depths)!;
+    const dAmpl = max(zoomDef.depths)! - dMin;
     const depth = materialClass.data.depth(matDef.key);
+
+    const depthToY = (d: number) =>
+      Phaser.Math.Linear(yposMin, yposMin + yAmpl, 1 - (d - dMin) / dAmpl);
+
+    const allDepths = zoomDef.depths.concat(matDef.depth);
+    const anchors = allDepths.map((depth) =>
+      scene.add
+        .ellipse(zoomDef.pos.x, depthToY(depth), track.width, 20, 0xff0000)
+        .setDepth(shadowPlane)
+        .setAlpha(initialAlpha),
+    );
 
     const matIcon = matDef
       .create(scene)
-      .setAlpha(startHidden ? 0 : 1)
+      .setAlpha(initialAlpha)
       .setInteractive()
       .setDepth(materialsPlane)
-      .setPosition(
-        zoomDef.pos.x,
-        Phaser.Math.Linear(
-          yposMin,
-          yposMin + yAmpl,
-          1 - (depth.value(scene) - dMin) / dAmpl,
-        ),
-      );
+      .setPosition(zoomDef.pos.x, depthToY(depth.value(scene)));
     matIcon.scale = 25 / matIcon.width;
     scene.input.setDraggable(matIcon);
 
+    const dragState = Flow.makeSceneStates();
+
+    const magnetToNearest = () =>
+      dragState.next(
+        Flow.tween(() => {
+          const nearestDepth = minBy(allDepths, (d) =>
+            Math.abs(d - depth.value(scene)),
+          )!;
+          return {
+            targets: matIcon,
+            props: { y: depthToY(nearestDepth) },
+            ease: Phaser.Math.Easing.Cubic.InOut,
+            delay: 600,
+          };
+        }),
+      );
+
     matIcon.on("drag", (pointer, x, y) => {
+      dragState.next(Flow.noop);
       matIcon.y = Phaser.Math.Clamp(y, yposMin, yposMin + yAmpl);
+    });
+    matIcon.on("dragend", magnetToNearest);
+    if (startHidden)
+      sceneClass.data.hiddenZoomTracks.updateValue((v) => v + 1)(scene);
+    const updateMatScale = () => {
       depth.setValue(
         Phaser.Math.Linear(
           dMin,
@@ -84,12 +115,27 @@ export const zoomTrackFlow = (matDef: LightSceneMaterialDef): Flow.PhaserNode =>
         ),
       )(scene);
       materialClass.getObj(matDef.key)(scene).scale = 1 / depth.value(scene);
-    });
-    sceneClass.data.hiddenZoomTracks.updateValue((v) => v + 1)(scene);
-    return Flow.sequence(
-      Flow.wait(sceneClass.events.showZoomTracks.subject),
-      Flow.tween({ targets: track, props: { alpha: 1 }, duration: 2000 }),
-      Flow.tween({ targets: matIcon, props: { alpha: 1 }, duration: 2000 }),
-      Flow.call(sceneClass.data.hiddenZoomTracks.updateValue((v) => v - 1)),
+    };
+
+    return Flow.parallel(
+      Flow.handlePostUpdate({
+        handler: () => updateMatScale,
+      }),
+      dragState.start(),
+      Flow.sequence(
+        Flow.wait(sceneClass.events.showZoomTracks.subject),
+        Flow.parallel(
+          Flow.tween({ targets: track, props: { alpha: 1 }, duration: 2000 }),
+          ...anchors.map((anchor) =>
+            Flow.tween({
+              targets: anchor,
+              props: { alpha: 1 },
+              duration: 2000,
+            }),
+          ),
+        ),
+        Flow.tween({ targets: matIcon, props: { alpha: 1 }, duration: 2000 }),
+        Flow.call(sceneClass.data.hiddenZoomTracks.updateValue((v) => v - 1)),
+      ),
     );
   });

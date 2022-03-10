@@ -5,7 +5,8 @@ import {
   sceneDef,
   LightSceneMaterialDef,
   ObjectCreationDef,
-  sourcesPlane, sceneClass,
+  sourcesPlane,
+  sceneClass,
 } from "./lights-def";
 import { eventsHelpers } from "../common/global-data";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
