@@ -1,5 +1,6 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import {
+  curtainsPlane,
   goalPlane,
   LightSceneGoalDef,
   sceneDef,
@@ -52,6 +53,7 @@ export const createGoal = (goalDef: LightSceneGoalDef): Flow.PhaserNode =>
         findPreviousEvent(goalDef.eventRequired),
         scene,
       );
+      keyItem.obj.setDepth(curtainsPlane);
 
       go.setMask(mask);
 
