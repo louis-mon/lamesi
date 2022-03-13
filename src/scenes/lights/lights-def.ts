@@ -82,7 +82,7 @@ const g4BallWidth = 132;
 const g5BallWidth = 94;
 
 const g3TriangleWidth = 138;
-const g4TriangleWidth = 134;
+const g4TriangleWidth = 198;
 const g5TriangleWidth = 133;
 
 const g5BarWidth = 64;
@@ -135,7 +135,7 @@ export const sceneDef: LightSceneDef = {
         pos: new Vector2(gameWidth - 50, gameHeight / 2 + 50),
         eventRequired: "lights3",
         depths: makeZoomDepths(
-          [0.66, 0.8],
+          [0.59, 0.8],
           [g3TriangleWidth, g4TriangleWidth, g5TriangleWidth],
           82,
         ),
@@ -210,17 +210,22 @@ export const sceneDef: LightSceneDef = {
       requires: [
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(315, 268),
+          position: new Phaser.Math.Vector2(310, 189),
           width: g4BallWidth,
         },
         {
           materialKey: "m-ball-1",
-          position: new Phaser.Math.Vector2(435, 268),
+          position: new Phaser.Math.Vector2(430, 189),
           width: g4BallWidth,
         },
         {
           materialKey: "m-triangle-1",
-          position: new Phaser.Math.Vector2(377, 146),
+          position: new Phaser.Math.Vector2(321, 214),
+          width: g4TriangleWidth,
+        },
+        {
+          materialKey: "m-triangle-1",
+          position: new Phaser.Math.Vector2(418, 214),
           width: g4TriangleWidth,
         },
       ],
