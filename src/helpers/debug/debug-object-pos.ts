@@ -2,7 +2,10 @@ import { Scene } from "phaser";
 import { ManipulableObject } from "/src/helpers/phaser";
 import EventEmitter = Phaser.Events.EventEmitter;
 
-export const debugObjectPos = (scene: Scene, obj: ManipulableObject & EventEmitter) => {
+export const debugObjectPos = (
+  scene: Scene,
+  obj: ManipulableObject & EventEmitter,
+) => {
   if (process.env.NODE_ENV !== "development") return;
   const text = scene.add.text(0, 0, "");
   text.depth = 1000;

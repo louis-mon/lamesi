@@ -24,6 +24,7 @@ import {
 import { globalEvents } from "/src/scenes/common/global-events";
 import { globalData } from "/src/scenes/common/global-data";
 import { createKeyItem } from "/src/scenes/common/key-item";
+import { openDoorWithKeyItem } from "/src/scenes/dungeon/door";
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -221,18 +222,7 @@ const openNewDoorsAnim = Flow.whenTrueDo({
   action: Flow.parallel(
     ...newDoorsToOpen.map(
       (doorKey): Flow.PhaserNode =>
-        Flow.lazy((scene) => {
-          const keyItem = createKeyItem(
-            findPreviousEvent("dungeonPhase2"),
-            scene,
-          );
-          keyItem.obj.setDepth(Def.depths.keyItems);
-          return Flow.sequence(
-            keyItem.downAnim(doorCenterPos(doorKey)),
-            keyItem.disappearAnim(),
-            Npc.openDoor(doorKey),
-          );
-        }),
+        openDoorWithKeyItem({ doorKey, eventKey: "dungeonPhase2" }),
     ),
   ),
 });

@@ -215,6 +215,30 @@
         "x": 0.5,
         "y": 0.5
       }
+    },
+    "amulet": {
+      "frame": {
+        "x": 51,
+        "y": 186,
+        "w": 41,
+        "h": 34
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 8,
+        "w": 41,
+        "h": 34
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {

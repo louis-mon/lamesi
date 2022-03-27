@@ -12,7 +12,7 @@ import { map } from "rxjs/operators";
 import * as Def from "./definitions";
 import { placeCheckpoint, playerIsOnPos } from "./definitions";
 import * as Npc from "./npc";
-import { endGoalAltarPlaceholder, openDoor } from "./npc";
+import { DoorKey, endGoalAltarPlaceholder, openDoor } from "./npc";
 import {
   amuletSkillAltar,
   amuletSkillDef,
@@ -22,7 +22,10 @@ import {
 import * as Wp from "./wp";
 import { setGroundObstacleLine } from "./wp";
 import Line = Phaser.Geom.Line;
-import { globalData } from "../common/global-data";
+import { globalData, GlobalDataKey } from "../common/global-data";
+import { isEventSolved } from "/src/scenes/common/events-def";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { openDoorWithKeyItem } from "/src/scenes/dungeon/door";
 
 const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
   const switchDef = Def.switches.room1ForRoom2Door;
@@ -181,12 +184,22 @@ export const puzzleRoom0: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
+const eventKey: GlobalDataKey = "dungeonPhase3";
+const startDoorToOpen: DoorKey = "door4To1";
+
 const enableGoal3 = Flow.whenTrueDo({
   condition: globalData.dungeonPhase3.dataSubject,
-  action: Flow.parallel(
-    Npc.openDoor("door4To1"),
-    bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),
-  ),
+  action: Flow.lazy((scene) => {
+    const isSolved = isEventSolved(eventKey)(scene);
+    return Flow.parallel(
+      Flow.whenTrueDo({
+        condition: globalEvents.subSceneEntered.subject,
+        action: openDoorWithKeyItem({ doorKey: startDoorToOpen, eventKey }),
+      }),
+      ...(isSolved ? [Npc.openDoor(startDoorToOpen)] : []),
+      bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),
+    );
+  }),
 });
 
 export const dungeonGoal3 = Flow.parallel(
