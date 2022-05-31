@@ -5,12 +5,14 @@ import {
   findPreviousEvent,
   getEventDef,
   isEventSolved,
+  undefinedEventItem,
 } from "/src/scenes/common/events-def";
 import { moveTo } from "/src/helpers/animate/move";
 import { centerOfSubScene, isASubScene } from "/src/scenes/hub/sub-scenes";
 import { waitTimer } from "/src/helpers/phaser-flow";
 import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
 import { globalEvents } from "/src/scenes/common/global-events";
+import Vector2 = Phaser.Math.Vector2;
 
 export const newEventAnim: Flow.PhaserNode = Flow.lazy((scene) => {
   const unsolvedEvents = allEvents.filter(
@@ -19,10 +21,9 @@ export const newEventAnim: Flow.PhaserNode = Flow.lazy((scene) => {
   const itemAnim = (targetKey: GlobalDataKey): Flow.PhaserNode => {
     const targetDef = getEventDef(targetKey);
     if (!isASubScene(targetDef.scene)) return Flow.noop;
-    const sourceItem = getEventDef(findPreviousEvent(targetKey)).keyItem;
-    if (!sourceItem) return Flow.noop;
-    const keyItem = scene.add
-      .image(952, 896, "items", sourceItem)
+    const sourceItem = getEventDef(findPreviousEvent(targetKey)).createItem;
+    if (sourceItem === undefinedEventItem) return Flow.noop;
+    const keyItem = sourceItem({ pos: new Vector2(952, 896), scene })
       .setAlpha(0)
       .setScale(1.5);
 

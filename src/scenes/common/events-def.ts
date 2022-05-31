@@ -7,10 +7,15 @@ import {
   lightsSceneKey,
 } from "/src/scenes/common/constants";
 import { compact, first, keys, pickBy } from "lodash";
+import Vector2 = Phaser.Math.Vector2;
 
+type CreateItem = (p: {
+  pos: Vector2;
+  scene: Scene;
+}) => Phaser.GameObjects.Image;
 type EventDef = {
   triggers: GlobalDataKey[];
-  keyItem: string;
+  createItem: CreateItem;
   scene: string;
 };
 
@@ -18,101 +23,107 @@ type EventsDef = {
   [data in GlobalDataKey]: EventDef;
 };
 
+const item =
+  (key: string): CreateItem =>
+  (p) =>
+    p.scene.add.image(p.pos.x, p.pos.y, "items", key);
+export const undefinedEventItem = item("");
+
 export const eventsDef: EventsDef = {
   firstEvent: {
     triggers: ["lights1"],
-    keyItem: "circle-gem",
+    createItem: item("circle-gem"),
     scene: hubSceneKey,
   },
   lights1: {
     triggers: ["creatures1"],
-    keyItem: "book",
+    createItem: item("book"),
     scene: lightsSceneKey,
   },
   creatures1: {
     triggers: ["dungeonPhase1"],
-    keyItem: "woman",
+    createItem: item("woman"),
     scene: creaturesSceneKey,
   },
   dungeonPhase1: {
     triggers: ["lights2"],
-    keyItem: "drop",
+    createItem: item("drop"),
     scene: dungeonSceneKey,
   },
   lights2: {
     triggers: ["creatures4", "dungeonPhase2"],
-    keyItem: "seeds",
+    createItem: item("seeds"),
     scene: lightsSceneKey,
   },
   dungeonPhase2: {
     triggers: ["lights3"],
-    keyItem: "tree",
+    createItem: item("tree"),
     scene: dungeonSceneKey,
   },
   lights3: {
     triggers: ["dungeonPhase3"],
-    keyItem: "amulet",
+    createItem: item("amulet"),
     scene: lightsSceneKey,
   },
   dungeonPhase3: {
     triggers: ["creatures3"],
-    keyItem: "",
+    createItem: item("shell"),
     scene: dungeonSceneKey,
   },
   creatures4: {
     triggers: ["creatures4Done"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
   creatures3: {
     triggers: ["creatures3Done"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
   creatures4Done: {
     triggers: ["lights4"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
   creatures3Done: {
     triggers: ["lights4"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
   lights4: {
     triggers: ["dungeonPhase4"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: lightsSceneKey,
   },
   dungeonPhase4: {
     triggers: ["creatures2"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: dungeonSceneKey,
   },
   creatures2: {
     triggers: ["lights5", "dungeonPhase5"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
   lights5: {
     triggers: ["lightsDone"],
-    keyItem: "",
+    createItem: undefinedEventItem,
     scene: lightsSceneKey,
   },
   dungeonPhase5: {
     triggers: ["dungeonDone"],
     scene: dungeonSceneKey,
-    keyItem: "",
+    createItem: undefinedEventItem,
   },
   dungeonDone: {
     triggers: [],
     scene: hubSceneKey,
-    keyItem: "",
+    createItem: undefinedEventItem,
   },
   lightsDone: {
     triggers: [],
     scene: hubSceneKey,
-    keyItem: "",
+    createItem: undefinedEventItem,
   },
 };
 

@@ -3,19 +3,18 @@ import { gameHeight, gameWidth } from "/src/scenes/common/constants";
 import { getEventDef, solveEvent } from "/src/scenes/common/events-def";
 import { EndEventAnim, globalEvents } from "/src/scenes/common/global-events";
 import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
+import Vector2 = Phaser.Math.Vector2;
 
 export const endEventAnim: (e: EndEventAnim) => Flow.PhaserNode = ({
   dataSolved,
 }) =>
   Flow.lazy((scene) => {
     const fromScene = scene.scene.get(getEventDef(dataSolved).scene);
-    const keyItem = scene.add
-      .image(
-        gameWidth / 2,
-        gameHeight / 2,
-        "items",
-        getEventDef(dataSolved).keyItem,
-      )
+    const keyItem = getEventDef(dataSolved)
+      .createItem({
+        pos: new Vector2(gameWidth / 2, gameHeight / 2),
+        scene,
+      })
       .setAlpha(0)
       .setScale(1.7);
     fromScene.cameras.main.fade(fadeDuration);

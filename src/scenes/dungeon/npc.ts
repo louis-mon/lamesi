@@ -238,7 +238,7 @@ type AltarComponentParams = {
   wp: Wp.WpDef;
   createItem: (p: {
     pos: Vector2;
-  }) => (scene: Phaser.Scene) => Phaser.GameObjects.Sprite;
+  }) => (scene: Phaser.Scene) => Phaser.GameObjects.Image;
   key: string;
   action: Flow.PhaserNode;
   infinite?: boolean;
@@ -247,7 +247,7 @@ type AltarComponentParams = {
 const altarClass = defineGoClass({
   data: { isEmpty: annotate<boolean>() },
   events: {},
-  kind: annotate<Phaser.GameObjects.Sprite>(),
+  kind: annotate<Phaser.GameObjects.Image>(),
 });
 
 export const altarComponent = (
@@ -342,12 +342,7 @@ export const endGoalAltarPlaceholder = (params: {
     createItem:
       ({ pos }) =>
       (scene) =>
-        createSpriteAt(
-          scene,
-          pos,
-          "items",
-          getEventDef(params.eventToSolve).keyItem,
-        ),
+        getEventDef(params.eventToSolve).createItem({ pos, scene }),
     key: "goal-altar",
     wp: params.wp,
     action: Flow.sequence(

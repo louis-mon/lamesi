@@ -7,7 +7,9 @@ import { placeAt } from "/src/helpers/phaser";
 
 export const createKeyItem = (key: GlobalDataKey, scene: Scene) => {
   const evDef = getEventDef(key);
-  const obj = scene.add.image(0, 0, "items", evDef.keyItem).setVisible(false);
+  const obj = evDef
+    .createItem({ pos: new Vector2(0, 0), scene })
+    .setVisible(false);
 
   const alphaDuration = 1400;
   const disappearAnim = () =>

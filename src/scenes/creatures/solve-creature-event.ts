@@ -56,10 +56,12 @@ export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
       .setScale(0)
       .setOrigin(0, 1);
     const showKeyItem: Flow.PhaserNode = Flow.lazy(() => {
-      const keyItem = placeAt(
-        scene.add.image(0, 0, "items", getEventDef(dataSolved).keyItem),
-        bubble.getTopLeft().add(new Vector2(58, 45)),
-      ).setAlpha(0);
+      const keyItem = getEventDef(dataSolved)
+        .createItem({
+          pos: bubble.getTopLeft().add(new Vector2(58, 45)),
+          scene,
+        })
+        .setAlpha(0);
 
       return Flow.tween({
         targets: keyItem,
