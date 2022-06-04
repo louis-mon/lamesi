@@ -15,7 +15,10 @@ const defaultOtherGlobalData: Partial<
   cheatCodes: true,
 };
 
-const initialGlobalData = {
+type AllGlobalData = DataMappingDefValues<typeof globalData> &
+  DataMappingDefValues<typeof otherGlobalData>;
+
+const initialGlobalData: AllGlobalData = {
   ...mapValues(
     {
       ...globalData,
@@ -36,7 +39,7 @@ export const gamePreBoot: BootCallback = (game) => {
   const oldSave = localStorage.getItem(storageKey);
   const initialDataFromSave = oldSave ? JSON.parse(oldSave) : initialGlobalData;
   const fromEnv = JSON.parse(process.env.LAMESI_EVENTS ?? "{}");
-  const initialData = {
+  const initialData: AllGlobalData = {
     ...initialDataFromSave,
     ...fromEnv,
   };
