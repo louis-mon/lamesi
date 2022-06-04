@@ -75,17 +75,12 @@ export const eventsDef: EventsDef = {
     createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
-  creatures3: {
-    triggers: ["creatures3Done"],
-    createItem: undefinedEventItem,
-    scene: creaturesSceneKey,
-  },
   creatures4Done: {
-    triggers: ["lights4"],
+    triggers: [],
     createItem: undefinedEventItem,
     scene: creaturesSceneKey,
   },
-  creatures3Done: {
+  creatures3: {
     triggers: ["lights4"],
     createItem: undefinedEventItem,
     scene: creaturesSceneKey,

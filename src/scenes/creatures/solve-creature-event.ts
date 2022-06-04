@@ -6,10 +6,11 @@ import {
 } from "/src/scenes/creatures/def";
 import { getObjectPosition, placeAt, vecToXY } from "/src/helpers/phaser";
 import { range } from "lodash";
-import { transformMan } from "/src/scenes/creatures/man";
+import { getTargetTransform, transformMan } from "/src/scenes/creatures/man";
 import { getEventDef, solveEvent } from "/src/scenes/common/events-def";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
+import { cutscene } from "/src/scenes/common/cutcenes";
 
 const waveFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const creature = sceneClass.data.creatureObj.value(scene);
@@ -43,10 +44,12 @@ const waveFlow: Flow.PhaserNode = Flow.lazy((scene) => {
 
 export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
   Flow.lazy((scene) => {
-    scene.input.enabled = false;
     const bodyDef = bodyPartsConfig[part];
     const dataSolved = bodyDef.requiredEvent;
+    const prevTransform = getTargetTransform(scene);
     solveEvent(dataSolved)(scene);
+    const newTransform = getTargetTransform(scene);
+    if (prevTransform === newTransform) return Flow.noop;
 
     const man = sceneClass.data.manObj.value(scene);
     const bubble = placeAt(
@@ -70,24 +73,26 @@ export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
       });
     });
 
-    return Flow.sequence(
-      Flow.waitTimer(2000),
-      Flow.parallel(
-        ...range(25).map((i) =>
-          Flow.sequence(Flow.waitTimer(100 * i), waveFlow),
+    return cutscene(
+      Flow.sequence(
+        Flow.waitTimer(2000),
+        Flow.parallel(
+          ...range(25).map((i) =>
+            Flow.sequence(Flow.waitTimer(100 * i), waveFlow),
+          ),
         ),
-      ),
-      transformMan,
-      Flow.tween({
-        targets: bubble,
-        props: { scale: 1 },
-      }),
-      showKeyItem,
-      Flow.waitTimer(1800),
-      Flow.call(
-        globalEvents.endEventAnim.emit({
-          dataSolved,
+        transformMan,
+        Flow.tween({
+          targets: bubble,
+          props: { scale: 1 },
         }),
+        showKeyItem,
+        Flow.waitTimer(1800),
+        Flow.call(
+          globalEvents.endEventAnim.emit({
+            dataSolved,
+          }),
+        ),
       ),
     );
   });

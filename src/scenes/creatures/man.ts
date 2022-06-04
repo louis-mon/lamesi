@@ -2,8 +2,11 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
 import { moveTo } from "/src/helpers/animate/move";
 import Vector2 = Phaser.Math.Vector2;
-import { sceneClass } from "/src/scenes/creatures/def";
-import { GlobalDataKey } from "/src/scenes/common/global-data";
+import {
+  BodyPart,
+  bodyPartsConfig,
+  sceneClass,
+} from "/src/scenes/creatures/def";
 import { Scene } from "phaser";
 import { isEventSolved } from "/src/scenes/common/events-def";
 import { range } from "lodash";
@@ -40,19 +43,20 @@ export const moveMan: (p: { dest: Vector2 }) => Flow.PhaserNode = ({ dest }) =>
   });
 
 type TransformConditionDef = {
-  events: GlobalDataKey[];
+  bodyPart: BodyPart;
   frameKey: string;
 };
 
 const transformConditions: Array<TransformConditionDef> = [
-  { frameKey: "man2", events: ["creatures1"] },
+  { frameKey: "man3", bodyPart: "algae" },
+  { frameKey: "man2", bodyPart: "eye" },
 ];
 
 export const getTargetTransform = (
   scene: Scene,
 ): TransformConditionDef | undefined => {
   return transformConditions.find((def) =>
-    def.events.every((ev) => isEventSolved(ev)(scene)),
+    isEventSolved(bodyPartsConfig[def.bodyPart].requiredEvent)(scene),
   );
 };
 

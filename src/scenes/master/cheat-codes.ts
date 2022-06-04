@@ -27,12 +27,14 @@ const activateEventCode: Flow.PhaserNode = Flow.lazy((scene) => {
   );
   return Flow.observe(fromEvent(activateAllKey, "down"), () =>
     Flow.call(() => {
-      const activated = (Object.keys(eventsDef) as GlobalDataKey[]).filter(
+      const readyAndNotSolved = (
+        Object.keys(eventsDef) as GlobalDataKey[]
+      ).filter(
         (key) => globalData[key].value(scene) && !isEventSolved(key)(scene),
       );
-      activated.forEach((key) => {
+      readyAndNotSolved.forEach((key) => {
         solveEvent(key)(scene);
-        toast.showMessage(`Activated '${key}'`);
+        toast.showMessage(`Activated ${eventsDef[key]?.triggers.join(", ")}`);
       });
     }),
   );

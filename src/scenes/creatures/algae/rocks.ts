@@ -87,12 +87,9 @@ const initializeState = (scene: Phaser.Scene): RockState => {
   return state;
 };
 
-const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
+export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const requiredEvent = Def.bodyPartsConfig.algae.requiredEvent;
-  if (
-    !isEventReady(requiredEvent)(scene) ||
-    !isEventSolved(Def.bodyPartsConfig.mouth.requiredEvent)(scene)
-  ) {
+  if (!isEventReady(requiredEvent)(scene)) {
     return Flow.noop;
   }
   const rockState = initializeState(scene);
@@ -297,6 +294,7 @@ const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     rockState.eggs.forEach((egg) => egg.obj.setScale(0));
     return Flow.sequence(
       Flow.wait(globalEvents.subSceneEntered.subject),
+      Flow.waitTrue(globalData.creatures4Done.dataSubject),
       cutscene(
         Flow.sequence(
           ...itinerary.map((dest) => moveMan({ dest })),
@@ -329,9 +327,4 @@ const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     ...rockState.eggs.map((egg) => egg.bloomFlow.start()),
     flowState.start(startingPoint),
   );
-});
-
-export const rockFlow: Flow.PhaserNode = Flow.whenTrueDo({
-  condition: globalData.creatures3.dataSubject,
-  action: createRocks,
 });
