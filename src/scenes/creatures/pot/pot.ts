@@ -30,6 +30,7 @@ import {
   moveMan,
   setToWaitingState,
 } from "/src/scenes/creatures/man";
+import { cutscene } from "/src/scenes/common/cutcenes";
 
 type VineController = {
   retract: () => Flow.PhaserNode;
@@ -452,34 +453,38 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     ];
     return Flow.sequence(
       Flow.wait(globalEvents.subSceneEntered.subject),
-      ...manItinerary.map((dest) => moveMan({ dest })),
-      Flow.parallel(
-        ...budsOrder.map((budState, i) => {
-          const keyItem = seeds[i];
-          keyItem.obj.setDepth(Def.depths.potFront);
-          return keyItem.downAnim(budState.sprite.getBottomCenter());
-        }),
-      ),
-      ...budsOrder.map((budState, i) =>
-        Flow.lazy(() => {
-          const keyItem = seeds[i];
-          return Flow.sequence(
-            moveMan({ dest: keyItem.obj.getTopCenter() }),
-            keyItem.disappearAnim(),
-            Flow.tween({
-              targets: budState.sprite,
-              props: { scale: targetScale },
+      cutscene(
+        Flow.sequence(
+          ...manItinerary.map((dest) => moveMan({ dest })),
+          Flow.parallel(
+            ...budsOrder.map((budState, i) => {
+              const keyItem = seeds[i];
+              keyItem.obj.setDepth(Def.depths.potFront);
+              return keyItem.downAnim(budState.sprite.getBottomCenter());
             }),
-          );
-        }),
+          ),
+          ...budsOrder.map((budState, i) =>
+            Flow.lazy(() => {
+              const keyItem = seeds[i];
+              return Flow.sequence(
+                moveMan({ dest: keyItem.obj.getTopCenter() }),
+                keyItem.disappearAnim(),
+                Flow.tween({
+                  targets: budState.sprite,
+                  props: { scale: targetScale },
+                }),
+              );
+            }),
+          ),
+          ...manItinerary
+            .slice()
+            .reverse()
+            .concat(manDeskPos)
+            .map((dest) => moveMan({ dest })),
+          setToWaitingState,
+          potState.nextFlow(waitForBulbClicked()),
+        ),
       ),
-      ...manItinerary
-        .slice()
-        .reverse()
-        .concat(manDeskPos)
-        .map((dest) => moveMan({ dest })),
-      setToWaitingState,
-      potState.nextFlow(waitForBulbClicked()),
     );
   };
 

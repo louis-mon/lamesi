@@ -15,6 +15,7 @@ import {
 } from "/src/scenes/creatures/man";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import { getObjectPosition, placeAt } from "/src/helpers/phaser";
+import { cutscene } from "/src/scenes/common/cutcenes";
 
 export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const eyeConfig = bodyPartsConfig.eye;
@@ -38,11 +39,15 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const realTime = (ms: number) => (isSolved ? 0 : ms);
 
   const goToCreateTree = Flow.sequence(
-    Flow.call(() => {
-      man.flipX = true;
-    }),
-    moveMan({ dest: new Vector2(1540, 992) }),
-    Flow.waitTimer(600),
+    cutscene(
+      Flow.sequence(
+        Flow.call(() => {
+          man.flipX = true;
+        }),
+        moveMan({ dest: new Vector2(1540, 992) }),
+        Flow.waitTimer(600),
+      ),
+    ),
     Flow.parallel(
       createTree,
       Flow.sequence(
@@ -62,11 +67,15 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
       ? Flow.noop
       : Flow.sequence(
           Flow.wait(globalEvents.subSceneEntered.subject),
-          closedBook.downAnim(getObjectPosition(openBook)),
-          moveMan({
-            dest: manDest,
-          }),
-          Flow.waitTimer(realTime(600)),
+          cutscene(
+            Flow.sequence(
+              closedBook.downAnim(getObjectPosition(openBook)),
+              moveMan({
+                dest: manDest,
+              }),
+              Flow.waitTimer(realTime(600)),
+            ),
+          ),
         ),
     Flow.call(() => {
       placeAt(man, manDest);

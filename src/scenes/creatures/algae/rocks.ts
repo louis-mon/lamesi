@@ -16,6 +16,7 @@ import DegToRad = Phaser.Math.DegToRad;
 import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { manDeskPos, moveMan } from "/src/scenes/creatures/man";
+import { cutscene } from "/src/scenes/common/cutcenes";
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;
@@ -296,22 +297,26 @@ const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     rockState.eggs.forEach((egg) => egg.obj.setScale(0));
     return Flow.sequence(
       Flow.wait(globalEvents.subSceneEntered.subject),
-      ...itinerary.map((dest) => moveMan({ dest })),
-      Flow.parallel(
-        ...rockState.eggs.map((egg) =>
-          Flow.tween({
-            targets: egg.obj,
-            props: { scale: 1 },
-            duration: 2000,
-          }),
+      cutscene(
+        Flow.sequence(
+          ...itinerary.map((dest) => moveMan({ dest })),
+          Flow.parallel(
+            ...rockState.eggs.map((egg) =>
+              Flow.tween({
+                targets: egg.obj,
+                props: { scale: 1 },
+                duration: 2000,
+              }),
+            ),
+          ),
+          ...itinerary
+            .slice()
+            .reverse()
+            .concat(manDeskPos)
+            .map((dest) => moveMan({ dest })),
+          flowState.nextFlow(chooseEgg),
         ),
       ),
-      ...itinerary
-        .slice()
-        .reverse()
-        .concat(manDeskPos)
-        .map((dest) => moveMan({ dest })),
-      flowState.nextFlow(chooseEgg),
     );
   });
 
