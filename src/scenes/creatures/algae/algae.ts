@@ -1,12 +1,11 @@
 import Phaser from "phaser";
-import Vector2 = Phaser.Math.Vector2;
 
 import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
-import * as Def from "./def";
+import * as Def from "../def";
 import { followPosition } from "/src/helpers/animate/composite";
 import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
-import { CreatureMoveCommand } from "./def";
+import { CreatureMoveCommand } from "../def";
 
 export const createAlgae = (moveCommand: CreatureMoveCommand) => {
   const instance = declareGoInstance(Def.movableElementClass, null);

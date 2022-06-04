@@ -1,5 +1,5 @@
-import { annotate } from "../../helpers/typing";
-import { defineData } from "../../helpers/component";
+import { annotate } from "/src/helpers/typing";
+import { defineData } from "/src/helpers/component";
 
 // these data are still saved as global but do not truly belong to the player progress
 export const otherGlobalData = defineData(

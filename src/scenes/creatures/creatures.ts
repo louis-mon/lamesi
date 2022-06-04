@@ -1,7 +1,7 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import { createCentralCreature } from "./central";
 import { potFlow } from "./pot/pot";
-import { rockFlow } from "/src/scenes/creatures/rocks";
+import { rockFlow } from "/src/scenes/creatures/algae/rocks";
 import { legsFlow } from "/src/scenes/creatures/legs/legs";
 import { backgroundFlow } from "/src/scenes/creatures/background";
 import { goal1 } from "/src/scenes/creatures/goal-1";

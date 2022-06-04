@@ -3,13 +3,19 @@ import Phaser from "phaser";
 import { createImageAt, getObjectPosition, vecToXY } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { getProp } from "/src/helpers/functional";
-import * as Def from "./def";
+import * as Def from "../def";
 import _ from "lodash";
 import Vector2 = Phaser.Math.Vector2;
-import { AlgaeController, createAlgae } from "/src/scenes/creatures/algae";
+import {
+  AlgaeController,
+  createAlgae,
+} from "/src/scenes/creatures/algae/algae";
 import { moveTo } from "/src/helpers/animate/move";
 import { globalData } from "/src/scenes/common/global-data";
 import DegToRad = Phaser.Math.DegToRad;
+import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { manDeskPos, moveMan } from "/src/scenes/creatures/man";
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;
@@ -81,6 +87,13 @@ const initializeState = (scene: Phaser.Scene): RockState => {
 };
 
 const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
+  const requiredEvent = Def.bodyPartsConfig.algae.requiredEvent;
+  if (
+    !isEventReady(requiredEvent)(scene) ||
+    !isEventSolved(Def.bodyPartsConfig.mouth.requiredEvent)(scene)
+  ) {
+    return Flow.noop;
+  }
   const rockState = initializeState(scene);
 
   const flowState = Flow.makeSceneStates();
@@ -274,9 +287,42 @@ const createRocks: Flow.PhaserNode = Flow.lazy((scene) => {
     }),
   );
 
+  const openingAnimation: Flow.PhaserNode = Flow.lazy(() => {
+    const itinerary: Vector2[] = [
+      new Vector2(1320, 800),
+      new Vector2(1320, 550),
+      new Vector2(1575, 500),
+    ];
+    rockState.eggs.forEach((egg) => egg.obj.setScale(0));
+    return Flow.sequence(
+      Flow.wait(globalEvents.subSceneEntered.subject),
+      ...itinerary.map((dest) => moveMan({ dest })),
+      Flow.parallel(
+        ...rockState.eggs.map((egg) =>
+          Flow.tween({
+            targets: egg.obj,
+            props: { scale: 1 },
+            duration: 2000,
+          }),
+        ),
+      ),
+      ...itinerary
+        .slice()
+        .reverse()
+        .concat(manDeskPos)
+        .map((dest) => moveMan({ dest })),
+      flowState.nextFlow(chooseEgg),
+    );
+  });
+
+  const startingPoint: Flow.PhaserNode = Flow.lazy(() => {
+    if (isEventSolved(requiredEvent)(scene)) return chooseEgg;
+    return openingAnimation;
+  });
+
   return Flow.parallel(
     ...rockState.eggs.map((egg) => egg.bloomFlow.start()),
-    flowState.start(chooseEgg),
+    flowState.start(startingPoint),
   );
 });
 

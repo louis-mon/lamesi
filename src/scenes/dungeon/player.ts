@@ -1,4 +1,3 @@
-import { globalData, otherGlobalData } from "/src/scenes/common/global-data";
 import * as Phaser from "phaser";
 import { playerCannotActSubject } from "./definitions";
 import { getWpId } from "./wp";
@@ -32,11 +31,7 @@ export const createPlayer = (scene: Phaser.Scene) => {
   const setPlayerWp = (wp: Wp.WpId) => {
     currentPosData.setValue(wp)(scene);
   };
-  const runKey = scene.input.keyboard.addKey(
-    Phaser.Input.Keyboard.KeyCodes.SHIFT,
-  );
-  const playerSpeed = () =>
-    runKey.isDown && otherGlobalData.cheatCodes.value(scene) ? 0.4 : 0.2;
+  const playerSpeed = 0.2;
   Def.scene.data.playerCheckpoint.setValue(getWpId(initialWp))(scene);
   setPlayerWp(Wp.getWpId(initialWp));
   isMovingData.setValue(false)(scene);
@@ -62,7 +57,7 @@ export const createPlayer = (scene: Phaser.Scene) => {
               Flow.tween({
                 targets: player,
                 props: vecToXY(wpPos),
-                duration: wpPos.distance(currentPos()) / playerSpeed(),
+                duration: wpPos.distance(currentPos()) / playerSpeed,
               }),
               Flow.call(() => setPlayerWp(wpId)),
             ),
