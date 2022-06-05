@@ -82,7 +82,7 @@ export const eventsDef: EventsDef = {
   },
   creatures3: {
     triggers: ["lights4"],
-    createItem: undefinedEventItem,
+    createItem: item("enemy"),
     scene: creaturesSceneKey,
   },
   lights4: {
