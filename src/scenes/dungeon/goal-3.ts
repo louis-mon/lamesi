@@ -191,12 +191,12 @@ const enableGoal3 = Flow.whenTrueDo({
   condition: globalData.dungeonPhase3.dataSubject,
   action: Flow.lazy((scene) => {
     const isSolved = isEventSolved(eventKey)(scene);
+    const openAnimation = Flow.whenTrueDo({
+      condition: globalEvents.subSceneEntered.subject,
+      action: openDoorWithKeyItem({ doorKey: startDoorToOpen, eventKey }),
+    });
     return Flow.parallel(
-      Flow.whenTrueDo({
-        condition: globalEvents.subSceneEntered.subject,
-        action: openDoorWithKeyItem({ doorKey: startDoorToOpen, eventKey }),
-      }),
-      ...(isSolved ? [Npc.openDoor(startDoorToOpen)] : []),
+      ...(isSolved ? [Npc.openDoor(startDoorToOpen)] : [openAnimation]),
       bellSkillAltar({ wp: { room: 4, x: 0, y: 3 } }),
     );
   }),
