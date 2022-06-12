@@ -30,7 +30,7 @@ import {
   moveMan,
   setToWaitingState,
 } from "/src/scenes/creatures/man";
-import { cutscene } from "/src/scenes/common/cutcenes";
+import { cutscene } from "/src/scenes/common/cutscene";
 
 type VineController = {
   retract: () => Flow.PhaserNode;

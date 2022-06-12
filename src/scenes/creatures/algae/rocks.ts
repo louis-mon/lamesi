@@ -16,7 +16,7 @@ import DegToRad = Phaser.Math.DegToRad;
 import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { manDeskPos, moveMan } from "/src/scenes/creatures/man";
-import { cutscene } from "/src/scenes/common/cutcenes";
+import { cutscene } from "/src/scenes/common/cutscene";
 
 type EggRockState = {
   obj: Phaser.GameObjects.Image;

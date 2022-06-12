@@ -15,7 +15,7 @@ import {
 } from "/src/scenes/creatures/man";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import { getObjectPosition, placeAt } from "/src/helpers/phaser";
-import { cutscene } from "/src/scenes/common/cutcenes";
+import { cutscene } from "/src/scenes/common/cutscene";
 
 export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const eyeConfig = bodyPartsConfig.eye;

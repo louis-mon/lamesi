@@ -10,7 +10,7 @@ import { getTargetTransform, transformMan } from "/src/scenes/creatures/man";
 import { getEventDef, solveEvent } from "/src/scenes/common/events-def";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
-import { cutscene } from "/src/scenes/common/cutcenes";
+import { cutscene } from "/src/scenes/common/cutscene";
 
 const waveFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const creature = sceneClass.data.creatureObj.value(scene);

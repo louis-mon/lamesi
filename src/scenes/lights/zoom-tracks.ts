@@ -13,10 +13,10 @@ import Phaser from "phaser";
 import { max, min, minBy } from "lodash";
 import { gameHeight } from "/src/scenes/common/constants";
 import { map } from "rxjs/operators";
+import { cutscene } from "/src/scenes/common/cutscene";
 
 export const presentZoomTrack: Flow.PhaserNode = Flow.lazy((scene) => {
   if (sceneClass.data.hiddenZoomTracks.value(scene) === 0) return Flow.noop;
-  scene.input.enabled = false;
   const rectWidth =
     min(
       sceneDef.materials.map(
@@ -28,16 +28,23 @@ export const presentZoomTrack: Flow.PhaserNode = Flow.lazy((scene) => {
     .setDepth(curtainsPlane)
     .setAlpha(0)
     .setOrigin(0, 0);
-  return Flow.sequence(
-    Flow.tween({ targets: blackRect, duration: 2000, props: { alpha: 0.86 } }),
-    Flow.waitTimer(2500),
-    Flow.call(sceneClass.events.showZoomTracks.emit({})),
-    Flow.waitTrue(
-      sceneClass.data.hiddenZoomTracks.subject(scene).pipe(map((v) => v === 0)),
+  return cutscene(
+    Flow.sequence(
+      Flow.tween({
+        targets: blackRect,
+        duration: 2000,
+        props: { alpha: 0.86 },
+      }),
+      Flow.waitTimer(2500),
+      Flow.call(sceneClass.events.showZoomTracks.emit({})),
+      Flow.waitTrue(
+        sceneClass.data.hiddenZoomTracks
+          .subject(scene)
+          .pipe(map((v) => v === 0)),
+      ),
+      Flow.tween({ targets: blackRect, duration: 2000, props: { alpha: 0 } }),
+      Flow.call(() => blackRect.destroy()),
     ),
-    Flow.tween({ targets: blackRect, duration: 2000, props: { alpha: 0 } }),
-    Flow.call(() => blackRect.destroy()),
-    Flow.call(() => (scene.input.enabled = true)),
   );
 });
 
