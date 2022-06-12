@@ -12,6 +12,7 @@ import { eventsHelpers } from "../common/global-data";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import { createMaterial } from "/src/scenes/lights/materials";
 import { createGoal } from "/src/scenes/lights/goals";
+import { createLightSource } from "/src/scenes/lights/light-source";
 
 export class LightScene extends Phaser.Scene {
   constructor() {
@@ -40,50 +41,24 @@ export class LightScene extends Phaser.Scene {
   }> = [];
   setCommonProps = (go: ManipulableObject, def: ObjectCreationDef) => {
     go.name = def.key;
-    if (def.movable || def.movablePath) {
+    if (def.movable) {
       go.setInteractive();
       this.input.setDraggable(go);
-      if (def.movablePath) {
-        const path = def.movablePath.path;
-        path.draw(this.add.graphics().lineStyle(4, 0xffffff));
-        let pos = def.movablePath.pos;
-        const length = path.getLength();
-        const setPathPos = () => {
-          const np = path.getPoint(pos / length);
-          go.setPosition(np.x, np.y);
-        };
-        setPathPos();
-        go.on("drag", (p, x, y) => {
-          const tangent = path.getTangent(pos / length);
-          const dir = new Phaser.Math.Vector2(x, y).subtract(
-            getObjectPosition(go),
-          );
-          pos = Phaser.Math.Clamp(pos + tangent.dot(dir), 0, length);
-          setPathPos();
-        });
-      } else {
-        go.on("drag", (p, x, y) => {
-          go.x = x;
-          go.y = y;
-          menuHelpers.ensureOutsideMenu(go);
-        });
-      }
+      go.on("drag", (p, x, y) => {
+        go.x = x;
+        go.y = y;
+        menuHelpers.ensureOutsideMenu(go);
+      });
     }
   };
 
   create() {
     this.cameras.main.setBackgroundColor(0x0);
     sceneClass.data.hiddenZoomTracks.setValue(0)(this);
-    sceneDef.lights
-      .filter(eventsHelpers.getEventFilter(this))
-      .forEach((lightDef) => {
-        const go = lightDef.create(this);
-        go.depth = sourcesPlane;
-        this.setCommonProps(go, lightDef);
-      });
     Flow.runScene(
       this,
       Flow.parallel(
+        ...sceneDef.lights.map(createLightSource),
         ...sceneDef.materials.map(createMaterial),
         ...sceneDef.goals.map(createGoal),
       ),

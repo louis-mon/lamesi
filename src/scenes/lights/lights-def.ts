@@ -31,10 +31,11 @@ export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
   create: (scene: Phaser.Scene) => ManipulableObject;
   movable?: boolean;
-  movablePath?: { path: Phaser.Curves.Path; pos: number };
 };
 
-export type LightSceneSourceDef = ObjectCreationDef;
+export type LightSceneSourceDef = ObjectCreationDef & {
+  movablePath?: { path: Phaser.Curves.Path; pos: number };
+};
 
 export type LightSceneZoomDef = WithRequiredEvent & {
   pos: Vector2;
@@ -68,7 +69,8 @@ export const goalHiddenObjectPlane = vortexPlane;
 export const goalPlane = vortexPlane + 1;
 export const shadowPlane = goalPlane + 1;
 export const materialsPlane = shadowPlane + 1;
-export const sourcesPlane = materialsPlane + 1;
+export const sourcesPathPlane = materialsPlane + 1;
+export const sourcesPlane = sourcesPathPlane + 1;
 export const curtainsPlane = sourcesPlane + 1;
 
 export const shadowName = (matKey: string, sourceDef: LightSceneSourceDef) =>
@@ -99,7 +101,7 @@ export const sceneDef: LightSceneDef = {
       eventRequired: "lights4",
       create: (scene) => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
       movablePath: {
-        path: new Phaser.Curves.Path(1880, 975)
+        path: new Phaser.Curves.Path(1780, 975)
           .lineTo(240, 975)
           .ellipseTo(39, 39, 0, 90, false, 90)
           .ellipseTo(39, 39, 0, -90, true)
