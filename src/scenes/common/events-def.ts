@@ -8,6 +8,7 @@ import {
 } from "/src/scenes/common/constants";
 import { compact, first, keys, pickBy } from "lodash";
 import Vector2 = Phaser.Math.Vector2;
+import { createImageAt } from "/src/helpers/phaser";
 
 type CreateItem = (p: {
   pos: Vector2;
@@ -87,7 +88,7 @@ export const eventsDef: EventsDef = {
   },
   lights4: {
     triggers: ["dungeonPhase4"],
-    createItem: undefinedEventItem,
+    createItem: item("light-4-solve"),
     scene: lightsSceneKey,
   },
   dungeonPhase4: {
