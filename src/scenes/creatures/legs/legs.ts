@@ -9,7 +9,11 @@ import {
 } from "/src/scenes/creatures/legs/bloom-button";
 import { sceneClass } from "/src/scenes/creatures/def";
 import { legsSwingDuration } from "/src/scenes/creatures/legs/legs-defs";
-import { globalData } from "/src/scenes/common/global-data";
+import * as Def from "/src/scenes/creatures/def";
+import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { cutscene } from "/src/scenes/common/cutscene";
+import { manDeskPos, moveMan } from "/src/scenes/creatures/man";
 
 const idButton1 = _.uniqueId();
 const idButton2 = _.uniqueId();
@@ -19,6 +23,8 @@ const idButton5 = _.uniqueId();
 const idButton6 = _.uniqueId();
 const idButton7 = _.uniqueId();
 const idButton8 = _.uniqueId();
+
+const requiredEvent = Def.bodyPartsConfig.leg.requiredEvent;
 
 const createBloomButton = createBloomButtonFactory({
   budsDependency: {
@@ -30,6 +36,39 @@ const createBloomButton = createBloomButtonFactory({
     [idButton7]: [idButton4, idButton5],
     [idButton8]: [idButton6, idButton5],
   },
+});
+
+const openAnimation: Flow.PhaserNode = Flow.lazy((scene) => {
+  const start = Flow.call(
+    legsBloomClass.events.attachThorn(idButton1).emit({}),
+  );
+
+  if (isEventSolved(requiredEvent)(scene)) {
+    return start;
+  }
+
+  const itinerary: Vector2[] = [
+    new Vector2(672.3, 924.86),
+    new Vector2(636.22, 607.35),
+    new Vector2(448.6, 592.92),
+  ];
+
+  return Flow.sequence(
+    Flow.wait(globalEvents.subSceneEntered.subject),
+    cutscene(
+      Flow.sequence(
+        ...itinerary.map((dest) => moveMan({ dest })),
+        Flow.waitTimer(800),
+        start,
+        Flow.waitTimer(1200),
+        ...itinerary
+          .slice()
+          .reverse()
+          .concat(manDeskPos)
+          .map((dest) => moveMan({ dest })),
+      ),
+    ),
+  );
 });
 
 const createLegs: Flow.PhaserNode = Flow.parallel(
@@ -71,14 +110,16 @@ const createLegs: Flow.PhaserNode = Flow.parallel(
     id: idButton8,
     linkedLegSlot: 5,
   }),
-  Flow.call(legsBloomClass.events.attachThorn(idButton1).emit({})),
+  openAnimation,
   Flow.repeatSequence(
     Flow.waitTimer(legsSwingDuration * 4),
     Flow.call(sceneClass.events.syncLegs.emit({})),
   ),
 );
 
-export const legsFlow = Flow.whenTrueDo({
-  condition: globalData.creatures2.dataSubject,
-  action: createLegs,
+export const legsFlow: Flow.PhaserNode = Flow.lazy((scene) => {
+  if (!isEventReady(requiredEvent)(scene)) {
+    return Flow.noop;
+  }
+  return createLegs;
 });

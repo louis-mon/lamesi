@@ -2,21 +2,11 @@ import Phaser from "phaser";
 import Vector2 = Phaser.Math.Vector2;
 
 import * as Flow from "/src/helpers/phaser-flow";
-import _ from "lodash";
-import { createImageAt, getObjectPosition, placeAt } from "/src/helpers/phaser";
+import { createImageAt, placeAt } from "/src/helpers/phaser";
 import { Subject } from "rxjs";
 import * as Def from "../def";
-import {
-  declareGoInstance,
-  defineGoImage,
-  defineGoObject,
-} from "/src/helpers/component";
-import {
-  CreateBodyPartParams,
-  CreatureMoveCommand,
-  movableElementClass,
-  sceneClass,
-} from "../def";
+import { declareGoInstance } from "/src/helpers/component";
+import { CreateBodyPartParams, movableElementClass, sceneClass } from "../def";
 import {
   LegFlowParams,
   legsConfigBySlot,

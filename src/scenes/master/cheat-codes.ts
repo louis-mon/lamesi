@@ -22,10 +22,10 @@ const activateEventCode: Flow.PhaserNode = Flow.lazy((scene) => {
     space: ui.borderSpacing(3),
   });
 
-  const activateAllKey = scene.input.keyboard.addKey(
+  const activateKey = scene.input.keyboard.addKey(
     Phaser.Input.Keyboard.KeyCodes.PLUS,
   );
-  return Flow.observe(fromEvent(activateAllKey, "down"), () =>
+  return Flow.observe(fromEvent(activateKey, "down"), () =>
     Flow.call(() => {
       const readyAndNotSolved = (
         Object.keys(eventsDef) as GlobalDataKey[]
@@ -41,12 +41,12 @@ const activateEventCode: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 const fastCode: Flow.PhaserNode = Flow.lazy((scene) => {
-  const activateAllKey = scene.input.keyboard.addKey(
+  const activateKey = scene.input.keyboard.addKey(
     Phaser.Input.Keyboard.KeyCodes.ALT,
   );
   const timeScale = 5;
   return Flow.parallel(
-    Flow.observe(fromEvent(activateAllKey, "up"), () =>
+    Flow.observe(fromEvent(activateKey, "up"), () =>
       Flow.call(() => {
         scene.scene.manager.scenes.forEach((scene: Scene) => {
           scene.time.timeScale = 1;
@@ -54,7 +54,7 @@ const fastCode: Flow.PhaserNode = Flow.lazy((scene) => {
         });
       }),
     ),
-    Flow.observe(fromEvent(activateAllKey, "down"), () =>
+    Flow.observe(fromEvent(activateKey, "down"), () =>
       Flow.call(() => {
         scene.scene.manager.scenes.forEach((scene: Scene) => {
           scene.time.timeScale = timeScale;
@@ -65,8 +65,22 @@ const fastCode: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
+const showPos: Flow.PhaserNode = Flow.lazy((scene) => {
+  const activateKey = scene.input.keyboard.addKey(
+    Phaser.Input.Keyboard.KeyCodes.P,
+  );
+  return Flow.observe(fromEvent(activateKey, "down"), () =>
+    Flow.call(() => {
+      const { x, y } = scene.input.mousePointer;
+      navigator.clipboard.writeText(
+        `new Vector2(${x.toFixed(2)}, ${y.toFixed(2)})`,
+      );
+    }),
+  );
+});
+
 export const cheatCodeAction: Flow.PhaserNode = Flow.lazy((scene) => {
   if (!otherGlobalData.cheatCodes.value(scene)) return Flow.noop;
 
-  return Flow.parallel(activateEventCode, fastCode);
+  return Flow.parallel(activateEventCode, fastCode, showPos);
 });
