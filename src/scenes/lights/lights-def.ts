@@ -119,7 +119,7 @@ export const sceneDef: LightSceneDef = {
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       movable: true,
       zoom: {
-        pos: new Vector2(gameWidth - 50, 50),
+        pos: new Vector2(gameWidth - 40, 50),
         eventRequired: "lights3",
         depths: makeZoomDepths(
           [0.35, 0.75],
@@ -134,7 +134,7 @@ export const sceneDef: LightSceneDef = {
       movable: true,
       eventRequired: "lights2",
       zoom: {
-        pos: new Vector2(gameWidth - 50, gameHeight / 2 + 50),
+        pos: new Vector2(gameWidth - 40, gameHeight / 2 + 50),
         eventRequired: "lights3",
         depths: makeZoomDepths(
           [0.59, 0.8],
@@ -151,7 +151,7 @@ export const sceneDef: LightSceneDef = {
       movable: true,
       eventRequired: "lights5",
       zoom: {
-        pos: new Vector2(gameWidth - 80, gameHeight * 0.28),
+        pos: new Vector2(gameWidth - 90, gameHeight * 0.28),
         eventRequired: "lights3",
         depths: makeZoomDepths([0.4, 0.9], [g5BarWidth], 46),
       },

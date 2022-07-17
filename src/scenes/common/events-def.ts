@@ -97,7 +97,7 @@ export const eventsDef: EventsDef = {
   },
   creatures2: {
     triggers: ["lights5", "dungeonPhase5"],
-    createItem: undefinedEventItem,
+    createItem: item("wedding"),
     scene: creaturesSceneKey,
   },
   lights5: {

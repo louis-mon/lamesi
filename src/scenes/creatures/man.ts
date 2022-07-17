@@ -48,6 +48,7 @@ type TransformConditionDef = {
 };
 
 const transformConditions: Array<TransformConditionDef> = [
+  { frameKey: "man4", bodyPart: "leg" },
   { frameKey: "man3", bodyPart: "algae" },
   { frameKey: "man2", bodyPart: "eye" },
 ];
