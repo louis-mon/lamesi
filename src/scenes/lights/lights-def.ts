@@ -88,6 +88,7 @@ const g4TriangleWidth = 198;
 const g5TriangleWidth = 133;
 
 const g5BarWidth = 64;
+const barRefWidth = 46;
 
 export const sceneDef: LightSceneDef = {
   lights: [
@@ -122,7 +123,7 @@ export const sceneDef: LightSceneDef = {
         pos: new Vector2(gameWidth - 40, 50),
         eventRequired: "lights3",
         depths: makeZoomDepths(
-          [0.35, 0.75],
+          [0.35, 0.46, 0.55, 0.64, 0.75],
           [g3BallWidth, g4BallWidth, g5BallWidth],
           46,
         ),
@@ -137,7 +138,7 @@ export const sceneDef: LightSceneDef = {
         pos: new Vector2(gameWidth - 40, gameHeight / 2 + 50),
         eventRequired: "lights3",
         depths: makeZoomDepths(
-          [0.59, 0.8],
+          [0.59, 0.62, 0.67, 0.73, 0.75, 0.8],
           [g3TriangleWidth, g4TriangleWidth, g5TriangleWidth],
           82,
         ),
@@ -147,15 +148,20 @@ export const sceneDef: LightSceneDef = {
     },
     {
       key: "m-bar-1",
-      depth: 0.5,
+      depth: 0.92,
       movable: true,
       eventRequired: "lights5",
       zoom: {
         pos: new Vector2(gameWidth - 90, gameHeight * 0.28),
         eventRequired: "lights3",
-        depths: makeZoomDepths([0.4, 0.9], [g5BarWidth], 46),
+        depths: makeZoomDepths(
+          [0.78, 0.81, 0.89, 0.95, 0.98],
+          [g5BarWidth],
+          barRefWidth,
+        ),
       },
-      create: (scene) => scene.add.rectangle(500, 500, 46, 92, 0x4afc03),
+      create: (scene) =>
+        scene.add.rectangle(500, 500, barRefWidth, barRefWidth * 2, 0x4afc03),
     },
   ],
   goals: [

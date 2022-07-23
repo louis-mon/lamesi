@@ -82,9 +82,11 @@ export const createMaterial = (
       shadows.forEach((shadow) => shadow.setAlpha(shadowTargetAlpha));
     });
 
-    return Flow.sequence(
-      isEventSolved(eventRequired)(scene) ? Flow.noop : appearCinematic(),
-      showMaterial,
+    return Flow.parallel(
       zoomTrackFlow(matDef),
+      Flow.sequence(
+        isEventSolved(eventRequired)(scene) ? Flow.noop : appearCinematic(),
+        showMaterial,
+      ),
     );
   });
