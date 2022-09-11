@@ -37,7 +37,7 @@ const nbRooms = nbRoomsW * nbRoomsH;
 
 const getRoomPos = (room: number) => Phaser.Math.ToXY(room, nbRoomsW, nbRoomsH);
 
-export const wpPos = (wp: WpDef) => {
+export const wpPos = (wp: WpDef): Vector2 => {
   const roomPos = getRoomPos(wp.room);
   return scenePos
     .clone()

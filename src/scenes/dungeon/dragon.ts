@@ -25,9 +25,22 @@ import {
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { combineLatest } from "rxjs";
-import { bindAttackButton, endGoalAltarPlaceholder } from "./npc";
+import {
+  bindAttackButton,
+  doorCenterPos,
+  endGoalAltarPlaceholder,
+} from "./npc";
 import { globalData } from "../common/global-data";
-import { iceArmorAltar } from "./ice-armor";
+import { iceArmorAltar, iceArmorAltarPos } from "./ice-armor";
+import {
+  findPreviousEvent,
+  isEventSolved,
+} from "/src/scenes/common/events-def";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { cutscene } from "/src/scenes/common/cutscene";
+import { createKeyItem } from "/src/scenes/common/key-item";
+import * as Npc from "/src/scenes/dungeon/npc";
+import { wpPos } from "./wp";
 
 const dragonHeadClass = defineGoClass({
   events: {
@@ -130,6 +143,7 @@ const stunEffect = ({
     });
   });
 
+const eventKey = "dungeonPhase5";
 export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   const basePos = new Vector2(0, -25.0).add(Wp.wpPos({ room: 1, x: 2, y: 1 }));
   const timeAwaken = 600;
@@ -311,7 +325,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         props: { alpha: 0 },
       }),
       Flow.call(toggleForbiddenPos(false)),
-      endGoalAltarPlaceholder({ eventToSolve: "dungeonPhase5", wp: goalPos }),
+      endGoalAltarPlaceholder({ eventToSolve: eventKey, wp: goalPos }),
     );
 
   const downBody = (): Flow.PhaserNode =>
@@ -478,6 +492,25 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
 });
 
 export const enableGoal5 = Flow.whenTrueDo({
-  condition: globalData.dungeonPhase5.dataSubject,
-  action: Flow.parallel(iceArmorAltar),
+  condition: globalData[eventKey].dataSubject,
+  action: Flow.lazy((scene) => {
+    const isSolved = isEventSolved(eventKey)(scene);
+    const animation = Flow.whenTrueDo({
+      condition: globalEvents.subSceneEntered.subject,
+      action: Flow.sequence(
+        cutscene(
+          Flow.lazy((scene) => {
+            const keyItem = createKeyItem(findPreviousEvent(eventKey), scene);
+            keyItem.obj.setDepth(Def.depths.keyItems);
+            return Flow.sequence(
+              keyItem.downAnim(wpPos(iceArmorAltarPos)),
+              keyItem.disappearAnim(),
+            );
+          }),
+        ),
+        iceArmorAltar,
+      ),
+    });
+    return isSolved ? iceArmorAltar : animation;
+  }),
 });

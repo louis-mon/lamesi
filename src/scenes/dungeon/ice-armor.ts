@@ -116,8 +116,9 @@ export const equipFireShield: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
+export const iceArmorAltarPos = { room: 4, x: 2, y: 3 };
 export const iceArmorAltar = Npc.altarComponent({
-  wp: { room: 4, x: 2, y: 3 },
+  wp: iceArmorAltarPos,
   createItem: (p) => (scene) =>
     createSpriteAt(scene, p.pos, "menu", "ice-armor"),
   key: "ice-armor-altar",
