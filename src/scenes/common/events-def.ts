@@ -102,7 +102,7 @@ export const eventsDef: EventsDef = {
   },
   lights5: {
     triggers: ["lightsDone"],
-    createItem: undefinedEventItem,
+    createItem: item("memorial"),
     scene: lightsSceneKey,
   },
   dungeonPhase5: {
