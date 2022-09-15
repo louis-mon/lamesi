@@ -4,8 +4,6 @@ import {
   createSpriteWithPhysicsAt,
   makeAnimFrames,
   ManipulableObject,
-  placeAt,
-  SceneContext,
   vecToXY,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -25,11 +23,7 @@ import {
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { combineLatest } from "rxjs";
-import {
-  bindAttackButton,
-  doorCenterPos,
-  endGoalAltarPlaceholder,
-} from "./npc";
+import { bindAttackButton } from "./npc";
 import { globalData } from "../common/global-data";
 import { iceArmorAltar, iceArmorAltarPos } from "./ice-armor";
 import {
@@ -39,7 +33,6 @@ import {
 import { globalEvents } from "/src/scenes/common/global-events";
 import { cutscene } from "/src/scenes/common/cutscene";
 import { createKeyItem } from "/src/scenes/common/key-item";
-import * as Npc from "/src/scenes/dungeon/npc";
 import { wpPos } from "./wp";
 
 const dragonHeadClass = defineGoClass({
@@ -312,20 +305,33 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   const emitNewState = (state: Flow.PhaserNode): Flow.PhaserNode =>
     Flow.call(headInst.events.newState.emit(state));
 
+  const keyItem = createKeyItem(eventKey, scene);
   const killingState = (): Flow.PhaserNode =>
-    Flow.sequence(
-      Flow.tween({
-        targets: [
-          ...eyeObjs,
-          headObj,
-          ...wingDefs.map(getProp("wing")),
-          ...footInsts.map((inst) => inst.getObj(scene)),
-          bodyObj,
-        ],
-        props: { alpha: 0 },
-      }),
-      Flow.call(toggleForbiddenPos(false)),
-      endGoalAltarPlaceholder({ eventToSolve: eventKey, wp: goalPos }),
+    cutscene(
+      Flow.sequence(
+        Flow.parallel(
+          Flow.tween({
+            targets: [
+              ...eyeObjs,
+              headObj,
+              ...wingDefs.map(getProp("wing")),
+              ...footInsts.map((inst) => inst.getObj(scene)),
+              bodyObj,
+            ],
+            props: { alpha: 0 },
+          }),
+          Flow.sequence(
+            Flow.waitTimer(600),
+            keyItem.appearAt(Wp.wpPos(goalPos)),
+          ),
+        ),
+        Flow.waitTimer(3000),
+        Flow.call(
+          globalEvents.endEventAnim.emit({
+            dataSolved: eventKey,
+          }),
+        ),
+      ),
     );
 
   const downBody = (): Flow.PhaserNode =>
@@ -412,7 +418,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         ),
       }),
       Flow.repeatSequence(
-        ..._.range(0, 14).map((i) =>
+        ..._.range(0, 14).map(() =>
           Flow.sequence(
             Flow.call(headInst.events.throwFireball.emit({})),
             Flow.waitTimer(70),

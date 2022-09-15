@@ -108,7 +108,7 @@ export const eventsDef: EventsDef = {
   dungeonPhase5: {
     triggers: ["dungeonDone"],
     scene: dungeonSceneKey,
-    createItem: undefinedEventItem,
+    createItem: item("dead-man"),
   },
   dungeonDone: {
     triggers: [],
