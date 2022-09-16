@@ -3,10 +3,11 @@ import { LightScene } from "/src/scenes/lights/lights";
 import Phaser from "phaser";
 import { DungeonScene } from "/src/scenes/dungeon/dungeon";
 import { CreaturesScene } from "/src/scenes/creatures/creatures";
-import { globalData, GlobalDataKey } from "../common/global-data";
+import { GlobalDataKey } from "../common/global-data";
 import {
   creaturesSceneKey,
   dungeonSceneKey,
+  finalSceneKey,
   gameHeight,
   gameRatio,
   gameWidth,
@@ -18,12 +19,18 @@ import { MenuScene } from "/src/scenes/menu/menu-scene";
 import { observe } from "/src/helpers/phaser-flow";
 import { fromEvent } from "rxjs";
 import { observeCommonGoEvent } from "/src/helpers/component";
-import { getEventsOfScene, isEventSolved } from "/src/scenes/common/events-def";
+import {
+  getEventsOfScene,
+  isEventReady,
+  isEventSolved,
+  solveEvent,
+} from "/src/scenes/common/events-def";
 import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
 import FADE_IN_COMPLETE = Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE;
 import { keys } from "lodash";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
+import { FinalScene } from "/src/scenes/final/final";
 
 const waitForCameraFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
   Flow.wait(
@@ -34,6 +41,7 @@ const waitForCameraFadeIn: Flow.PhaserNode = Flow.lazy((scene) =>
 type SubScene = {
   create: () => Phaser.Scene;
   key: string;
+  position?: Vector2;
 };
 
 const subScenes: SubScene[] = [
@@ -49,33 +57,45 @@ const subScenes: SubScene[] = [
     create: () => new CreaturesScene(),
     key: creaturesSceneKey,
   },
+  {
+    create: () => new FinalScene(),
+    key: finalSceneKey,
+    position: new Vector2(gameWidth / 2, 870),
+  },
 ];
 
 export const isASubScene = (key: string) =>
   subScenes.some((s) => s.key === key);
 
 export const centerOfSubScene = (key: string) => {
-  const i = subScenes.findIndex((s) => s.key === key);
+  const sceneDef = subScenes.find((s) => s.key === key)!;
+  if (sceneDef.position) return sceneDef.position;
+  const i = subScenes.indexOf(sceneDef);
   const baseAngle = Math.PI / 10;
   const basePoint = new Vector2(gameWidth / 2, 2200);
+  const nbPositioned = subScenes.filter((s) => !s.position).length;
   return basePoint
     .clone()
     .add(
       new Vector2(0, 0).setToPolar(
-        (i - Math.floor(subScenes.length / 2)) * baseAngle - Math.PI / 2,
+        (i - Math.floor(nbPositioned / 2)) * baseAngle - Math.PI / 2,
         1860,
       ),
     );
 };
 
-export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
-  Flow.parallel(
+export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) => {
+  if (
+    isEventReady("dungeonDone")(hubScene) &&
+    isEventReady("lightsDone")(hubScene)
+  ) {
+    solveEvent("dungeonDone")(hubScene);
+  }
+  return Flow.parallel(
     ...subScenes.map((sceneDef, i) => {
       const eventsOfScene = getEventsOfScene(sceneDef.key);
       const eventKeys = keys(eventsOfScene) as GlobalDataKey[];
-      const hasAccess = eventKeys.some((key) =>
-        globalData[key].value(hubScene),
-      );
+      const hasAccess = eventKeys.some((key) => isEventReady(key)(hubScene));
       if (!hasAccess) {
         return Flow.noop;
       }
@@ -86,9 +106,9 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
       return observe(fromEvent(scene.events, "ready"), () => {
         const width = 447;
         const height = width * gameRatio;
-        const { x, y } = centerOfSubScene(sceneDef.key).subtract(
-          new Phaser.Math.Vector2(width, height).scale(0.5),
-        );
+        const { x, y } = centerOfSubScene(sceneDef.key)
+          .clone()
+          .subtract(new Phaser.Math.Vector2(width, height).scale(0.5));
         const mainCam = scene.cameras.main;
         mainCam.setViewport(x, y, width, height);
         mainCam.zoom = width / gameWidth;
@@ -171,5 +191,5 @@ export const subSceneFlow: Flow.PhaserNode = Flow.lazy((hubScene) =>
         );
       });
     }),
-  ),
-);
+  );
+});

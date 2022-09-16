@@ -38,6 +38,9 @@ export const globalData = defineData(
     creatures3: annotate<boolean>(),
     creatures4: annotate<boolean>(),
     creatures4Done: annotate<boolean>(),
+
+    finalPhase: annotate<boolean>(),
+    gameFinished: annotate<boolean>(),
   },
   "game",
 );

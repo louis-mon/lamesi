@@ -3,6 +3,7 @@ import { Scene } from "phaser";
 import {
   creaturesSceneKey,
   dungeonSceneKey,
+  finalSceneKey,
   hubSceneKey,
   lightsSceneKey,
 } from "/src/scenes/common/constants";
@@ -28,6 +29,9 @@ const item =
   (p) =>
     p.scene.add.image(p.pos.x, p.pos.y, "items", key);
 export const undefinedEventItem = item("");
+
+const invisibleItem: CreateItem = (p) =>
+  p.scene.add.image(p.pos.x, p.pos.y, "items").setVisible(false);
 
 export const eventsDef: EventsDef = {
   firstEvent: {
@@ -108,14 +112,24 @@ export const eventsDef: EventsDef = {
   dungeonPhase5: {
     triggers: ["dungeonDone"],
     scene: dungeonSceneKey,
-    createItem: item("dead-man"),
+    createItem: item("man-dead"),
   },
   dungeonDone: {
-    triggers: [],
+    triggers: ["finalPhase"],
     scene: hubSceneKey,
-    createItem: undefinedEventItem,
+    createItem: invisibleItem,
   },
   lightsDone: {
+    triggers: ["finalPhase"],
+    scene: hubSceneKey,
+    createItem: invisibleItem,
+  },
+  finalPhase: {
+    triggers: ["gameFinished"],
+    scene: finalSceneKey,
+    createItem: undefinedEventItem,
+  },
+  gameFinished: {
     triggers: [],
     scene: hubSceneKey,
     createItem: undefinedEventItem,

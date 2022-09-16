@@ -8,3 +8,4 @@ export const menuSceneKey = "menu";
 export const lightsSceneKey = "lights";
 export const dungeonSceneKey = "dungeon";
 export const creaturesSceneKey = "creatures";
+export const finalSceneKey = "final";
