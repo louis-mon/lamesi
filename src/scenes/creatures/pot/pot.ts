@@ -422,11 +422,6 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     );
   };
 
-  const clawMandibles = Flow.repeatSequence(
-    Flow.waitTimer(2200),
-    Flow.call(potSceneClass.events.syncMandibleClaw.emit({})),
-  );
-
   const takeAllMandibles = Flow.call(
     potSceneClass.events.pickAllMandibles.emit({}),
   );
@@ -488,5 +483,5 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     );
   };
 
-  return Flow.parallel(potState.start(growBulbs()), budFlows, clawMandibles);
+  return Flow.parallel(potState.start(growBulbs()), budFlows);
 });

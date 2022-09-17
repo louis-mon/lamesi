@@ -111,10 +111,6 @@ const createLegs: Flow.PhaserNode = Flow.parallel(
     linkedLegSlot: 5,
   }),
   openAnimation,
-  Flow.repeatSequence(
-    Flow.waitTimer(legsSwingDuration * 4),
-    Flow.call(sceneClass.events.syncLegs.emit({})),
-  ),
 );
 
 export const legsFlow: Flow.PhaserNode = Flow.lazy((scene) => {

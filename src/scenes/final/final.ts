@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { background } from "/src/scenes/final/background";
 import { finalSceneKey } from "/src/scenes/common/constants";
+import { creature } from "/src/scenes/final/creature";
 
 export class FinalScene extends Phaser.Scene {
   constructor() {
@@ -21,6 +22,6 @@ export class FinalScene extends Phaser.Scene {
   }
 
   create() {
-    Flow.runScene(this, Flow.sequence(background));
+    Flow.runScene(this, Flow.parallel(background, creature));
   }
 }

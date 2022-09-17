@@ -16,13 +16,13 @@ import { followPosition } from "/src/helpers/animate/composite";
 
 export const createLeg = (moveCommand: CreateBodyPartParams): Flow.PhaserNode =>
   legFlowFromConfig({
-    startPos: moveCommand.pos(),
+    pos: moveCommand.pos,
     requiredSlot: moveCommand.slot,
     ...legsConfigBySlot[moveCommand.slot],
   });
 
 const legFlowFromConfig = ({
-  startPos,
+  pos,
   startAngle,
   flip,
   requiredSlot,
@@ -34,7 +34,7 @@ const legFlowFromConfig = ({
     const rootContainer = inst
       .create(scene.add.container())
       .setRotation(startAngle);
-    inst.data.move.setValue({ pos: () => startPos, rotation: () => 0 })(scene);
+    inst.data.move.setValue({ pos, rotation: () => 0 })(scene);
     rootContainer.scaleY *= dir;
 
     const createNode = ({

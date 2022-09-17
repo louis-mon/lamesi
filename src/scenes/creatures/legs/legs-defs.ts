@@ -1,7 +1,7 @@
 import Vector2 = Phaser.Math.Vector2;
 
 export type LegFlowParams = {
-  startPos: Vector2;
+  pos: () => Vector2;
   startAngle: number;
   flip?: boolean;
   requiredSlot: number;
@@ -12,7 +12,7 @@ const secondLevelAngle = 0;
 const thirdLevelAngle = Math.PI / 8;
 
 export const legsConfigBySlot: {
-  [key: number]: Omit<LegFlowParams, "startPos" | "requiredSlot">;
+  [key: number]: Omit<LegFlowParams, "pos" | "requiredSlot">;
 } = {
   0: {
     startAngle: Math.PI - firstLevelAngle,

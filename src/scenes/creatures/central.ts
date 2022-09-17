@@ -21,6 +21,18 @@ import { createAlgae } from "/src/scenes/creatures/algae/algae";
 import { createMandibles } from "/src/scenes/creatures/pot/mandibles";
 import { createLeg } from "/src/scenes/creatures/legs/legs-leg";
 import { solveCreatureEvent } from "/src/scenes/creatures/solve-creature-event";
+import { legsSwingDuration } from "/src/scenes/creatures/legs/legs-defs";
+import { potSceneClass } from "/src/scenes/creatures/pot/pot-def";
+
+const moveLegs: Flow.PhaserNode = Flow.repeatSequence(
+  Flow.waitTimer(legsSwingDuration * 4),
+  Flow.call(sceneClass.events.syncLegs.emit({})),
+);
+
+const clawMandibles = Flow.repeatSequence(
+  Flow.waitTimer(2200),
+  Flow.call(potSceneClass.events.syncMandibleClaw.emit({})),
+);
 
 const bodyPartsToFlow: {
   [key in BodyPart]: (p: CreateBodyPartParams) => PhaserNode;
@@ -324,5 +336,7 @@ export const createCentralCreature: Flow.PhaserNode = Flow.lazy((scene) => {
     Flow.observe(Def.sceneClass.events.elemReadyToPick.subject, catchElement),
     Flow.handlePostUpdate({ handler: () => updateBodyPoints }),
     startBodyParts,
+    moveLegs,
+    clawMandibles,
   );
 });
