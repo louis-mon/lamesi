@@ -3,23 +3,23 @@ import * as Def from "/src/scenes/creatures/def";
 import { declareGoInstance } from "/src/helpers/component";
 import { followPosition, followRotation } from "/src/helpers/animate/composite";
 import { getObjectPosition, getPointerPosInMainCam } from "/src/helpers/phaser";
+import { moveFromCommand } from "/src/scenes/creatures/common";
 
 export const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const eyelidInst = declareGoInstance(Def.movableElementClass, null);
-    const eyeblank = eyelidInst.create(
+    const eyeblank = scene.add
+      .sprite(0, 0, "tree", "eye-blank")
+      .setDepth(Def.depths.eye)
+      .setScale(0);
+    const eyelid = eyelidInst.create(
       scene.add
-        .sprite(0, 0, "tree", "eye-blank")
-        .setDepth(Def.depths.eye)
-        .setScale(0),
+        .sprite(0, 0, "tree", "eyelid-1")
+        .setScale(0)
+        .setDepth(Def.depths.eye),
     );
 
     eyelidInst.data.move.setValue(initial)(scene);
-
-    const eyelid = scene.add
-      .sprite(0, 0, "tree", "eyelid-1")
-      .setScale(0)
-      .setDepth(Def.depths.eye);
 
     const eyeAnimKey = "blinkEye";
     const eyeAnim = eyelid.anims.create({
@@ -35,12 +35,9 @@ export const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
     });
 
     return Flow.parallel(
+      moveFromCommand(eyelidInst),
       followPosition({
-        getPos: () => eyelidInst.data.move.value(scene).pos(),
-        target: () => eyelid,
-      }),
-      followPosition({
-        getPos: () => eyelidInst.data.move.value(scene).pos(),
+        getPos: () => getObjectPosition(eyelid),
         target: () => eyeblank,
       }),
       followRotation({
@@ -62,7 +59,7 @@ export const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
         }),
         Flow.waitTimer(3000),
         Flow.call(
-          Def.sceneClass.events.elemReadyToPick.emit({
+          Def.creatureSceneClass.events.elemReadyToPick.emit({
             key: eyelidInst.key,
             bodyPart: "eye",
           }),

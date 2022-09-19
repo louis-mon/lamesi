@@ -116,7 +116,7 @@ export const moveFlameTo = ({
     moveTo((scene) => ({
       target: instance.getObj(scene),
       dest: Wp.wpPos(newPos),
-      speed: 0.3,
+      speed: 300,
     })),
     Flow.call(instance.data.currentPos.setValue(newPos)),
   );

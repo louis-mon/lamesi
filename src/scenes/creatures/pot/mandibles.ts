@@ -1,11 +1,11 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
 import * as Def from "/src/scenes/creatures/def";
-import { getObjectPosition, placeAt } from "/src/helpers/phaser";
+import { placeAt } from "/src/helpers/phaser";
 import _ from "lodash";
-import { followPosition } from "/src/helpers/animate/composite";
 import { CreatureMoveCommand } from "/src/scenes/creatures/def";
 import { potSceneClass } from "/src/scenes/creatures/pot/pot-def";
+import { moveFromCommand } from "/src/scenes/creatures/common";
 
 export const createMandibles = (
   moveCommand: CreatureMoveCommand,
@@ -57,16 +57,13 @@ export const createMandibles = (
     };
 
     return Flow.parallel(
-      followPosition({
-        getPos: () => mandibleInst.data.move.value(scene).pos(),
-        target: () => mandibleRoot,
-      }),
+      moveFromCommand(mandibleInst),
       ...[true, false].map(singleMandible),
       Flow.sequence(
         Flow.wait(potSceneClass.events.pickAllMandibles.subject),
         Flow.waitTimer(4000),
         Flow.call(
-          Def.sceneClass.events.elemReadyToPick.emit({
+          Def.creatureSceneClass.events.elemReadyToPick.emit({
             key: mandibleInst.key,
             bodyPart: "mouth",
           }),

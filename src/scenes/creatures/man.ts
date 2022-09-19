@@ -5,7 +5,7 @@ import Vector2 = Phaser.Math.Vector2;
 import {
   BodyPart,
   bodyPartsConfig,
-  sceneClass,
+  creatureSceneClass,
 } from "/src/scenes/creatures/def";
 import { Scene } from "phaser";
 import { isEventSolved } from "/src/scenes/common/events-def";
@@ -16,14 +16,14 @@ import { panCameraTo } from "/src/helpers/animate/tween/camera";
 export const manDeskPos = new Vector2(960, 962);
 
 export const setToWaitingState: Flow.PhaserNode = Flow.lazy((scene) => {
-  const man = sceneClass.data.manObj.value(scene);
+  const man = creatureSceneClass.data.manObj.value(scene);
   return Flow.call(() => man.setFlipX(false));
 });
 
 export const moveMan: (p: { dest: Vector2 }) => Flow.PhaserNode = ({ dest }) =>
   Flow.lazy((scene) => {
-    const manSpeed = 0.2;
-    const man = sceneClass.data.manObj.value(scene);
+    const manSpeed = 200;
+    const man = creatureSceneClass.data.manObj.value(scene);
     const dx = dest.x - man.x;
     if (dx !== 0) man.setFlipX(dx > 0);
     return Flow.concurrent(
@@ -62,7 +62,7 @@ export const getTargetTransform = (
 };
 
 export const transformMan: Flow.PhaserNode = Flow.lazy((scene) => {
-  const man = sceneClass.data.manObj.value(scene);
+  const man = creatureSceneClass.data.manObj.value(scene);
 
   const targetTransform = getTargetTransform(scene);
   if (!targetTransform) return Flow.noop;

@@ -6,35 +6,27 @@ import { createImageAt, placeAt } from "/src/helpers/phaser";
 import { Subject } from "rxjs";
 import * as Def from "../def";
 import { declareGoInstance } from "/src/helpers/component";
-import { CreateBodyPartParams, movableElementClass, sceneClass } from "../def";
 import {
-  LegFlowParams,
+  CreateBodyPartParams,
+  movableElementClass,
+  creatureSceneClass,
+} from "../def";
+import {
   legsConfigBySlot,
   legsSwingDuration,
 } from "/src/scenes/creatures/legs/legs-defs";
-import { followPosition } from "/src/helpers/animate/composite";
+import { moveFromCommand } from "/src/scenes/creatures/common";
 
 export const createLeg = (moveCommand: CreateBodyPartParams): Flow.PhaserNode =>
-  legFlowFromConfig({
-    pos: moveCommand.pos,
-    requiredSlot: moveCommand.slot,
-    ...legsConfigBySlot[moveCommand.slot],
-  });
-
-const legFlowFromConfig = ({
-  pos,
-  startAngle,
-  flip,
-  requiredSlot,
-}: LegFlowParams): Flow.PhaserNode =>
   Flow.lazy((scene) => {
+    const { flip, startAngle } = legsConfigBySlot[moveCommand.slot];
     const flows = new Subject<Flow.PhaserNode>();
     const inst = declareGoInstance(movableElementClass, null);
     const dir = flip ? -1 : 1;
     const rootContainer = inst
       .create(scene.add.container())
       .setRotation(startAngle);
-    inst.data.move.setValue({ pos, rotation: () => 0 })(scene);
+    inst.data.move.setValue(moveCommand)(scene);
     rootContainer.scaleY *= dir;
 
     const createNode = ({
@@ -75,10 +67,10 @@ const legFlowFromConfig = ({
       const askToCatch = Flow.sequence(
         Flow.waitTimer(1200),
         Flow.call(
-          sceneClass.events.elemReadyToPick.emit({
+          creatureSceneClass.events.elemReadyToPick.emit({
             key: inst.key,
             bodyPart: "leg",
-            requiredSlot,
+            requiredSlot: moveCommand.slot,
           }),
         ),
       );
@@ -102,7 +94,7 @@ const legFlowFromConfig = ({
               ease: Phaser.Math.Easing.Sine.InOut,
             }),
             Flow.parallel(
-              Flow.observe(sceneClass.events.syncLegs.subject, () =>
+              Flow.observe(creatureSceneClass.events.syncLegs.subject, () =>
                 Flow.sequence(
                   Flow.tween({
                     targets: container,
@@ -124,10 +116,7 @@ const legFlowFromConfig = ({
     };
 
     return Flow.parallel(
-      followPosition({
-        getPos: () => inst.data.move.value(scene).pos(),
-        target: () => rootContainer,
-      }),
+      moveFromCommand(inst),
       Flow.observe(flows),
       createNode({ fromContainer: rootContainer, step: 1 }),
     );

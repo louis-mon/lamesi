@@ -1,5 +1,5 @@
 import * as Flow from "/src/helpers/phaser-flow";
-import { createCentralCreature } from "./central";
+import { createCentralGlurp } from "./glurp";
 import { potFlow } from "./pot/pot";
 import { rockFlow } from "/src/scenes/creatures/algae/rocks";
 import { legsFlow } from "/src/scenes/creatures/legs/legs";
@@ -34,7 +34,7 @@ export class CreaturesScene extends Phaser.Scene {
         goal1,
         potFlow,
         rockFlow,
-        createCentralCreature,
+        createCentralGlurp,
         legsFlow,
       ),
     );

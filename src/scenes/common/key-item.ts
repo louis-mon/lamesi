@@ -36,7 +36,7 @@ export const createKeyItem = (key: GlobalDataKey, scene: Scene) => {
   const moveTo = (dest: Vector2): Flow.PhaserNode =>
     Flow.moveTo({
       dest,
-      speed: 0.3,
+      speed: 300,
       target: obj,
     });
 

@@ -36,7 +36,7 @@ export const newEventAnim: Flow.PhaserNode = Flow.lazy((scene) => {
       moveTo({
         target: keyItem,
         dest: centerOfSubScene(targetDef.scene),
-        speed: 0.3,
+        speed: 300,
       }),
       Flow.tween({
         targets: keyItem,

@@ -44,9 +44,12 @@ export const depths = {
 export type CreatureMoveCommand = {
   pos: () => Vector2;
   rotation: () => number;
+  container?: Phaser.GameObjects.Container;
 };
 
-export type CreateBodyPartParams = CreatureMoveCommand & { slot: number };
+export type CreateBodyPartParams = CreatureMoveCommand & {
+  slot: number;
+};
 
 export const movableElementClass = defineGoClass({
   kind: annotate<
@@ -99,7 +102,7 @@ export type ElemReadyToPickParams = {
   bodyPart: BodyPart;
   requiredSlot?: number;
 };
-export const sceneClass = defineSceneClass({
+export const creatureSceneClass = defineSceneClass({
   events: {
     elemReadyToPick: customEvent<ElemReadyToPickParams>(),
     syncLegs: customEvent(),
@@ -107,6 +110,6 @@ export const sceneClass = defineSceneClass({
   },
   data: {
     manObj: annotate<Image>(),
-    creatureObj: annotate<Transform>(),
+    glurpObj: annotate<Transform>(),
   },
 });

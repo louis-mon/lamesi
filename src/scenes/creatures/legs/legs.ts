@@ -7,8 +7,6 @@ import {
   createBloomButtonFactory,
   legsBloomClass,
 } from "/src/scenes/creatures/legs/bloom-button";
-import { sceneClass } from "/src/scenes/creatures/def";
-import { legsSwingDuration } from "/src/scenes/creatures/legs/legs-defs";
 import * as Def from "/src/scenes/creatures/def";
 import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";

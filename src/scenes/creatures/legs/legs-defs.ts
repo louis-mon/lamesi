@@ -12,7 +12,10 @@ const secondLevelAngle = 0;
 const thirdLevelAngle = Math.PI / 8;
 
 export const legsConfigBySlot: {
-  [key: number]: Omit<LegFlowParams, "pos" | "requiredSlot">;
+  [key: number]: {
+    startAngle: number;
+    flip?: boolean;
+  };
 } = {
   0: {
     startAngle: Math.PI - firstLevelAngle,

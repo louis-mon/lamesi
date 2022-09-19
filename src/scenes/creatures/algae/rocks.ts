@@ -107,7 +107,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     Flow.waitTimer(4000),
     Flow.call(() =>
       rockState.eggs.forEach((egg) =>
-        Def.sceneClass.events.elemReadyToPick.emit({
+        Def.creatureSceneClass.events.elemReadyToPick.emit({
           key: egg.algae!.instance.key,
           bodyPart: "algae",
         })(scene),
@@ -170,7 +170,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
       flowState.nextFlow(chooseEgg),
     );
 
-    const ballSpeed = 300 / 1000;
+    const ballSpeed = 300;
     const sendBallToShell = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.lazy(() => {
         const startPos = getObjectPosition(egg.obj);

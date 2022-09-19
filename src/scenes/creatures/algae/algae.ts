@@ -3,9 +3,9 @@ import Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { declareGoInstance } from "/src/helpers/component";
 import * as Def from "../def";
-import { followPosition } from "/src/helpers/animate/composite";
 import { swingRotation } from "/src/helpers/animate/tween/swing-rotation";
 import { CreatureMoveCommand } from "../def";
+import { moveFromCommand } from "/src/scenes/creatures/common";
 
 export const createAlgae = (moveCommand: CreatureMoveCommand) => {
   const instance = declareGoInstance(Def.movableElementClass, null);
@@ -68,10 +68,7 @@ export const createAlgae = (moveCommand: CreatureMoveCommand) => {
       });
 
     return Flow.parallel(
-      followPosition({
-        getPos: () => instance.data.move.value(scene).pos(),
-        target: () => root,
-      }),
+      moveFromCommand(instance),
       growAlgae({ parent: root, depth: 0, offset: 0 }),
     );
   });

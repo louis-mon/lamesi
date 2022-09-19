@@ -16,7 +16,7 @@ export const moveTo = (
   Flow.tween((c) => {
     const { target, dest, speed, ...rest } = funcOrConstValue(c, getProps);
     const from = getObjectPosition(target);
-    const duration = from.distance(dest) / speed;
+    const duration = from.distance(dest) / (speed / 1000);
     return {
       targets: target,
       props: vecToXY(dest),

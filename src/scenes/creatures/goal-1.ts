@@ -7,7 +7,7 @@ import { createTree } from "/src/scenes/creatures/tree";
 import { gameHeight } from "/src/scenes/common/constants";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
-import { bodyPartsConfig, sceneClass } from "/src/scenes/creatures/def";
+import { bodyPartsConfig, creatureSceneClass } from "/src/scenes/creatures/def";
 import {
   getTargetTransform,
   manDeskPos,
@@ -31,7 +31,7 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
   const man = scene.add
     .image(manDeskPos.x, gameHeight + 40, "crea-npc", "man1")
     .setScale(1.6);
-  sceneClass.data.manObj.setValue(man)(scene);
+  creatureSceneClass.data.manObj.setValue(man)(scene);
   const manStep = getTargetTransform(scene);
   if (manStep) {
     man.setFrame(manStep.frameKey);

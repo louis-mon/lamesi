@@ -2,7 +2,7 @@ import * as Flow from "/src/helpers/phaser-flow";
 import {
   BodyPart,
   bodyPartsConfig,
-  sceneClass,
+  creatureSceneClass,
 } from "/src/scenes/creatures/def";
 import { getObjectPosition, placeAt, vecToXY } from "/src/helpers/phaser";
 import { range } from "lodash";
@@ -13,8 +13,8 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { cutscene } from "/src/scenes/common/cutscene";
 
 const waveFlow: Flow.PhaserNode = Flow.lazy((scene) => {
-  const creature = sceneClass.data.creatureObj.value(scene);
-  const man = sceneClass.data.manObj.value(scene);
+  const creature = creatureSceneClass.data.glurpObj.value(scene);
+  const man = creatureSceneClass.data.manObj.value(scene);
   const wave = scene.add
     .image(creature.x, creature.y, "crea-npc", "light-ring")
     .setScale(0);
@@ -51,7 +51,7 @@ export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
     const newTransform = getTargetTransform(scene);
     if (prevTransform === newTransform) return Flow.noop;
 
-    const man = sceneClass.data.manObj.value(scene);
+    const man = creatureSceneClass.data.manObj.value(scene);
     const bubble = placeAt(
       scene.add.image(0, 0, "crea-npc", "thought"),
       man.getTopRight().add(new Vector2(-16, 10)),

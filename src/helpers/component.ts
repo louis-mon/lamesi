@@ -233,6 +233,25 @@ export const observeCommonGoEvent = (
   event: keyof typeof commonGoEvents,
 ) => fromEvent(go, event);
 
+export type GoInstance<C extends GoClassDef<any, any, any, any>> =
+  C extends GoClassDef<infer Cl, infer Events, infer Data, infer Config>
+    ? {
+        config: Config;
+        create: <SubCl extends Cl>(obj: SubCl) => SubCl;
+        key: string;
+        goClass: C;
+        getObj: (scene: Phaser.Scene) => Cl;
+        events: {
+          [Key in keyof Events]: EventHelper<
+            ReturnType<Events[Key]["selector"]>
+          >;
+        };
+        data: {
+          [Key in keyof Data]: DataHelper<Data[Key]>;
+        };
+      }
+    : never;
+
 export const declareGoInstance = <
   Cl extends Phaser.GameObjects.GameObject,
   Events extends DefineEventMappingParams,
@@ -242,7 +261,7 @@ export const declareGoInstance = <
   goClass: GoClassDef<Cl, Events, Data, Config>,
   keyOrNull: string | null,
   config?: Config,
-) => {
+): GoInstance<GoClassDef<Cl, Events, Data, Config>> => {
   const key = keyOrNull || _.uniqueId("go-unique");
   const getObj = goClass.getObj(key);
   return {
