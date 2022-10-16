@@ -26,7 +26,11 @@ export class FinalScene extends Phaser.Scene {
   create() {
     Flow.runScene(
       this,
-      Flow.parallel(background, createGlurp({ pos: glurpInitPos }), intro),
+      Flow.parallel(
+        background,
+        createGlurp({ pos: glurpInitPos, rotation: Math.PI / 2 }),
+        intro,
+      ),
     );
   }
 }

@@ -40,10 +40,12 @@ export const createEye = (initial: Def.CreatureMoveCommand): Flow.PhaserNode =>
         getPos: () => getObjectPosition(eyelid),
         target: () => eyeblank,
       }),
-      followRotation({
-        getRotation: () => eyelidInst.data.move.value(scene).rotation(),
-        target: () => eyelid,
-      }),
+      initial.container
+        ? Flow.noop
+        : followRotation({
+            getRotation: () => eyelidInst.data.move.value(scene).rotation(),
+            target: () => eyelid,
+          }),
       followRotation({
         getRotation: () => {
           return getPointerPosInMainCam(scene)

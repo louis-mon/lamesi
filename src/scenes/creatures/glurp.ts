@@ -44,9 +44,14 @@ const bodyPartsToFlow: {
   mouth: createMandibles,
 };
 
-export const createGlurp = (params: { pos: Vector2 }): Flow.PhaserNode =>
+export const createGlurp = (params: {
+  pos: Vector2;
+  rotation?: number;
+}): Flow.PhaserNode =>
   Flow.lazy((scene) => {
-    const container = scene.add.container(params.pos.x, params.pos.y);
+    const container = scene.add
+      .container(params.pos.x, params.pos.y)
+      .setRotation(params.rotation ?? 0);
     const body = scene.add.rope(0, 0, "central", "central");
     container.add(body);
     creatureSceneClass.data.glurpObj.setValue(container)(scene);
