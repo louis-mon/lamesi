@@ -3,8 +3,6 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { background } from "/src/scenes/final/background";
 import { finalSceneKey } from "/src/scenes/common/constants";
 import { intro } from "/src/scenes/final/intro";
-import { createGlurp } from "/src/scenes/creatures/glurp";
-import { glurpInitPos } from "/src/scenes/final/defs";
 
 export class FinalScene extends Phaser.Scene {
   constructor() {
@@ -24,13 +22,6 @@ export class FinalScene extends Phaser.Scene {
   }
 
   create() {
-    Flow.runScene(
-      this,
-      Flow.parallel(
-        background,
-        createGlurp({ pos: glurpInitPos, rotation: Math.PI / 2 }),
-        intro,
-      ),
-    );
+    Flow.runScene(this, Flow.parallel(background, intro));
   }
 }
