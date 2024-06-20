@@ -33,6 +33,7 @@ export class DungeonScene extends Phaser.Scene {
     this.load.aseprite("dungeon-player");
     this.load.audio("switch-activate", ["switch-activate.wav"]);
     this.load.audio("switch-deactivate", ["switch-deactivate.wav"]);
+    this.load.audio("bell", ["bell.wav"]);
   }
 
   create() {

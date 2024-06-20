@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import { Maybe } from "purify-ts";
 import { playerCannotActSubject } from "./definitions";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -254,6 +253,7 @@ const bellUseAction: Flow.PhaserNode = Flow.lazy((scene) => {
   const playerWpDef = Wp.getWpDef(playerWp);
   Def.scene.data.currentSkillInUse.setValue(true)(scene);
   return Flow.sequence(
+    Flow.call(() => scene.sound.play("bell")),
     Flow.parallel(
       Flow.tween({
         targets: radius,
