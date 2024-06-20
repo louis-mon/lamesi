@@ -10,6 +10,7 @@ import {
   createSpriteAt,
   SceneContext,
   createImageAt,
+  getObjectPosition,
 } from "/src/helpers/phaser";
 import { bindActionButton, bindSkillButton } from "./menu";
 import { combineLatest, Observable, of } from "rxjs";
@@ -87,6 +88,23 @@ export const bindAttackButton = ({
 
 export const switchCrystalFactory = (scene: Phaser.Scene) => {
   return (def: Def.SwitchCrystalDef) => {
+    const switchWaveAnim = () => {
+      const sprite = createSpriteAt(
+        scene,
+        getObjectPosition(def.getObj(scene)),
+        "npc",
+        "switch-wave",
+      );
+      sprite.scale = 0.1;
+      sprite.y -= 10;
+      scene.tweens.add({
+        targets: sprite,
+        props: { scale: 1.5, alpha: 0 },
+        duration: 600,
+        onComplete: () => sprite.destroy(),
+      });
+    };
+
     let transitioning = false;
     const playTransition = (anim: Flow.PhaserNode, toState: boolean) => () => {
       if (def.data.state.value(scene) !== toState && !transitioning) {
@@ -126,7 +144,7 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
           disabled: def.config.deactivable ? undefined : stateData.dataSubject,
           action: Flow.call(() =>
             (stateData.value(scene)
-              ? def.events.deactivateSwitch.emit({})
+              ? def.events.deactivateSwitch.emit({ feedback: true })
               : def.events.activateSwitch.emit({}))(scene),
           ),
         }),
@@ -136,16 +154,24 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
         Flow.observe(
           def.events.activateSwitch.subject,
           playTransition(
-            Flow.call(() => obj.anims.play("switch")),
+            Flow.call(() => {
+              switchWaveAnim();
+              scene.sound.play("switch-activate");
+              obj.anims.play("switch");
+            }),
             true,
           ),
         ),
-        Flow.observe(
-          def.events.deactivateSwitch.subject,
+        Flow.observe(def.events.deactivateSwitch.subject, ({ feedback }) =>
           playTransition(
-            Flow.call(() => obj.anims.playReverse("switch")),
+            Flow.call(() => {
+              if (feedback) {
+                scene.sound.play("switch-deactivate");
+              }
+              obj.anims.playReverse("switch");
+            }),
             false,
-          ),
+          )(),
         ),
       ),
     );

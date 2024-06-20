@@ -104,7 +104,10 @@ type ObjectNextWp = {
 };
 export const switchClass = defineGoSprite({
   data: { state: annotate<boolean>() },
-  events: { activateSwitch: customEvent(), deactivateSwitch: customEvent() },
+  events: {
+    activateSwitch: customEvent(),
+    deactivateSwitch: customEvent<{ feedback?: boolean }>(),
+  },
   config: annotate<ObjectNextWp & { deactivable?: boolean }>(),
 });
 

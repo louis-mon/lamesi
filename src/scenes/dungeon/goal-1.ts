@@ -271,7 +271,7 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
         condition: switchDef.data.state.subject,
         action: Flow.sequence(
           Flow.waitTimer(1500),
-          Flow.call(switchDef.events.deactivateSwitch.emit({})),
+          Flow.call(switchDef.events.deactivateSwitch.emit({ feedback: true })),
         ),
       }),
     ),
