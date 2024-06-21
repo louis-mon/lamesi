@@ -16,15 +16,12 @@ import * as Npc from "./npc";
 import { arrowSkillAltar, bellHiddenAction, bellSkillAltar } from "./skills";
 import * as Wp from "./wp";
 import Vector2 = Phaser.Math.Vector2;
-import { doorCenterPos, DoorKey } from "./npc";
-import {
-  findPreviousEvent,
-  isEventSolved,
-} from "/src/scenes/common/events-def";
+import { DoorKey } from "./npc";
+import { isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { globalData } from "/src/scenes/common/global-data";
-import { createKeyItem } from "/src/scenes/common/key-item";
 import { openDoorWithKeyItem } from "/src/scenes/dungeon/door";
+import { altarAppearCutscene } from "/src/scenes/dungeon/dungeon-cutscene";
 
 const bellAlignSwitches = [
   declareGoInstance(Def.switchClass, "switch-align-bell-1", {
@@ -108,7 +105,10 @@ const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
     condition: combineLatest(
       bellAlignSwitches.map((def) => def.data.state.dataSubject(scene)),
     ).pipe(map((states) => states.every(_.identity))),
-    action: bellSkillAltar({ wp: { room: 3, x: 0, y: 0 } }),
+    action: altarAppearCutscene({
+      wp: { room: 3, x: 0, y: 0 },
+      altarAppear: bellSkillAltar,
+    }),
   });
 
   return Flow.parallel(...controlledFlow, ...moveControl, solved);
