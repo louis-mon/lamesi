@@ -49,6 +49,8 @@ export const scene = defineSceneClass({
 
     sendMagicArrow: customEvent<Vector2>(),
 
+    altarAppeared: customEvent<{ at: Wp.WpId }>(),
+
     // puzzle related events
     showAltSwitchInRoom5: customEvent(),
 

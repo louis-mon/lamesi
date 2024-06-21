@@ -3,15 +3,34 @@ import { fromEvent } from "rxjs";
 import Vector2 = Phaser.Math.Vector2;
 import PAN_COMPLETE = Phaser.Cameras.Scene2D.Events.PAN_COMPLETE;
 
+type PanCameraParams = {
+  target: Vector2;
+  duration?: number;
+  zoom?: number;
+};
+
+export const panCameraToAndReset = ({
+  action,
+  ...params
+}: PanCameraParams & { action: Flow.PhaserNode }): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    const { centerX, centerY, zoom } = scene.cameras.main;
+    return Flow.sequence(
+      panCameraTo(params),
+      action,
+      panCameraTo({
+        duration: params.duration,
+        zoom,
+        target: new Vector2(centerX, centerY),
+      }),
+    );
+  });
+
 export const panCameraTo = ({
   target,
   duration,
   zoom,
-}: {
-  target: Vector2;
-  duration?: number;
-  zoom?: number;
-}): Flow.PhaserNode =>
+}: PanCameraParams): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const camera = scene.cameras.main;
     const h2 = camera.height / 2;

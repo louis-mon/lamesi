@@ -320,6 +320,11 @@ export const altarComponent = (
               props: { scale: 0.65 },
               duration: 500,
             }),
+            Flow.call(
+              Def.scene.events.altarAppeared.emit({
+                at: Wp.getWpId(params.wp),
+              }),
+            ),
             Flow.tween({
               targets: altarClass.getObj(itemKey)(scene),
               props: { y: basePos.y - 50 },

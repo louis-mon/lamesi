@@ -14,12 +14,14 @@ import {
   customEvent,
 } from "/src/helpers/component";
 import { combineContext } from "/src/helpers/functional";
-import { combineLatest } from "rxjs";
+import { combineLatest, Subject } from "rxjs";
 import { map } from "rxjs/operators";
 import { arrowSkillAltar } from "./skills";
 import { Maybe } from "purify-ts";
 import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
 import { globalData } from "../common/global-data";
+import { cutscene } from "/src/scenes/common/cutscene";
+import { panCameraToAndReset } from "/src/helpers/animate/tween/camera";
 
 const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
   const mechanisms = [
@@ -172,11 +174,36 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
       [0, false],
       [0, false],
     ]),
-    action: Flow.sequence(
-      Flow.tween({ targets: hint, props: { alpha: 0 } }),
-      Flow.call(() => hint.destroy()),
-      arrowSkillAltar({ wp: { room: 5, x: 4, y: 0 } }),
-    ),
+    action: Flow.lazy(() => {
+      const arrowAltarWp: Wp.WpDef = { room: 5, x: 4, y: 0 };
+      const arrowAltarId = Wp.getWpId(arrowAltarWp);
+      const startAnim = new Subject();
+      return Flow.parallel(
+        cutscene(
+          panCameraToAndReset({
+            target: Wp.wpPos(arrowAltarWp),
+            duration: 1000,
+            zoom: 2.5,
+            action: Flow.sequence(
+              Flow.call(() => startAnim.next()),
+              Flow.waitTrue(
+                Def.scene.events.altarAppeared
+                  .subject(scene)
+                  .pipe(map((p) => p.at === arrowAltarId)),
+              ),
+              Flow.waitTimer(2000),
+            ),
+          }),
+        ),
+        Flow.sequence(
+          Flow.wait(startAnim),
+          Flow.tween({ targets: hint, props: { alpha: 0 } }),
+          Flow.call(() => hint.destroy()),
+          Flow.call(() => scene.sound.play("item-appear")),
+          arrowSkillAltar({ wp: arrowAltarWp }),
+        ),
+      );
+    }),
   });
 
   const solveFishPuzzle = Flow.whenTrueDo({
