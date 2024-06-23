@@ -10,6 +10,7 @@ import { Maybe } from "purify-ts";
 import { observeCommonGoEvent } from "/src/helpers/component";
 import { makeSpawner } from "/src/helpers/flow/spawner";
 import { call, sequence } from "./flow";
+import { globalEvents } from "/src/scenes/common/global-events";
 
 export * from "./flow";
 export * from "./animate/move";
@@ -53,16 +54,52 @@ export const tween =
     params.registerAbort(abortHandler);
   };
 
+export const playAmbianceMusic = (params: { key: string }): PhaserNode =>
+  Flow.lazy((scene) => {
+    const sound = scene.sound.add(params.key, {
+      loop: true,
+    }) as Phaser.Sound.HTML5AudioSound;
+    sound.volume = 0.1;
+    return withGlobalCleanup({
+      flow: Flow.sequence(
+        Flow.wait(globalEvents.subSceneEntered.subject),
+        Flow.call(() => sound.play()),
+        waitTimer(100),
+        tween(() => ({
+          targets: sound,
+          props: { volume: 1 },
+          duration: 5000,
+        })),
+        Flow.infinite,
+      ),
+      cleanup: () => sound.stop(),
+    });
+  });
+
 /**
  * Executes a cleanup action even when the flow aborts, unless scene is already destroyed
  */
-export const withCleanup =
+export const withCleanup = (params: {
+  flow: PhaserNode;
+  cleanup: (c: Context) => void;
+}): PhaserNode =>
+  withGlobalCleanup({
+    flow: params.flow,
+    cleanup: (c) => {
+      if (c.scene.scene) params.cleanup(c);
+    },
+  });
+
+/**
+ * Executes a cleanup action even when the flow aborts, unless scene is already destroyed
+ */
+export const withGlobalCleanup =
   (params: { flow: PhaserNode; cleanup: (c: Context) => void }): PhaserNode =>
   (c) =>
   (p) => {
     sequence(params.flow, call(params.cleanup))(c)(p);
     p.registerAbort(() => {
-      if (c.scene.scene) params.cleanup(c);
+      params.cleanup(c);
     });
   };
 

@@ -5,6 +5,7 @@ import { rockFlow } from "/src/scenes/creatures/algae/rocks";
 import { legsFlow } from "/src/scenes/creatures/legs/legs";
 import { backgroundFlow } from "/src/scenes/creatures/background";
 import { goal1 } from "/src/scenes/creatures/goal-1";
+import { playAmbianceMusic } from "/src/helpers/phaser-flow";
 
 export class CreaturesScene extends Phaser.Scene {
   constructor() {
@@ -24,12 +25,14 @@ export class CreaturesScene extends Phaser.Scene {
     this.load.atlas("legs");
     this.load.atlas("crea-npc");
     this.load.image("back");
+    this.load.audio("creatures-music", ["creatures-music.mp3"]);
   }
 
   create() {
     Flow.runScene(
       this,
       Flow.parallel(
+        playAmbianceMusic({ key: "creatures-music" }),
         backgroundFlow,
         goal1,
         potFlow,

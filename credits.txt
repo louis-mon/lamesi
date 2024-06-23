@@ -1,4 +1,19 @@
+-- graphics
+
 "Small flame pack" by serenajeanne licensed CC BY-SA 3.0: https://opengameart.org/content/small-flame-pack-0
 "Pointers: part 5" by yd liscensed CC0: https://opengameart.org/content/pointers-part-5
+
+-- sound effects
+
+Basic Activate.wav by SirusAmory -- https://freesound.org/s/460584/ -- License: Creative Commons 0
 Basic Deactivate.wav by SirusAmory -- https://freesound.org/s/460583/ -- License: Creative Commons 0
 Ringing a Hand Bell.wav by Tewkesound -- https://freesound.org/s/140150/ -- License: Attribution 4.0
+Appearance Effect by The-Sacha-Rush -- https://freesound.org/s/472506/ -- License: Creative Commons 0
+
+-- music
+
+# dungeon
+Music by <a href="https://pixabay.com/users/white_records-32584949/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=217682">Maksym Dudchyk</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=217682">Pixabay</a>
+
+# Labo
+Music by <a href="https://pixabay.com/users/amarantamusic-7819462/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=112141">Leonid Timachev</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=112141">Pixabay</a>
