@@ -45,6 +45,7 @@ export const scene = defineSceneClass({
   events: {
     clickWp: customEvent<WpId>(),
     movePlayer: customEvent<{ path: WpId[] }>(),
+    attackPlayer: customEvent(),
     killPlayer: customEvent(),
 
     sendMagicArrow: customEvent<Vector2>(),

@@ -23,6 +23,11 @@ export const createPlayer = (scene: Phaser.Scene) => {
       ),
     ),
   );
+  // phaser cannot load durations properly
+  const slashAnimDurations = [300, 50, 50, 50, 300];
+  player.anims.animationManager.get("slash").frames.forEach((frame, i) => {
+    frame.duration = slashAnimDurations[i];
+  });
   const currentPosData = Def.player.data.currentPos;
   const isMovingData = Def.player.data.isMoving;
   const isDeadData = Def.player.data.isDead;
@@ -95,6 +100,10 @@ export const createPlayer = (scene: Phaser.Scene) => {
         Flow.waitTimer(2000),
         Flow.call(isDeadData.setValue(false)),
       );
+    }),
+    Flow.observe(Def.scene.events.attackPlayer.subject, () => {
+      player.anims.play("slash");
+      return Flow.noop;
     }),
   );
 };

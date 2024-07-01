@@ -59,7 +59,7 @@ export const playAmbianceMusic = (params: { key: string }): PhaserNode =>
     const sound = scene.sound.add(params.key, {
       loop: true,
     }) as Phaser.Sound.HTML5AudioSound;
-    sound.volume = 0.1;
+    sound.volume = 0.01;
     return withGlobalCleanup({
       flow: Flow.sequence(
         Flow.wait(globalEvents.subSceneEntered.subject),
@@ -67,7 +67,7 @@ export const playAmbianceMusic = (params: { key: string }): PhaserNode =>
         waitTimer(100),
         tween(() => ({
           targets: sound,
-          props: { volume: 1 },
+          props: { volume: 0.1 },
           duration: 5000,
         })),
         Flow.infinite,

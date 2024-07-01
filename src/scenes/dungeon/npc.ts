@@ -76,7 +76,10 @@ export const bindAttackButton = ({
       })(scene),
       {
         hintKey: "dungeonActivateHint",
-        action: action,
+        action: Flow.parallel(
+          Flow.call(Def.scene.events.attackPlayer.emit({})),
+          action,
+        ),
         key: `activate-attack-${pos}`,
         create:
           ({ pos }) =>
