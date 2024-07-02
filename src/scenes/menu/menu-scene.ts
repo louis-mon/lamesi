@@ -2,12 +2,13 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { gameHeight, gameWidth, menuSceneKey } from "../common/constants";
 import { ManipulableObject } from "/src/helpers/phaser";
-import { fadeDuration, menuZoneSize } from "/src/scenes/menu/menu-scene-def";
+import { menuZoneSize } from "/src/scenes/menu/menu-scene-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { endEventAnim } from "/src/scenes/menu/end-event-anim";
 import { newEventAnim } from "/src/scenes/menu/new-event-anim";
 import { openGoBackMenu } from "/src/scenes/menu/go-back-menu";
 import { openOptionsMenu } from "/src/scenes/menu/options-menu";
+import { otherGlobalData } from "/src/scenes/common/global-data";
 
 const buttonSize = 60;
 
@@ -51,6 +52,30 @@ export class MenuScene extends Phaser.Scene {
     return obj;
   }
 
+  private addSoundButton() {
+    this.addButton(
+      ({ x, y }) => {
+        const soundImage = this.add
+          .image(x, y, "items", "menu-sound")
+          .on("pointerdown", () => {
+            otherGlobalData.globalAudioLevel.updateValue((v) => 1 - v)(this);
+          });
+        Flow.runScene(
+          this,
+          Flow.observe(otherGlobalData.globalAudioLevel.dataSubject, (v) => {
+            soundImage.setTexture(
+              "items",
+              v > 0 ? "menu-sound" : "menu-no-sound",
+            );
+            return Flow.noop;
+          }),
+        );
+        return soundImage;
+      },
+      { side: "left" },
+    );
+  }
+
   addRightButton<O extends ManipulableObject>(
     f: (p: { x: number; y: number; size: number }) => O,
   ) {
@@ -82,6 +107,7 @@ export class MenuScene extends Phaser.Scene {
           .on("pointerdown", () => openOptionsMenu(this)),
       { side: "left" },
     );
+    this.addSoundButton();
     Flow.runScene(
       this,
       Flow.parallel(

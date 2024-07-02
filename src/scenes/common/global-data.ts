@@ -1,19 +1,24 @@
 import { annotate } from "/src/helpers/typing";
 import { defineData } from "/src/helpers/component";
 
+export const menuHintGlobalData = {
+  dungeonActivateHint: annotate<boolean>(),
+  dungeonTakeHint: annotate<boolean>(),
+  dungeonSkillHint: annotate<boolean>(),
+} as const;
+
 // these data are still saved as global but do not truly belong to the player progress
 export const otherGlobalData = defineData(
   {
     cheatCodes: annotate<boolean>(),
-
-    dungeonActivateHint: annotate<boolean>(),
-    dungeonTakeHint: annotate<boolean>(),
-    dungeonSkillHint: annotate<boolean>(),
+    globalAudioLevel: annotate<number>(),
+    ...menuHintGlobalData,
   },
   "game",
 );
 
 export type OtherGlobalDataKey = keyof typeof otherGlobalData;
+export type MenuHintGlobalDataKey = keyof typeof menuHintGlobalData;
 
 export const globalData = defineData(
   {

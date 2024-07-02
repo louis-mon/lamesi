@@ -1,33 +1,46 @@
 import BootCallback = Phaser.Types.Core.BootCallback;
 import { globalData, otherGlobalData } from "/src/scenes/common/global-data";
-import _, { mapValues } from "lodash";
 import { DataMappingDefValues } from "/src/helpers/component";
 import { Game } from "phaser";
-
-const defaultGlobalData: Partial<DataMappingDefValues<typeof globalData>> = {
-  firstEvent: true,
-  lights1: true,
-};
-
-const defaultOtherGlobalData: Partial<
-  DataMappingDefValues<typeof otherGlobalData>
-> = {
-  cheatCodes: true,
-};
 
 type AllGlobalData = DataMappingDefValues<typeof globalData> &
   DataMappingDefValues<typeof otherGlobalData>;
 
 const initialGlobalData: AllGlobalData = {
-  ...mapValues(
-    {
-      ...globalData,
-      ...otherGlobalData,
-    },
-    () => false,
-  ),
-  ...defaultGlobalData,
-  ...defaultOtherGlobalData,
+  /** modified */
+  cheatCodes: true,
+  globalAudioLevel: 1,
+
+  firstEvent: true,
+  lights1: true,
+
+  /** enf of modified */
+
+  dungeonActivateHint: false,
+  dungeonSkillHint: false,
+  dungeonTakeHint: false,
+
+  lights2: false,
+  lights3: false,
+  lights4: false,
+  lights5: false,
+  lightsDone: false,
+
+  dungeonPhase1: false,
+  dungeonPhase2: false,
+  dungeonPhase3: false,
+  dungeonPhase4: false,
+  dungeonPhase5: false,
+  dungeonDone: false,
+
+  creatures1: false,
+  creatures2: false,
+  creatures3: false,
+  creatures4: false,
+  creatures4Done: false,
+
+  finalPhase: false,
+  gameFinished: false,
 };
 
 export const resetGameData = (game: Game) => {
@@ -37,9 +50,10 @@ export const resetGameData = (game: Game) => {
 export const gamePreBoot: BootCallback = (game) => {
   const storageKey = "save";
   const oldSave = localStorage.getItem(storageKey);
-  const initialDataFromSave = oldSave ? JSON.parse(oldSave) : initialGlobalData;
+  const initialDataFromSave = oldSave ? JSON.parse(oldSave) : {};
   const fromEnv = JSON.parse(process.env.LAMESI_EVENTS ?? "{}");
   const initialData: AllGlobalData = {
+    ...initialGlobalData,
     ...initialDataFromSave,
     ...fromEnv,
   };

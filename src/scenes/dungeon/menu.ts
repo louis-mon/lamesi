@@ -21,8 +21,8 @@ import {
 import { gameWidth, gameHeight } from "../common/constants";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import {
+  MenuHintGlobalDataKey,
   otherGlobalData,
-  OtherGlobalDataKey,
 } from "/src/scenes/common/global-data";
 
 const actionEmptyFrame = "action-empty";
@@ -31,7 +31,7 @@ type BindActionParams = {
   action: Flow.PhaserNode;
   key: string;
   disabled?: Observable<boolean>;
-  hintKey: OtherGlobalDataKey;
+  hintKey: MenuHintGlobalDataKey;
   create: (params: {
     pos: Phaser.Math.Vector2;
   }) => (scene: Phaser.Scene) => ManipulableObject;
@@ -72,7 +72,7 @@ const showShadowRect = ({
   hintKey,
   targetPos,
 }: {
-  hintKey: OtherGlobalDataKey;
+  hintKey: MenuHintGlobalDataKey;
   targetPos: Phaser.Math.Vector2;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
