@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import { playerCannotActSubject } from "./definitions";
 import * as Wp from "./wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import { map, tap } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import * as Def from "./definitions";
 
 import Vector2 = Phaser.Math.Vector2;
@@ -12,7 +12,7 @@ import {
   createImageAt,
   getObjectPosition,
 } from "/src/helpers/phaser";
-import { bindActionButton, bindSkillButton } from "./menu";
+import { bindActionButton } from "./menu";
 import { combineLatest, Observable, of } from "rxjs";
 import {
   commonGoEvents,

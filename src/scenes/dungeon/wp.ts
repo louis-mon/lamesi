@@ -350,7 +350,10 @@ const initWalls: SceneContext<void> = (scene) => {
 export const initGroundMap = (scene: Phaser.Scene) => {
   initWalls(scene);
 
-  scene.add.image(0, 0, "rooms").setDepth(Def.depths.backgound).setOrigin(0, 0);
+  scene.add
+    .image(0, 0, "rooms")
+    .setDepth(Def.depths.background)
+    .setOrigin(0, 0);
   allWp.forEach((wpDef) => {
     const wpId = getWpId(wpDef);
     const { x, y } = wpPos(wpDef);

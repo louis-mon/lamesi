@@ -18,13 +18,13 @@ import {
   commonInputEvents,
   customEvent,
   particleEmitterManagerClassKind,
-  physicsImageClassKind,
 } from "/src/helpers/component";
 import { annotate } from "/src/helpers/typing";
 import { take, map, tap, first } from "rxjs/operators";
 import { of, Observable, combineLatest } from "rxjs";
 import { combineContext } from "/src/helpers/functional";
-import { bindSkillButton } from "./menu";
+import { bindSkillButton, menuSceneClass } from "./menu";
+import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 
 const arrowLightParticleDef = declareGoInstance(
   particleEmitterManagerClassKind,
@@ -74,6 +74,13 @@ const skillAltar =
         combineContext(
           Def.scene.data.currentSkillInUse.setValue(false),
           Def.scene.data.currentSkill.setValue(skillDef.key),
+          (scene) => {
+            const menuScene = menuHelpers.getMenuScene(scene);
+            const item = skillDef.createItem({ pos: Wp.wpPos(wp) })(menuScene);
+            menuSceneClass.events.goToButton.emit({ item, key: skillDef.key })(
+              menuScene,
+            );
+          },
         ),
       ),
     });

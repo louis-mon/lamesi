@@ -61,9 +61,10 @@ const buttons = declareGoInstances(menuButtonClass, "buttons", {
   action: { shortcut: "E" },
 });
 
-const menuSceneClass = defineSceneClass({
+export const menuSceneClass = defineSceneClass({
   events: {
     removeShadow: customEvent<{ activated: boolean }>(),
+    goToButton: customEvent<{ item: Phaser.GameObjects.Sprite; key: string }>(),
   },
   data: {},
 });
@@ -122,6 +123,9 @@ const showShadowRect = ({
 export const makeMenu = (scene: Phaser.Scene) => {
   const menuScene = menuHelpers.getMenuScene(scene);
 
+  const getButtonActionObj = (key: string) =>
+    spriteClassKind.getObj(buttonKey(key))(menuScene);
+
   const buttonsFlow = [buttons.skill, buttons.action].map((button) => {
     button.create(
       menuScene.addRightButton(({ x, y }) =>
@@ -152,8 +156,6 @@ export const makeMenu = (scene: Phaser.Scene) => {
         button.config.shortcut,
       )
       .setFontSize(25);
-    const getButtonActionObj = (key: string) =>
-      spriteClassKind.getObj(buttonKey(key))(menuScene);
 
     return Flow.parallel(
       Flow.observeSentinel(button.data.action.subject, ({ disabled, key }) =>
@@ -222,7 +224,21 @@ export const makeMenu = (scene: Phaser.Scene) => {
       ),
     );
   });
-  Flow.run(menuScene, Flow.parallel(...buttonsFlow));
+
+  const goToItemFlow: Flow.PhaserNode = Flow.observe(
+    menuSceneClass.events.goToButton.subject,
+    ({ item, key }) =>
+      Flow.sequence(
+        Flow.moveTo({
+          dest: getObjectPosition(getButtonActionObj(key)),
+          target: item,
+          speed: 2000,
+        }),
+        Flow.call(() => item.destroy()),
+      ),
+  );
+
+  Flow.run(menuScene, Flow.parallel(...buttonsFlow, goToItemFlow));
 };
 
 const bindMenuButton =

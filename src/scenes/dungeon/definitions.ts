@@ -151,7 +151,7 @@ export const switches = declareGoInstances(switchClass, "switch", {
 export type SwitchCrystalDef = ValueOf<typeof switches>;
 
 export const depths = {
-  backgound: -10,
+  background: -10,
   carpet: 1,
   wp: 5,
   npc: 10,
