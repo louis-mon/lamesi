@@ -20,7 +20,10 @@ import { arrowSkillAltar } from "./skills";
 import { Maybe } from "purify-ts";
 import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
 import { globalData } from "../common/global-data";
-import { altarAppearCutscene } from "/src/scenes/dungeon/dungeon-cutscene";
+import {
+  altarAppearCutscene,
+  dungeonCutscene,
+} from "/src/scenes/dungeon/dungeon-cutscene";
 
 const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
   const mechanisms = [
@@ -250,8 +253,9 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
     room: 4,
     kind: "spike",
   })(scene);
+  const goalAltarWp = { room: 4, x: 2, y: 1 };
   const goalAltar = Npc.endGoalAltarPlaceholder({
-    wp: { room: 4, x: 2, y: 1 },
+    wp: goalAltarWp,
     eventToSolve: "dungeonPhase1",
   });
   const setGoalSpikes = (open: boolean) =>
@@ -268,7 +272,10 @@ const createGoal1: Flow.PhaserNode = Flow.lazy((scene) => {
       condition: combineLatest(
         switches.map((switchDef) => switchDef.data.state.subject(scene)),
       ).pipe(map((states) => states.every(_.identity))),
-      action: Flow.call(setGoalSpikes(true)),
+      action: dungeonCutscene({
+        targetWp: goalAltarWp,
+        inCutscene: Flow.call(setGoalSpikes(true)),
+      }),
     }),
     ...switches.map((switchDef) =>
       Flow.repeatWhen({

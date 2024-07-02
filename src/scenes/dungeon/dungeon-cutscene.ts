@@ -10,7 +10,7 @@ import { map } from "rxjs/operators";
 export const dungeonCutscene = (params: {
   targetWp: Wp.WpDef;
   inCutscene: Flow.PhaserNode;
-  action: Flow.PhaserNode;
+  action?: Flow.PhaserNode;
 }): Flow.PhaserNode => {
   const startAnim = new Subject();
   return Flow.parallel(
@@ -22,6 +22,7 @@ export const dungeonCutscene = (params: {
           duration: 1000,
           zoom: 2.5,
           action: Flow.sequence(
+            Flow.waitTimer(1000),
             Flow.call(() => startAnim.next()),
             params.inCutscene,
             Flow.waitTimer(2000),
@@ -29,7 +30,7 @@ export const dungeonCutscene = (params: {
         }),
       ),
     ),
-    Flow.sequence(Flow.wait(startAnim), params.action),
+    Flow.sequence(Flow.wait(startAnim), params.action ?? Flow.noop),
   );
 };
 
