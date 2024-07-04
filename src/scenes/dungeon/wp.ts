@@ -30,7 +30,7 @@ const roomMargin = new Vector2(60, 55);
 const wpPerSide = 5;
 export const wpSize = roomSize.clone().scale(1 / wpPerSide);
 export const wpHalfSize = wpSize.clone().scale(0.5);
-const scenePos = new Vector2(menuZoneSize + 20, 100);
+const scenePos = new Vector2(menuZoneSize + 30, 100);
 const nbRoomsW = 3;
 const nbRoomsH = 2;
 const nbRooms = nbRoomsW * nbRoomsH;
@@ -350,8 +350,9 @@ const initWalls: SceneContext<void> = (scene) => {
 export const initGroundMap = (scene: Phaser.Scene) => {
   initWalls(scene);
 
+  scene.cameras.main.setBackgroundColor("1d2921");
   scene.add
-    .image(0, 0, "rooms")
+    .image(scenePos.x, scenePos.y, "rooms")
     .setDepth(Def.depths.background)
     .setOrigin(0, 0);
   allWp.forEach((wpDef) => {
