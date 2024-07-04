@@ -23,6 +23,8 @@ export const createPlayer = (scene: Phaser.Scene) => {
       ),
     ),
   );
+  player.body.setSize(35, 57);
+  player.body.setOffset(18, 13);
   // phaser cannot load durations properly
   const slashAnimDurations = [300, 50, 50, 50, 300];
   player.anims.animationManager.get("slash").frames.forEach((frame, i) => {
