@@ -26,13 +26,17 @@ import { globalData, GlobalDataKey } from "../common/global-data";
 import { isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { openDoorWithKeyItem } from "/src/scenes/dungeon/door";
+import { dungeonCutscene } from "/src/scenes/dungeon/dungeon-cutscene";
 
 const puzzleDoorRoom1: PhaserNode = Flow.lazy((scene) => {
   const switchDef = Def.switches.room1ForRoom2Door;
   Npc.switchCrystalFactory(scene)(switchDef);
   return Flow.whenTrueDo({
     condition: switchDef.data.state.subject(scene),
-    action: Npc.openDoor("door1to2"),
+    action: dungeonCutscene({
+      targetWp: { room: 1, x: 4, y: 2 },
+      inCutscene: Npc.openDoor("door1to2"),
+    }),
   });
 });
 
@@ -123,7 +127,12 @@ const createGroundSwitch = (inst: GroundSwitch): Flow.PhaserNode =>
     inst.data.state.setValue(false)(scene);
     return Flow.parallel(
       Flow.observe(playerIsOnPos(inst.config.wp), (isOnSwitch) =>
-        Flow.call(inst.data.state.setValue(isOnSwitch)),
+        Flow.call(() => {
+          inst
+            .getObj(scene)
+            .setFrame(isOnSwitch ? "ground-switch-down" : "ground-switch-up");
+          inst.data.state.setValue(isOnSwitch)(scene);
+        }),
       ),
     );
   });
