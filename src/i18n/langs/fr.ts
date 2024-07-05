@@ -7,7 +7,7 @@ export const frTranslation: TranslationKeys = {
     close: "Retour",
   },
   goBack: {
-    contents: `Etes vous sûr de vouloir quitter ce niveau et retourner au hub ?\nLa progression sera perdue`,
+    contents: `En retournant au hub, la progression dans cette énigme ne sera pas enrengistrée.`,
     title: "Retourner au hub",
   },
   options: {
