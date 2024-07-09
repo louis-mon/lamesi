@@ -16,4 +16,12 @@ export const frTranslation: TranslationKeys = {
     confirmEraseData:
       "Etes vous sur de vouloir effacer les données de sauvegarde ?",
   },
+  dungeon: {
+    activateSwitch:
+      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour activer l'interrupteur",
+    takeItem:
+      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour prendre l'objet",
+    useItem:
+      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour utiliser l'objet",
+  },
 };

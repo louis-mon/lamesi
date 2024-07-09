@@ -2,28 +2,31 @@ import * as Phaser from "phaser";
 import { Maybe } from "purify-ts";
 import * as Flow from "/src/helpers/phaser-flow";
 import {
-  defineGoClass,
+  commonGoEvents,
   customEvent,
   declareGoInstances,
-  commonGoEvents,
-  spriteClassKind,
+  defineGoClass,
   defineSceneClass,
+  spriteClassKind,
 } from "/src/helpers/component";
 import { annotate, ValueOf } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
-import { Observable, fromEvent } from "rxjs";
-import { startWith, pairwise } from "rxjs/operators";
+import { fromEvent, Observable } from "rxjs";
+import { pairwise, startWith } from "rxjs/operators";
 import {
   getObjectPosition,
   ManipulableObject,
   placeAt,
 } from "/src/helpers/phaser";
-import { gameWidth, gameHeight } from "../common/constants";
+import { gameHeight, gameWidth } from "../common/constants";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import {
   MenuHintGlobalDataKey,
   otherGlobalData,
 } from "/src/scenes/common/global-data";
+import { uiBuilder } from "/src/helpers/ui/ui-builder";
+import { tr } from "/src/i18n/init";
+import { DottedKey } from "/src/i18n/keys";
 
 const actionEmptyFrame = "action-empty";
 
@@ -41,14 +44,17 @@ type BindActionState = Pick<BindActionParams, "action" | "key" | "disabled">;
 
 const buttonKey = (key: string) => `menu-button-${key}`;
 
+type ButtonConfig = { shortcut: string };
+
 const menuButtonClass = defineGoClass({
   events: {
-    bindAction: customEvent<BindActionParams>(),
+    bindAction:
+      customEvent<{ params: BindActionParams; config: ButtonConfig }>(),
     unbindAction: customEvent<BindActionParams>(),
   },
   data: { action: annotate<BindActionState>() },
   kind: annotate<Phaser.GameObjects.Sprite>(),
-  config: annotate<{ shortcut: string }>(),
+  config: annotate<ButtonConfig>(),
 });
 
 const emptyAction: BindActionState = {
@@ -69,16 +75,25 @@ export const menuSceneClass = defineSceneClass({
   data: {},
 });
 
+const hintKeyAction: Record<MenuHintGlobalDataKey, DottedKey> = {
+  dungeonActivateHint: "dungeon.activateSwitch",
+  dungeonSkillHint: "dungeon.useItem",
+  dungeonTakeHint: "dungeon.takeItem",
+};
+
 const showShadowRect = ({
   hintKey,
   targetPos,
+  config: { shortcut },
 }: {
   hintKey: MenuHintGlobalDataKey;
   targetPos: Phaser.Math.Vector2;
+  config: ButtonConfig;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     if (otherGlobalData[hintKey].value(scene)) return Flow.noop;
 
+    const ui = uiBuilder(scene);
     const pointerCircle = scene.add.graphics();
     pointerCircle.fillCircle(0, 0, 200).setVisible(false);
     const pointerCircleMask = pointerCircle.createGeometryMask();
@@ -87,6 +102,20 @@ const showShadowRect = ({
       .rectangle(gameWidth / 2, gameHeight / 2, gameWidth, gameHeight, 0, 0)
       .setDepth(200)
       .setMask(pointerCircleMask);
+    const hintDialog = ui
+      .dialog(() => ({
+        background: ui.containerBack(),
+        content: ui.bodyText(
+          tr(hintKeyAction[hintKey], {
+            key: shortcut,
+          }),
+        ),
+        orientation: "vertical",
+        actions: [ui.button({ text: tr("general.ok") })],
+      }))
+      .layout();
+    hintDialog.on("button.click", () => hintDialog.fadeOutDestroy(500));
+    hintDialog.setDepth(shadowRect.depth + 1, false);
     return Flow.withBackground({
       main: Flow.whenValueDo({
         condition: menuSceneClass.events.removeShadow.subject,
@@ -172,7 +201,7 @@ export const makeMenu = (scene: Phaser.Scene) => {
       ),
       Flow.observe(
         button.events.bindAction.subject,
-        ({ action, create, key, disabled, hintKey }) =>
+        ({ params: { action, create, key, disabled, hintKey }, config }) =>
           Flow.sequence(
             Flow.call(() => {
               buttonDisabled = false;
@@ -195,6 +224,7 @@ export const makeMenu = (scene: Phaser.Scene) => {
               showShadowRect({
                 hintKey,
                 targetPos: getObjectPosition(buttonObj),
+                config,
               }),
             ),
           ),
@@ -253,7 +283,10 @@ const bindMenuButton =
             menuHelpers.getMenuScene,
             Flow.call(
               value
-                ? button.events.bindAction.emit(params)
+                ? button.events.bindAction.emit({
+                    params,
+                    config: button.config,
+                  })
                 : button.events.unbindAction.emit(params),
             ),
           );

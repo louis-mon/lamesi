@@ -13,6 +13,11 @@ export type TranslationKeys = {
     eraseData: string;
     confirmEraseData: string;
   };
+  dungeon: {
+    activateSwitch: string;
+    takeItem: string;
+    useItem: string;
+  };
 };
 
 type ToDotted<
