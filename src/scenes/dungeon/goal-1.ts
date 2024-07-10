@@ -118,38 +118,49 @@ const arrowCirclePuzzle = Flow.lazy((scene: Phaser.Scene) => {
     Flow.repeatWhen({
       condition: Def.switches.room5AltPanel.data.state.subject,
       action: Flow.lazy(() => {
-        const altIndex = [1, 2].find((i) =>
-          getRotateMechDef(mechanisms[i].switchDef.key).data.alt.value(scene),
-        );
+        const getAltValue = (i: number) =>
+          getRotateMechDef(mechanisms[i].switchDef.key).data.alt.value(scene);
+
+        function getNextIndices() {
+          const startIndex = 1;
+          const endIndex = 2;
+          const altMechanismIndices = [startIndex, endIndex];
+          const altBytes = altMechanismIndices.map(
+            (i) => (getAltValue(i) ? 1 : 0) << (endIndex - i),
+          );
+          const nextFlags = _.sum(altBytes) + 1;
+          return altMechanismIndices.filter((i) => {
+            const activeNext = !!(nextFlags & (1 << (endIndex - i)));
+            return activeNext !== getAltValue(i);
+          });
+        }
+
         return Flow.sequence(
           Flow.parallel(
-            ...Maybe.fromNullable(altIndex)
-              .map((i) => (mechanisms[i + 1] ? [i, i + 1] : [i]))
-              .orDefault([1])
-              .map((i) => {
-                const mech = getRotateMechDef(mechanisms[i].switchDef.key);
-                const mechObj = mech.getObj(scene);
-                const duration = 520;
+            ...getNextIndices().map((i) => {
+              const mech = getRotateMechDef(mechanisms[i].switchDef.key);
+              const mechObj = mech.getObj(scene);
+              const duration = 520;
 
-                return Flow.sequence(
-                  Flow.tween({
-                    targets: mechObj,
-                    props: { alpha: 0 },
-                    duration,
-                  }),
-                  Flow.call(mech.data.alt.updateValue((value) => !value)),
-                  Flow.call(() =>
-                    mechObj.setFrame(
-                      mechTextureFrame(i, mech.data.alt.value(scene)),
-                    ),
+              return Flow.sequence(
+                Flow.tween({
+                  targets: mechObj,
+                  props: { alpha: 0 },
+                  duration,
+                }),
+                Flow.call(mech.data.alt.updateValue((value) => !value)),
+                Flow.call(() =>
+                  mechObj.setFrame(
+                    mechTextureFrame(i, mech.data.alt.value(scene)),
                   ),
-                  Flow.tween(() => ({
-                    targets: mechObj,
-                    props: { alpha: 1 },
-                    duration,
-                  })),
-                );
-              }),
+                ),
+                Flow.tween(() => ({
+                  targets: mechObj,
+                  props: { alpha: 1 },
+                  duration,
+                })),
+              );
+            }),
           ),
           Flow.call(
             Def.switches.room5AltPanel.events.deactivateSwitch.emit({}),
