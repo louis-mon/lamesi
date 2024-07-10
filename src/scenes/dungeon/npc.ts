@@ -63,10 +63,12 @@ export const bindAttackButton = ({
   pos,
   disabled = () => of(false),
   action,
+  target,
 }: {
   pos: Def.WpId;
   disabled?: SceneContext<Observable<boolean>>;
   action: Flow.PhaserNode;
+  target: Phaser.GameObjects.Components.Transform;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) =>
     bindActionButton(
@@ -77,7 +79,7 @@ export const bindAttackButton = ({
       {
         hintKey: "dungeonActivateHint",
         action: Flow.parallel(
-          Flow.call(Def.scene.events.attackPlayer.emit({})),
+          Flow.call(Def.scene.events.attackPlayer.emit({ target })),
           action,
         ),
         key: `activate-attack-${pos}`,
@@ -143,6 +145,7 @@ export const switchCrystalFactory = (scene: Phaser.Scene) => {
       scene,
       Flow.parallel(
         bindAttackButton({
+          target: def.getObj(scene),
           pos: Wp.getWpId(def.config.wp),
           disabled: def.config.deactivable ? undefined : stateData.dataSubject,
           action: Flow.call(() =>

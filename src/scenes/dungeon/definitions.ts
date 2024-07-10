@@ -45,7 +45,8 @@ export const scene = defineSceneClass({
   events: {
     clickWp: customEvent<WpId>(),
     movePlayer: customEvent<{ path: WpId[] }>(),
-    attackPlayer: customEvent(),
+    attackPlayer:
+      customEvent<{ target: Phaser.GameObjects.Components.Transform }>(),
     killPlayer: customEvent(),
 
     sendMagicArrow: customEvent<Vector2>(),

@@ -355,6 +355,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         bindAttackButton({
           pos: Wp.getWpId({ room: 1, x: 2, y: 2 }),
           action: emitNewState(killingState()),
+          target: headObj,
         }),
       ),
     );
@@ -387,6 +388,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
           pos: Wp.getWpId(footInst.config.pos),
           disabled: footInst.data.hit.dataSubject,
           action: Flow.call(footInst.data.hit.setValue(true)),
+          target: footInst.getObj(scene),
         }),
       ),
     ),

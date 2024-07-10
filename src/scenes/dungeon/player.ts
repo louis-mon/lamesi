@@ -103,8 +103,12 @@ export const createPlayer = (scene: Phaser.Scene) => {
         Flow.call(isDeadData.setValue(false)),
       );
     }),
-    Flow.observe(Def.scene.events.attackPlayer.subject, () => {
+    Flow.observe(Def.scene.events.attackPlayer.subject, ({ target }) => {
       player.anims.play("slash");
+      const dx = target.x - player.x;
+      if (dx !== 0) {
+        player.setFlipX(dx < 0);
+      }
       return Flow.noop;
     }),
   );
