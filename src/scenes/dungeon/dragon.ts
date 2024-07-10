@@ -34,6 +34,7 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { cutscene } from "/src/scenes/common/cutscene";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import { wpPos } from "./wp";
+import { colorTweenParams } from "/src/helpers/animate/tween/tween-color";
 
 const dragonHeadClass = defineGoClass({
   events: {
@@ -53,11 +54,30 @@ const toggleForbiddenPos = (disabled: boolean) =>
     disabled,
   });
 
+const angryEffect = ({
+  target,
+}: {
+  target: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+}) =>
+  Flow.withCleanup({
+    flow: Flow.tween({
+      ...colorTweenParams({
+        targets: target,
+        value: 0xffffaaaa,
+        propName: "tint",
+      }),
+      repeat: -1,
+      yoyo: true,
+      duration: 500,
+    }),
+    cleanup: () => target.clearTint(),
+  });
+
 const stunEffect = ({
   target,
   infinite,
 }: {
-  target: ManipulableObject;
+  target: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   infinite: boolean;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
@@ -206,7 +226,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
     .create(createSpriteWithPhysicsAt(scene, headPosSleep, "dragon", "head"))
     .setDepth(Def.depths.npcHigh);
   Def.scene.data.interactableGroup.value(scene).add(headObj);
-  const initialHp = 3;
+  const initialHp = 2;
   const initHp = headInst.data.hp.setValue(initialHp);
   initHp(scene);
 
@@ -406,10 +426,13 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
       }),
       Flow.observe(headInst.data.hp.subject, (hp) =>
         hp > 0
-          ? stunEffect({
-              target: headObj,
-              infinite: false,
-            })
+          ? Flow.parallel(
+              stunEffect({
+                target: headObj,
+                infinite: false,
+              }),
+              angryEffect({ target: headObj }),
+            )
           : emitNewState(stunnedState),
       ),
       Flow.repeatWhen({
