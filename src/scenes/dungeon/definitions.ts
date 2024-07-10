@@ -143,6 +143,10 @@ export const switches = declareGoInstances(switchClass, "switch", {
     wp: { room: 2, x: 1, y: 4 },
     offset: new Vector2(25, 0),
   },
+  room2ResetFloor: {
+    wp: { room: 2, x: 4, y: 0 },
+    offset: new Vector2(38, -30),
+  },
   room0ToOpenDoor: {
     wp: { room: 0, x: 0, y: 2 },
     offset: new Vector2(-20, 0),

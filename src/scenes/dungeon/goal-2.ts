@@ -134,6 +134,30 @@ type Room2FloorState = { [key: string]: boolean };
 const room2floorState =
   makeSceneDataHelper<Room2FloorState>("room2-floor-state");
 
+const setTile = ({
+  wp,
+  newState,
+}: {
+  wp: Wp.WpDef;
+  newState: boolean;
+}): Flow.PhaserNode =>
+  Flow.lazy((scene) => {
+    const wpId = Wp.getWpId(wp);
+    return Flow.sequence(
+      Flow.tween({
+        targets: spriteClassKind.getObj(tileName(wp))(scene),
+        props: { alpha: newState ? 0.7 : 0 },
+        duration: 500,
+      }),
+      Flow.call(
+        room2floorState.updateValue((state) => ({
+          ...state,
+          [wpId]: newState,
+        })),
+      ),
+    );
+  });
+
 export const swappingTileBellActions = (tileWps: Wp.WpDef[]): Flow.PhaserNode =>
   Flow.lazy((scene) =>
     Flow.parallel(
@@ -142,20 +166,10 @@ export const swappingTileBellActions = (tileWps: Wp.WpDef[]): Flow.PhaserNode =>
           bellHiddenAction({
             action: () => {
               const wpId = Wp.getWpId(wp);
-              const floorActive = room2floorState.value(scene)[wpId];
-              return Flow.sequence(
-                Flow.tween({
-                  targets: spriteClassKind.getObj(tileName(wp))(scene),
-                  props: { alpha: floorActive ? 0 : 0.7 },
-                  duration: 500,
-                }),
-                Flow.call(
-                  room2floorState.updateValue((state) => ({
-                    ...state,
-                    [wpId]: !state[wpId],
-                  })),
-                ),
-              );
+              return setTile({
+                wp,
+                newState: !room2floorState.value(scene)[wpId],
+              });
             },
             wp,
           }),
@@ -200,6 +214,20 @@ export const checkSolveSwappingTiles =
       }),
     );
 
+const createResetFloorSwitch: Flow.PhaserNode = Flow.lazy((scene) => {
+  const resetSwitch = Def.switches.room2ResetFloor;
+  Npc.switchCrystalFactory(scene)(resetSwitch);
+  return Flow.repeatWhen({
+    condition: resetSwitch.data.state.subject,
+    action: Flow.sequence(
+      Flow.parallel(
+        ...allTileWps.map((wp) => setTile({ wp, newState: false })),
+      ),
+      Flow.call(resetSwitch.events.deactivateSwitch.emit({})),
+    ),
+  });
+});
+
 const tileName = (wp: Def.WpDef) => `room2-floor-tile-${Wp.getWpId(wp)}`;
 export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
   room2floorState.setValue({})(scene);
@@ -216,7 +244,11 @@ export const room2GoalPuzzle: Flow.PhaserNode = Flow.lazy((scene) => {
           }),
       }),
   );
-  return Flow.parallel(swappingTileBellActions(firstSwappingTiles), checkSolve);
+  return Flow.parallel(
+    createResetFloorSwitch,
+    swappingTileBellActions(firstSwappingTiles),
+    checkSolve,
+  );
 });
 
 const newDoorsToOpen: DoorKey[] = ["door5To2", "door4To3"];
