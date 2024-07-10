@@ -1,22 +1,19 @@
 import * as Phaser from "phaser";
-import { Maybe } from "purify-ts";
-import { playerCannotActSubject } from "../definitions";
-import * as Wp from "../wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import * as Geom from "/src/helpers/math/geom";
 import * as Npc from "../npc";
 import * as Def from "../definitions";
-import { iceArmorAltar } from "../ice-armor";
 import { globalData } from "../../common/global-data";
 import { amuletSkillAltar } from "../skills";
-import { createSpriteAt } from "/src/helpers/phaser";
 import { createFlameAnim, showGreenFlame } from "./goal-4-defs";
 import { puzzleRoom2Config } from "./goal-4-puzzle-room-2";
 import { goal4PuzzleRoom5Config } from "./goal-4-puzzle-room-5";
 import { goal4Puzzle0 } from "./goal-4-puzzle-room-0";
-import { combineLatest } from "rxjs";
+import { combineLatest, fromEvent } from "rxjs";
 import { map } from "rxjs/operators";
-import { dungeonCutscene } from "/src/scenes/dungeon/dungeon-cutscene";
+import {
+  altarAppearCutscene,
+  dungeonCutscene,
+} from "/src/scenes/dungeon/dungeon-cutscene";
 
 const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config, goal4Puzzle0];
 
@@ -69,11 +66,33 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
             flameDef.instance.instance.data.solved.dataSubject(scene),
           ),
         ).pipe(map((values) => values.every((x) => x))),
-        action: Npc.endGoalAltarPlaceholder({
-          eventToSolve: "dungeonPhase4",
-          wp: { room: 4, x: 1, y: 4 },
-        }),
+        action: Flow.sequence(
+          Flow.waitTimer(1000),
+          altarAppearCutscene({
+            wp: { room: 4, x: 1, y: 4 },
+            altarAppear: (params) =>
+              Npc.endGoalAltarPlaceholder({
+                eventToSolve: "dungeonPhase4",
+                ...params,
+              }),
+          }),
+        ),
       }),
+    ),
+  );
+});
+
+const cheatCode: Flow.PhaserNode = Flow.lazy((scene) => {
+  const keyToEvent: Array<{ key: number; def: typeof goal4Puzzle0 }> = [
+    { key: Phaser.Input.Keyboard.KeyCodes.ONE, def: goal4Puzzle0 },
+    { key: Phaser.Input.Keyboard.KeyCodes.TWO, def: puzzleRoom2Config },
+    { key: Phaser.Input.Keyboard.KeyCodes.THREE, def: goal4PuzzleRoom5Config },
+  ];
+  return Flow.parallel(
+    ...keyToEvent.map(({ key, def }) =>
+      Flow.observe(fromEvent(scene.input.keyboard.addKey(key), `down`), () =>
+        Flow.call(def.instance.instance.data.solved.setValue(true)),
+      ),
     ),
   );
 });

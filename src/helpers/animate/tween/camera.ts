@@ -1,7 +1,9 @@
 import * as Flow from "/src/helpers/phaser-flow";
-import { fromEvent } from "rxjs";
+import { BehaviorSubject, fromEvent, Subject } from "rxjs";
 import Vector2 = Phaser.Math.Vector2;
 import PAN_COMPLETE = Phaser.Cameras.Scene2D.Events.PAN_COMPLETE;
+import { map } from "rxjs/operators";
+import { uniqueId } from "lodash";
 
 type PanCameraParams = {
   target: Vector2;
@@ -9,22 +11,46 @@ type PanCameraParams = {
   zoom?: number;
 };
 
+const makeEventQueue = (key: string) => {
+  return {
+    run: (flow: Flow.PhaserNode): Flow.PhaserNode =>
+      Flow.lazy((scene) => {
+        const evQueue$: BehaviorSubject<string[]> =
+          scene.data.get(key) ?? new BehaviorSubject<string[]>([]);
+        scene.data.set(key, evQueue$);
+        const id = uniqueId();
+        evQueue$.next(evQueue$.value.concat(id));
+        return Flow.withCleanup({
+          flow: Flow.sequence(
+            Flow.waitTrue(evQueue$.pipe(map((queue) => queue[0] === id))),
+            flow,
+          ),
+          cleanup: () => evQueue$.next(evQueue$.value.filter((v) => v !== id)),
+        });
+      }),
+  };
+};
+
+const cameraQueue = makeEventQueue("camera-panning");
+
 export const panCameraToAndReset = ({
   action,
   ...params
 }: PanCameraParams & { action: Flow.PhaserNode }): Flow.PhaserNode =>
-  Flow.lazy((scene) => {
-    const { centerX, centerY, zoom } = scene.cameras.main;
-    return Flow.sequence(
-      panCameraTo(params),
-      action,
-      panCameraTo({
-        duration: params.duration,
-        zoom,
-        target: new Vector2(centerX, centerY),
-      }),
-    );
-  });
+  cameraQueue.run(
+    Flow.lazy((scene) => {
+      const { centerX, centerY, zoom } = scene.cameras.main;
+      return Flow.sequence(
+        panCameraTo(params),
+        action,
+        panCameraTo({
+          duration: params.duration,
+          zoom,
+          target: new Vector2(centerX, centerY),
+        }),
+      );
+    }),
+  );
 
 export const panCameraTo = ({
   target,
