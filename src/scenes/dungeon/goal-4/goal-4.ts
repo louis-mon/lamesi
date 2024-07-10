@@ -16,6 +16,7 @@ import { goal4PuzzleRoom5Config } from "./goal-4-puzzle-room-5";
 import { goal4Puzzle0 } from "./goal-4-puzzle-room-0";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
+import { dungeonCutscene } from "/src/scenes/dungeon/dungeon-cutscene";
 
 const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config, goal4Puzzle0];
 
@@ -31,28 +32,31 @@ const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
             flow,
             Flow.whenTrueDo({
               condition: instance.instance.data.solved.dataSubject,
-              action: Flow.sequence(
-                Flow.tween({
-                  targets: instance.hintInstance.getObj(scene),
-                  props: { alpha: 0.6 },
-                  duration: 1000,
-                }),
-                Flow.call(() => {
-                  const hintObj = instance.hintInstance.getObj(scene);
-                  particles.createEmitter({
-                    follow: hintObj,
-                    scale: hintObj.scale,
-                    frame: instance.config.hintFrame,
-                    x: 0,
-                    y: 0,
-                    speedY: -80,
-                    frequency: 350,
-                    quantity: 1,
-                    alpha: { start: hintObj.alpha, end: 0 },
-                    lifespan: 750,
-                  });
-                }),
-              ),
+              action: dungeonCutscene({
+                targetWp: instance.config.pos,
+                inCutscene: Flow.sequence(
+                  Flow.tween({
+                    targets: instance.hintInstance.getObj(scene),
+                    props: { alpha: 0.6 },
+                    duration: 1000,
+                  }),
+                  Flow.call(() => {
+                    const hintObj = instance.hintInstance.getObj(scene);
+                    particles.createEmitter({
+                      follow: hintObj,
+                      scale: hintObj.scale,
+                      frame: instance.config.hintFrame,
+                      x: 0,
+                      y: 0,
+                      speedY: -80,
+                      frequency: 350,
+                      quantity: 1,
+                      alpha: { start: hintObj.alpha, end: 0 },
+                      lifespan: 750,
+                    });
+                  }),
+                ),
+              }),
             }),
           ),
         ),

@@ -1,36 +1,18 @@
 import _ from "lodash";
 import * as Phaser from "phaser";
-import { Maybe } from "purify-ts";
-import { playerCannotActSubject } from "../definitions";
 import * as Wp from "../wp";
 import * as Flow from "/src/helpers/phaser-flow";
-import * as Geom from "/src/helpers/math/geom";
-import * as Npc from "../npc";
 import * as Def from "../definitions";
-import { iceArmorAltar } from "../ice-armor";
-import { globalData } from "../../common/global-data";
-import { amuletSkillAltar } from "../skills";
-import { createSpriteAt } from "/src/helpers/phaser";
-import {
-  customEvent,
-  declareGoInstance,
-  defineSceneClass,
-  makeSceneEventHelper,
-  spriteClassKind,
-} from "/src/helpers/component";
-import {
-  hintFlameRoom5,
-  makeGreenFlame,
-  moveFlameTo,
-  playerIsOnFlame,
-} from "./goal-4-defs";
-import { distinct, map, pairwise } from "rxjs/operators";
+import { declareGoInstance } from "/src/helpers/component";
+import { makeGreenFlame, playerIsOnFlame } from "./goal-4-defs";
+import { map, pairwise } from "rxjs/operators";
 import {
   createFlameThrower,
   flameThrowerClass,
   hideFlameThrower,
   revealFlameThrower,
 } from "../fireball";
+import { BehaviorSubject } from "rxjs";
 
 const startPuzzlePos: Wp.WpDef = { room: 0, x: 1, y: 1 };
 
@@ -61,20 +43,11 @@ const flameThrowers = _.range(1, 4).map((x) =>
 
 const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   let lines: Phaser.GameObjects.Line[] = [];
-  let positions: Wp.WpId[] = [];
 
   const state = Flow.makeSceneStates();
 
-  const checkSolveState = () =>
+  const resetAfterLeaveState = () =>
     Flow.lazy(() => {
-      if (
-        _.isEqual(
-          solution.map((v) => ({ ...v, room: 0 })),
-          positions.map(Wp.getWpDef),
-        )
-      ) {
-        return Flow.call(flame.instance.data.solved.setValue(true));
-      }
       return Flow.sequence(
         Flow.parallel(
           ..._.map(flameThrowers, hideFlameThrower),
@@ -87,15 +60,29 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
         Flow.call(() => {
           lines.forEach((l) => l.destroy());
           lines = [];
-          positions = [];
         }),
         state.nextFlow(flameWaitingState()),
       );
     });
 
+  const solvedState = () =>
+    Flow.sequence(Flow.call(flame.instance.data.solved.setValue(true)));
+
   const flameActiveState = () =>
-    Flow.lazy(() =>
-      Flow.parallel(
+    Flow.lazy(() => {
+      let nextPositions: Wp.WpId[] = [];
+      const positions$: BehaviorSubject<Wp.WpId[]> = new BehaviorSubject<
+        Wp.WpId[]
+      >([]);
+
+      function isSolved(positions: Wp.WpId[]): boolean {
+        return _.isEqual(
+          solution.map((v) => ({ ...v, room: 0 })),
+          positions.map(Wp.getWpDef),
+        );
+      }
+
+      return Flow.parallel(
         ..._.flatMap(flameThrowers, (flameThrower) => [
           revealFlameThrower(flameThrower),
           Flow.repeatSequence(
@@ -119,11 +106,18 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
                 pos.y > 3,
             ),
           ),
-          action: state.nextFlow(checkSolveState()),
+          action: state.nextFlow(resetAfterLeaveState()),
+        }),
+        Flow.whenTrueDo({
+          condition: positions$.pipe(map(isSolved)),
+          action: state.nextFlow(solvedState()),
         }),
         Flow.observe(
           Def.player.data.currentPos.dataSubject(scene).pipe(pairwise()),
           ([prevPosId, posId]) => {
+            if (isSolved(nextPositions)) {
+              return Flow.noop;
+            }
             const prevPos = Wp.wpPos(Wp.getWpDef(prevPosId));
             const pos = Wp.wpPos(Wp.getWpDef(posId));
             const line = scene.add
@@ -132,15 +126,18 @@ const puzzleFlow: Flow.PhaserNode = Flow.lazy((scene) => {
               .setLineWidth(5)
               .setOrigin(0);
             lines.push(line);
-            positions.push(posId);
+            nextPositions = nextPositions.concat(posId);
             return Flow.tween({
               targets: line,
               props: { alpha: 1, duration: 480 },
+              // doing this now avoids changing state too early, which cause
+              // the tween to be canceled
+              onComplete: () => positions$.next(nextPositions),
             });
           },
         ),
-      ),
-    );
+      );
+    });
 
   const flameWaitingState = (): Flow.PhaserNode =>
     Flow.sequence(
