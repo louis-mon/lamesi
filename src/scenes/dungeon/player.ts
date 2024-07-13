@@ -11,6 +11,7 @@ import {
   placeAt,
   addPhysicsFromSprite,
 } from "/src/helpers/phaser";
+import { playAnim, setUpAnimDurations } from "/src/helpers/animate/play-anim";
 
 export const createPlayer = (scene: Phaser.Scene) => {
   const initialWp: Wp.WpDef = { room: 4, x: 2, y: 4 };
@@ -25,11 +26,10 @@ export const createPlayer = (scene: Phaser.Scene) => {
   );
   player.body.setSize(35, 57);
   player.body.setOffset(18, 13);
-  // phaser cannot load durations properly
-  const slashAnimDurations = [300, 50, 50, 50, 300];
-  player.anims.animationManager.get("slash").frames.forEach((frame, i) => {
-    frame.duration = slashAnimDurations[i];
-  });
+
+  setUpAnimDurations(scene, "slash", [300, 50, 50, 50, 300]);
+  setUpAnimDurations(scene, "death", [500, 700, 1200]);
+
   const currentPosData = Def.player.data.currentPos;
   const isMovingData = Def.player.data.isMoving;
   const isDeadData = Def.player.data.isDead;
@@ -94,10 +94,12 @@ export const createPlayer = (scene: Phaser.Scene) => {
       if (isDeadData.value(scene)) return Flow.noop;
       isDeadData.setValue(true)(scene);
       return Flow.sequence(
+        playAnim({ key: "death" }, player),
         Flow.call(() => {
           const newPosId = Def.scene.data.playerCheckpoint.value(scene);
           setPlayerWp(newPosId);
           placeAt(player, Wp.wpPos(Wp.getWpDef(newPosId)));
+          player.play("idle");
         }),
         Flow.waitTimer(2000),
         Flow.call(isDeadData.setValue(false)),

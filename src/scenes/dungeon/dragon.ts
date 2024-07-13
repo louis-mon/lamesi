@@ -3,7 +3,6 @@ import {
   createSpriteAt,
   createSpriteWithPhysicsAt,
   makeAnimFrames,
-  ManipulableObject,
   vecToXY,
 } from "/src/helpers/phaser";
 import * as Flow from "/src/helpers/phaser-flow";
@@ -35,6 +34,7 @@ import { cutscene } from "/src/scenes/common/cutscene";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import { wpPos } from "./wp";
 import { colorTweenParams } from "/src/helpers/animate/tween/tween-color";
+import { playerCanActSubject } from "./definitions";
 
 const dragonHeadClass = defineGoClass({
   events: {
@@ -231,10 +231,13 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
   initHp(scene);
 
   const eatPlayerCondition = () =>
-    Def.player.data.currentPos.dataSubject(scene).pipe(
-      map(Wp.getWpDef),
-      map((pos) => pos.x >= 1 && pos.x <= 3 && pos.y >= 2 && pos.y <= 3),
-    );
+    combineLatest([
+      Def.player.data.currentPos.dataSubject(scene).pipe(
+        map(Wp.getWpDef),
+        map((pos) => pos.x >= 1 && pos.x <= 3 && pos.y >= 2 && pos.y <= 3),
+      ),
+      playerCanActSubject(scene),
+    ]).pipe(map((values) => values.every((x) => x)));
 
   const eatPlayerState = Flow.lazy(() =>
     Flow.sequence(
@@ -443,6 +446,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
         ),
       }),
       Flow.repeatSequence(
+        Flow.waitTrue(playerCanActSubject),
         ..._.range(0, 14).map(() =>
           Flow.sequence(
             Flow.call(headInst.events.throwFireball.emit({})),

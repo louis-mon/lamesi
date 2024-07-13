@@ -82,6 +82,9 @@ export const playerCannotActSubject: MakeObservable<boolean> = (scene) =>
     map(([isDead]) => isDead),
   );
 
+export const playerCanActSubject: MakeObservable<boolean> = (scene) =>
+  playerCannotActSubject(scene).pipe(map((cannotAct) => !cannotAct));
+
 export const playerIsOnPos =
   (wp: Wp.WpDef): MakeObservable<boolean> =>
   (scene) =>
