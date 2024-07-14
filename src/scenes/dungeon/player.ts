@@ -44,6 +44,61 @@ export const createPlayer = (scene: Phaser.Scene) => {
   isMovingData.setValue(false)(scene);
   isDeadData.setValue(false)(scene);
 
+  const particles = scene.add
+    .particles("npc", "light-particle")
+    .setDepth(Def.depths.floating);
+
+  const resurrection: Flow.PhaserNode = Flow.lazy((scene) => {
+    const lightRay = scene.add
+      .sprite(player.x, player.y, "npc", "light-ray")
+      .setDepth(Def.depths.lightRay)
+      .setOrigin(0.5, 1)
+      .setScale(0.01, 10);
+    const lightBottom = scene.add
+      .sprite(player.x, player.y, "npc", "light-ray-bottom")
+      .setDepth(Def.depths.lightRay)
+      .setOrigin(0.5, 0.12)
+      .setScale(0.01, 1);
+    const emitter = particles
+      .createEmitter({
+        emitZone: {
+          type: "random",
+          source: {
+            getRandomPoint: (point) =>
+              Phaser.Math.RandomXY(point as Phaser.Math.Vector2, 200),
+          },
+        },
+        //tint: arrowParticleTint,
+        moveToX: player.x,
+        moveToY: player.y,
+        scale: { start: 0, end: 1 },
+        alpha: { start: 0.6, end: 1 },
+        frequency: 60,
+      })
+      .setPosition(player.x, player.y);
+    return Flow.parallel(
+      Flow.sequence(
+        Flow.waitTimer(2000),
+        Flow.call(() => emitter.stop()),
+        Flow.waitTimer(1000),
+        Flow.call(() => emitter.remove()),
+      ),
+      Flow.withCleanup({
+        flow: Flow.tween({
+          targets: [lightRay, lightBottom],
+          props: { scaleX: 1 },
+          ease: Phaser.Math.Easing.Cubic.Out,
+          yoyo: true,
+          duration: 1500,
+        }),
+        cleanup: () => {
+          lightBottom.destroy();
+          lightRay.destroy();
+        },
+      }),
+    );
+  });
+
   const movePlayerNext = (wpId: Wp.WpId) => {
     const wpPos = Wp.wpPos(Wp.getWpDef(wpId));
     const currentPos = () => Wp.wpPos(Wp.getWpDef(currentPosData.value(scene)));
@@ -101,7 +156,7 @@ export const createPlayer = (scene: Phaser.Scene) => {
           placeAt(player, Wp.wpPos(Wp.getWpDef(newPosId)));
           player.play("idle");
         }),
-        Flow.waitTimer(2000),
+        resurrection,
         Flow.call(isDeadData.setValue(false)),
       );
     }),

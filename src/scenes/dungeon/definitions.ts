@@ -166,5 +166,6 @@ export const depths = {
   npcHigh: 12,
   floating: 15,
   clouds: 100,
+  lightRay: 101,
   keyItems: 150,
 };

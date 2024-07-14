@@ -35,7 +35,6 @@ export const playAnim =
       targets.anims.stop();
     };
     const listener = () => {
-      console.log("bla");
       cleaner();
       params.unregisterAbort(abortHandler);
       params.onComplete();
