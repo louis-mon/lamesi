@@ -26,16 +26,17 @@ export const createMandibles = (
 
     const singleMandible = (flip: boolean) => {
       const mandible = scene.add
-        .image(0, 0, "pot", "mandible")
+        .image(0, 0, "pot", flip ? "mandible-right" : "mandible-left")
         .setScale(0)
         .setFlipX(flip)
         .setOrigin(1, 1);
+      mandible.displayOriginX = 360;
       mandibleRoot.add(mandible);
       return Flow.sequence(
         Flow.tween({
           targets: mandible,
           props: {
-            scale: 1,
+            scale: 1 / 9,
           },
           duration: 740,
         }),

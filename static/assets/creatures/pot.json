@@ -1,9 +1,153 @@
 {
   "frames": {
-    "pot-cut": {
+    "mandible-right": {
       "frame": {
         "x": 2,
         "y": 2,
+        "w": 435,
+        "h": 898
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 2,
+        "w": 435,
+        "h": 898
+      },
+      "sourceSize": {
+        "w": 450,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "mandible-left": {
+      "frame": {
+        "x": 2,
+        "y": 904,
+        "w": 421,
+        "h": 898
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 2,
+        "w": 421,
+        "h": 898
+      },
+      "sourceSize": {
+        "w": 450,
+        "h": 900
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "mandible": {
+      "frame": {
+        "x": 2,
+        "y": 1806,
+        "w": 39,
+        "h": 100
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 0,
+        "w": 39,
+        "h": 100
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 100
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "bud": {
+      "frame": {
+        "x": 2,
+        "y": 1910,
+        "w": 43,
+        "h": 50
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 3,
+        "y": 0,
+        "w": 43,
+        "h": 50
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "root-bulb": {
+      "frame": {
+        "x": 2,
+        "y": 1964,
+        "w": 20,
+        "h": 20
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 20,
+        "h": 20
+      },
+      "sourceSize": {
+        "w": 20,
+        "h": 20
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "root": {
+      "frame": {
+        "x": 2,
+        "y": 1988,
+        "w": 200,
+        "h": 11
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 15,
+        "w": 200,
+        "h": 11
+      },
+      "sourceSize": {
+        "w": 200,
+        "h": 40
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "pot-cut": {
+      "frame": {
+        "x": 427,
+        "y": 904,
         "w": 427,
         "h": 332
       },
@@ -26,8 +170,8 @@
     },
     "pot-front": {
       "frame": {
-        "x": 433,
-        "y": 2,
+        "x": 427,
+        "y": 1240,
         "w": 427,
         "h": 297
       },
@@ -47,102 +191,6 @@
         "x": 0.5,
         "y": 0.5
       }
-    },
-    "root": {
-      "frame": {
-        "x": 864,
-        "y": 2,
-        "w": 200,
-        "h": 11
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 15,
-        "w": 200,
-        "h": 11
-      },
-      "sourceSize": {
-        "w": 200,
-        "h": 40
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "bud": {
-      "frame": {
-        "x": 1068,
-        "y": 2,
-        "w": 43,
-        "h": 50
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 3,
-        "y": 0,
-        "w": 43,
-        "h": 50
-      },
-      "sourceSize": {
-        "w": 50,
-        "h": 50
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "mandible": {
-      "frame": {
-        "x": 864,
-        "y": 17,
-        "w": 39,
-        "h": 100
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 1,
-        "y": 0,
-        "w": 39,
-        "h": 100
-      },
-      "sourceSize": {
-        "w": 40,
-        "h": 100
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "root-bulb": {
-      "frame": {
-        "x": 907,
-        "y": 17,
-        "w": 20,
-        "h": 20
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 20,
-        "h": 20
-      },
-      "sourceSize": {
-        "w": 20,
-        "h": 20
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
     }
   },
   "meta": {
@@ -151,8 +199,8 @@
     "image": "pot.png",
     "format": "RGBA8888",
     "size": {
-      "w": 1113,
-      "h": 336
+      "w": 856,
+      "h": 2001
     },
     "scale": 1
   }
