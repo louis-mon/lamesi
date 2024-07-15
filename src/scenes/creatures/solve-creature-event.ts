@@ -7,7 +7,12 @@ import {
 import { getObjectPosition, placeAt, vecToXY } from "/src/helpers/phaser";
 import { range } from "lodash";
 import { getTargetTransform, transformMan } from "/src/scenes/creatures/man";
-import { getEventDef, solveEvent } from "/src/scenes/common/events-def";
+import {
+  getEventDef,
+  isEventReady,
+  isEventSolved,
+  solveEvent,
+} from "/src/scenes/common/events-def";
 import Vector2 = Phaser.Math.Vector2;
 import { globalEvents } from "/src/scenes/common/global-events";
 import { cutscene } from "/src/scenes/common/cutscene";
@@ -49,7 +54,19 @@ export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
     const prevTransform = getTargetTransform(scene);
     solveEvent(dataSolved)(scene);
     const newTransform = getTargetTransform(scene);
-    if (prevTransform === newTransform) return Flow.noop;
+    if (prevTransform === newTransform) {
+      if (
+        Object.values(bodyPartsConfig).some(
+          (otherPart) =>
+            isEventReady(otherPart.requiredEvent)(scene) &&
+            !isEventSolved(otherPart.requiredEvent)(scene),
+        )
+      ) {
+        return Flow.noop;
+      } else {
+        return Flow.call(globalEvents.goToHub.emit({}));
+      }
+    }
 
     const man = creatureSceneClass.data.manObj.value(scene);
     const bubble = placeAt(
