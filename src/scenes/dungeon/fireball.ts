@@ -156,7 +156,7 @@ export const createFlameThrower = (instance: FlameThrower): Flow.PhaserNode =>
     const [posOffset, fireOffset] =
       instance.config.orientation % 2 === 1
         ? [Wp.wpHalfSize.y, object.displayHeight / 2]
-        : [Wp.wpHalfSize.x, object.displayWidth / 2];
+        : [Wp.wpHalfSize.x - 5, object.displayWidth / 2];
     placeAt(
       object,
       Wp.wpPos(instance.config.wp).subtract(
