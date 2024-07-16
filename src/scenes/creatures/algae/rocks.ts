@@ -28,6 +28,7 @@ type EggRockState = {
 type ShellRockState = {
   belowObj: Phaser.GameObjects.Image;
   aboveObj: Phaser.GameObjects.Image;
+  mask: Phaser.Display.Masks.GeometryMask;
   ball?: Phaser.GameObjects.Image;
 };
 
@@ -57,25 +58,36 @@ const initializeState = (scene: Phaser.Scene): RockState => {
     });
   };
   const createShell = ({ pos }: { pos: Vector2 }) => {
+    const shellScale = 1 / 3;
     const newShell = scene.add
       .image(pos.x, pos.y, "rocks", "shell-2")
       .setDepth(Def.depths.rocks.shellBelow)
+      .setScale(shellScale)
       .setOrigin(0.5, 0);
     const newShellAbove = scene.add
       .image(pos.x, pos.y, "rocks", "shell-1")
       .setDepth(Def.depths.rocks.shellAbove)
+      .setScale(shellScale)
       .setOrigin(0.5, 0)
       .setInteractive();
-    state.shells.push({ belowObj: newShell, aboveObj: newShellAbove });
+    const circle = scene.make.graphics({});
+    circle.x = pos.x;
+    circle.y = pos.y + 85 * shellScale;
+    circle.fillCircle(0, 0, 18);
+    const mask = circle.createGeometryMask();
+    mask.invertAlpha = true;
+    newShellAbove.setMask(mask);
+    circle.scale = 0;
+    state.shells.push({ belowObj: newShell, aboveObj: newShellAbove, mask });
   };
 
-  createEgg({ pos: new Vector2(1400, 430), algaeRotation: DegToRad(-148) });
-  createEgg({ pos: new Vector2(1750, 460), algaeRotation: Math.PI / 2 });
+  createEgg({ pos: new Vector2(1377, 450), algaeRotation: DegToRad(-148) });
+  createEgg({ pos: new Vector2(1780, 490), algaeRotation: Math.PI / 2 });
   createEgg({ pos: new Vector2(1380, 80), algaeRotation: DegToRad(140) });
   createEgg({ pos: new Vector2(1750, 90), algaeRotation: Math.PI / 6 });
 
   createShell({ pos: new Vector2(1470, 150) });
-  createShell({ pos: new Vector2(1570, 170) });
+  createShell({ pos: new Vector2(1570, 120) });
   createShell({ pos: new Vector2(1680, 130) });
   createShell({ pos: new Vector2(1456, 250) });
   createShell({ pos: new Vector2(1575, 240) });
@@ -124,18 +136,18 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     const shellOpenDuration = 670;
     const openShell = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.tween({
-        targets: shell.aboveObj,
+        targets: shell.mask.geometryMask,
         props: {
-          angle: -130,
+          scale: 1,
         },
         duration: shellOpenDuration,
       });
 
     const closeShell = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.tween({
-        targets: shell.aboveObj,
+        targets: shell.mask.geometryMask,
         props: {
-          angle: 0,
+          scale: 0,
         },
         duration: shellOpenDuration,
       });
@@ -200,9 +212,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
           Flow.waitTimer(800),
           moveTo({
             target: shell.ball,
-            dest: getObjectPosition(shell.aboveObj)
-              .clone()
-              .add(new Vector2(0, 17)),
+            dest: getObjectPosition(shell.mask.geometryMask),
             speed: ballSpeed,
           }),
           Flow.call(() => shell.ball?.setDepth(shell.belowObj.depth)),

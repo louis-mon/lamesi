@@ -1,9 +1,81 @@
 {
   "frames": {
-    "algae": {
+    "shell-1": {
       "frame": {
         "x": 2,
         "y": 2,
+        "w": 249,
+        "h": 279
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 21,
+        "y": 11,
+        "w": 249,
+        "h": 279
+      },
+      "sourceSize": {
+        "w": 300,
+        "h": 300
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "shell-2": {
+      "frame": {
+        "x": 2,
+        "y": 285,
+        "w": 163,
+        "h": 195
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 70,
+        "y": 17,
+        "w": 163,
+        "h": 195
+      },
+      "sourceSize": {
+        "w": 300,
+        "h": 300
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "egg": {
+      "frame": {
+        "x": 2,
+        "y": 484,
+        "w": 50,
+        "h": 49
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 49
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "algae": {
+      "frame": {
+        "x": 2,
+        "y": 537,
         "w": 80,
         "h": 48
       },
@@ -24,82 +96,10 @@
         "y": 0.5
       }
     },
-    "egg": {
-      "frame": {
-        "x": 86,
-        "y": 2,
-        "w": 50,
-        "h": 49
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 50,
-        "h": 49
-      },
-      "sourceSize": {
-        "w": 50,
-        "h": 50
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "shell-1": {
-      "frame": {
-        "x": 2,
-        "y": 54,
-        "w": 34,
-        "h": 35
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 1,
-        "y": 0,
-        "w": 34,
-        "h": 35
-      },
-      "sourceSize": {
-        "w": 35,
-        "h": 35
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "shell-2": {
-      "frame": {
-        "x": 40,
-        "y": 54,
-        "w": 34,
-        "h": 35
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 1,
-        "y": 0,
-        "w": 34,
-        "h": 35
-      },
-      "sourceSize": {
-        "w": 35,
-        "h": 35
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "ball": {
       "frame": {
-        "x": 140,
-        "y": 2,
+        "x": 56,
+        "y": 484,
         "w": 31,
         "h": 31
       },
@@ -127,8 +127,8 @@
     "image": "rocks.png",
     "format": "RGBA8888",
     "size": {
-      "w": 173,
-      "h": 91
+      "w": 253,
+      "h": 587
     },
     "scale": 1
   }
