@@ -58,8 +58,8 @@ type RootStepsDeployed = RootStepState[][];
 
 const totalDepth = 5;
 const totalBuds = 3;
-const nbPtPerFloor = 1 + (totalBuds - 1) * 2 ** (totalDepth / 2);
-const potPosition = new Vector2(400, 300);
+const nbPtPerFloor = 1 + (totalBuds - 1) * 2 ** Math.floor(totalDepth / 2);
+const potPosition = new Vector2(400, 370);
 const hspaceDepth = 250 / (totalDepth - 1);
 
 const makeRopeCurveController = ({
@@ -106,15 +106,17 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     "pot-front",
   ).setDepth(Def.depths.potFront);
 
+  const xStart = 86;
+  const xEnd = 412;
   const anchorPositions = _.range(totalDepth).map((depth) =>
     _.range(nbPtPerFloor).map((posInFloor) =>
       potFront
-        .getTopCenter()
+        .getTopLeft()
         .clone()
         .add(
           new Vector2(
-            (-(nbPtPerFloor - 1) / 2 + posInFloor) * (325 / (nbPtPerFloor - 1)),
-            37 + hspaceDepth * depth,
+            xStart + (posInFloor * (xEnd - xStart)) / (nbPtPerFloor - 1),
+            94 + hspaceDepth * depth,
           ),
         ),
     ),
@@ -444,7 +446,7 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     );
     const manItinerary: Vector2[] = [
       new Vector2(670, 950),
-      potFront.getTopRight().clone().add(new Vector2(0, -30)),
+      potFront.getTopRight(),
     ];
     return Flow.sequence(
       Flow.wait(globalEvents.subSceneEntered.subject),
@@ -462,7 +464,12 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
             Flow.lazy(() => {
               const keyItem = seeds[i];
               return Flow.sequence(
-                moveMan({ dest: keyItem.obj.getTopCenter() }),
+                moveMan({
+                  dest: keyItem.obj
+                    .getTopRight()
+                    .clone()
+                    .add(new Vector2(30, 0)),
+                }),
                 keyItem.disappearAnim(),
                 Flow.tween({
                   targets: budState.sprite,

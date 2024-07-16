@@ -1,4 +1,5 @@
 import * as Flow from "/src/helpers/phaser-flow";
+import * as Def from "./def";
 import {
   findPreviousEvent,
   isEventSolved,
@@ -30,7 +31,8 @@ export const goal1: Flow.PhaserNode = Flow.lazy((scene) => {
     .setVisible(false);
   const man = scene.add
     .image(manDeskPos.x, gameHeight + 40, "crea-npc", "man1")
-    .setScale(1.6);
+    .setScale(1.6)
+    .setDepth(Def.depths.potCut + 1);
   creatureSceneClass.data.manObj.setValue(man)(scene);
   const manStep = getTargetTransform(scene);
   if (manStep) {
