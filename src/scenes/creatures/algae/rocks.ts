@@ -17,9 +17,15 @@ import { isEventReady, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { manDeskPos, moveMan } from "/src/scenes/creatures/man";
 import { cutscene } from "/src/scenes/common/cutscene";
+import {
+  closeIncubator,
+  createIncubator,
+  IncubatorState,
+  openIncubator,
+} from "/src/scenes/creatures/algae/incubator";
 
 type EggRockState = {
-  obj: Phaser.GameObjects.Image;
+  incubator: IncubatorState;
   algae: AlgaeController | null;
   bloomFlow: Flow.SceneStatesFlow;
   algaeRotation: number;
@@ -46,12 +52,8 @@ const initializeState = (scene: Phaser.Scene): RockState => {
     pos: Vector2;
     algaeRotation: number;
   }) => {
-    const newEgg = scene.add
-      .image(pos.x, pos.y, "rocks", "egg")
-      .setDepth(Def.depths.rocks.rock)
-      .setInteractive();
     state.eggs.push({
-      obj: newEgg,
+      incubator: createIncubator(scene, { pos }),
       algae: null,
       bloomFlow: Flow.makeSceneStates(),
       algaeRotation,
@@ -159,7 +161,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
           Flow.call(() => shell.ball?.destroy()),
         ),
       ),
-      resetScale(egg.obj),
+      closeIncubator(egg.incubator),
     );
 
     const failEggRiddle: Flow.PhaserNode = Flow.sequence(
@@ -185,7 +187,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     const ballSpeed = 300;
     const sendBallToShell = (shell: ShellRockState): Flow.PhaserNode =>
       Flow.lazy(() => {
-        const startPos = getObjectPosition(egg.obj);
+        const startPos = getObjectPosition(egg.incubator.root);
         shell.ball = createImageAt(scene, startPos, "rocks", "ball")
           .setScale(0)
           .setDepth(Def.depths.rocks.ball);
@@ -229,7 +231,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
 
     const bloomAlgae = () => {
       egg.algae = createAlgae({
-        pos: () => getObjectPosition(egg.obj),
+        pos: () => getObjectPosition(egg.incubator.root),
         rotation: () => egg.algaeRotation,
       });
       egg.bloomFlow.next(egg.algae.flow);
@@ -250,7 +252,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
         moveTo({
           target: shell.ball!,
           speed: ballSpeed,
-          dest: getObjectPosition(egg.obj),
+          dest: getObjectPosition(egg.incubator.root),
         }),
         Flow.call(() => {
           ++playerStep;
@@ -275,22 +277,13 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
 
     const shellFlows = Flow.sequence(showOrder, enterShellInput);
 
-    return Flow.parallel(
-      Flow.tween({
-        targets: egg.obj,
-        props: { scale: 1.5 },
-        duration: 500,
-        yoyo: true,
-        repeat: -1,
-      }),
-      shellFlows,
-    );
+    return Flow.parallel(openIncubator(egg.incubator), shellFlows);
   };
 
   const chooseEgg: Flow.PhaserNode = Flow.lazy(() =>
     Flow.waitOnOfPointerdown({
       items: rockState.eggs.filter((egg) => !egg.algae),
-      getObj: getProp("obj"),
+      getObj: (egg) => egg.incubator.root,
       nextFlow: (egg) => flowState.nextFlow(prepareEggRiddle(egg)),
     }),
   );
@@ -301,7 +294,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
       new Vector2(1320, 550),
       new Vector2(1575, 500),
     ];
-    rockState.eggs.forEach((egg) => egg.obj.setScale(0));
+    rockState.eggs.forEach((egg) => egg.incubator.root.setScale(0));
     return Flow.sequence(
       Flow.wait(globalEvents.subSceneEntered.subject),
       Flow.waitTrue(globalData.creatures4Done.dataSubject),
@@ -311,7 +304,7 @@ export const rockFlow: Flow.PhaserNode = Flow.lazy((scene) => {
           Flow.parallel(
             ...rockState.eggs.map((egg) =>
               Flow.tween({
-                targets: egg.obj,
+                targets: egg.incubator.root,
                 props: { scale: 1 },
                 duration: 2000,
               }),

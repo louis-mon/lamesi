@@ -48,10 +48,58 @@
         "y": 0.5
       }
     },
-    "egg": {
+    "egg-base": {
       "frame": {
         "x": 2,
         "y": 484,
+        "w": 80,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 80
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "egg-teeth": {
+      "frame": {
+        "x": 2,
+        "y": 568,
+        "w": 40,
+        "h": 51
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 40,
+        "y": 15,
+        "w": 40,
+        "h": 51
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 80
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "egg": {
+      "frame": {
+        "x": 2,
+        "y": 623,
         "w": 50,
         "h": 49
       },
@@ -74,8 +122,8 @@
     },
     "algae": {
       "frame": {
-        "x": 2,
-        "y": 537,
+        "x": 46,
+        "y": 568,
         "w": 80,
         "h": 48
       },
@@ -98,7 +146,7 @@
     },
     "ball": {
       "frame": {
-        "x": 56,
+        "x": 86,
         "y": 484,
         "w": 31,
         "h": 31
@@ -128,7 +176,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 253,
-      "h": 587
+      "h": 674
     },
     "scale": 1
   }
