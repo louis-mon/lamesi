@@ -124,7 +124,7 @@
       "frame": {
         "x": 427,
         "y": 904,
-        "w": 490,
+        "w": 489,
         "h": 524
       },
       "rotated": false,
@@ -132,7 +132,7 @@
       "spriteSourceSize": {
         "x": 5,
         "y": 10,
-        "w": 490,
+        "w": 489,
         "h": 524
       },
       "sourceSize": {
@@ -175,7 +175,7 @@
     "image": "pot.png",
     "format": "RGBA8888",
     "size": {
-      "w": 919,
+      "w": 918,
       "h": 1897
     },
     "scale": 1

@@ -59,7 +59,7 @@ type RootStepsDeployed = RootStepState[][];
 const totalDepth = 5;
 const totalBuds = 3;
 const nbPtPerFloor = 1 + (totalBuds - 1) * 2 ** Math.floor(totalDepth / 2);
-const potPosition = new Vector2(400, 370);
+const potPosition = new Vector2(400, 330);
 const hspaceDepth = 250 / (totalDepth - 1);
 
 const makeRopeCurveController = ({
@@ -446,7 +446,7 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     );
     const manItinerary: Vector2[] = [
       new Vector2(670, 950),
-      potFront.getTopRight(),
+      getObjectPosition(budsOrder[0].sprite).add(new Vector2(150, 0)),
     ];
     return Flow.sequence(
       Flow.wait(globalEvents.subSceneEntered.subject),
