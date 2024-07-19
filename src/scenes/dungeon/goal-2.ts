@@ -136,13 +136,14 @@ const room2floorState =
 
 const setTile = ({
   wp,
-  newState,
+  getNewState,
 }: {
   wp: Wp.WpDef;
-  newState: boolean;
+  getNewState: (oldState: boolean) => boolean;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
     const wpId = Wp.getWpId(wp);
+    const newState = getNewState(room2floorState.value(scene)[wpId]);
     return Flow.sequence(
       Flow.tween({
         targets: spriteClassKind.getObj(tileName(wp))(scene),
@@ -168,7 +169,7 @@ export const swappingTileBellActions = (tileWps: Wp.WpDef[]): Flow.PhaserNode =>
               const wpId = Wp.getWpId(wp);
               return setTile({
                 wp,
-                newState: !room2floorState.value(scene)[wpId],
+                getNewState: (oldState) => !oldState,
               });
             },
             wp,
@@ -221,7 +222,7 @@ const createResetFloorSwitch: Flow.PhaserNode = Flow.lazy((scene) => {
     condition: resetSwitch.data.state.subject,
     action: Flow.sequence(
       Flow.parallel(
-        ...allTileWps.map((wp) => setTile({ wp, newState: false })),
+        ...allTileWps.map((wp) => setTile({ wp, getNewState: () => false })),
       ),
       Flow.call(resetSwitch.events.deactivateSwitch.emit({})),
     ),
