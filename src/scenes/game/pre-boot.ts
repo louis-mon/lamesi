@@ -12,14 +12,14 @@ const initialGlobalData: AllGlobalData = {
   globalAudioLevel: 1,
 
   firstEvent: true,
-  lights1: true,
 
-  /** enf of modified */
+  /** end of modified */
 
   dungeonActivateHint: false,
   dungeonSkillHint: false,
   dungeonTakeHint: false,
 
+  lights1: false,
   lights2: false,
   lights3: false,
   lights4: false,

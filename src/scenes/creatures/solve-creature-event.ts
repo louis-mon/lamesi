@@ -11,6 +11,7 @@ import {
   getEventDef,
   isEventReady,
   isEventSolved,
+  isEventToSolve,
   solveEvent,
 } from "/src/scenes/common/events-def";
 import Vector2 = Phaser.Math.Vector2;
@@ -56,10 +57,8 @@ export const solveCreatureEvent: (part: BodyPart) => Flow.PhaserNode = (part) =>
     const newTransform = getTargetTransform(scene);
     if (prevTransform === newTransform) {
       if (
-        Object.values(bodyPartsConfig).some(
-          (otherPart) =>
-            isEventReady(otherPart.requiredEvent)(scene) &&
-            !isEventSolved(otherPart.requiredEvent)(scene),
+        Object.values(bodyPartsConfig).some((otherPart) =>
+          isEventToSolve(otherPart.requiredEvent)(scene),
         )
       ) {
         return Flow.noop;

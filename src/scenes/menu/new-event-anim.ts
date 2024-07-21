@@ -14,16 +14,16 @@ import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import Vector2 = Phaser.Math.Vector2;
 
+export const newEventAnimStartPosition = new Vector2(952, 896);
+
 export const newEventAnim: Flow.PhaserNode = Flow.lazy((scene) => {
-  const unsolvedEvents = allEvents.filter(
-    (key) => globalData[key].value(scene) && !isEventSolved(key)(scene),
-  );
   const itemAnim = (targetKey: GlobalDataKey): Flow.PhaserNode => {
+    if (isEventSolved(targetKey)(scene)) return Flow.noop;
     const targetDef = getEventDef(targetKey);
     if (!isASubScene(targetDef.scene)) return Flow.noop;
     const sourceItem = getEventDef(findPreviousEvent(targetKey)).createItem;
     if (sourceItem === undefinedEventItem) return Flow.noop;
-    const keyItem = sourceItem({ pos: new Vector2(952, 896), scene })
+    const keyItem = sourceItem({ pos: newEventAnimStartPosition, scene })
       .setAlpha(0)
       .setScale(1.5);
 
@@ -49,6 +49,11 @@ export const newEventAnim: Flow.PhaserNode = Flow.lazy((scene) => {
 
   return Flow.parallel(
     waitTimer(fadeDuration * 2),
-    ...unsolvedEvents.map(itemAnim),
+    ...allEvents.map((key) =>
+      Flow.whenTrueDo({
+        condition: globalData[key].dataSubject(scene),
+        action: Flow.lazy(() => itemAnim(key)),
+      }),
+    ),
   );
 });

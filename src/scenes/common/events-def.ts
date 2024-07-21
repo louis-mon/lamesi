@@ -145,6 +145,9 @@ export const isEventSolved = (key: GlobalDataKey) => (scene: Scene) => {
   );
 };
 
+export const isEventToSolve = (key: GlobalDataKey) => (scene: Scene) =>
+  isEventReady(key)(scene) && !isEventSolved(key)(scene);
+
 export const solveEvent = (key: GlobalDataKey) => (scene: Scene) =>
   eventsDef[key]?.triggers.forEach((trigger) =>
     globalData[trigger].setValue(true)(scene),
