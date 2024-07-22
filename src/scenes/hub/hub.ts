@@ -4,6 +4,7 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { subSceneFlow } from "/src/scenes/hub/sub-scenes";
 import { hubSceneKey, menuSceneKey } from "/src/scenes/common/constants";
 import { hubIntro } from "/src/scenes/hub/hub-intro";
+import { languages, languageSvgKey } from "/src/i18n/i18n";
 
 export class HubScene extends Phaser.Scene {
   constructor() {
@@ -20,6 +21,12 @@ export class HubScene extends Phaser.Scene {
     this.load.image("hub-back");
     this.load.image("central-orb");
     this.load.image("frame");
+    languages.forEach((lang) =>
+      this.load.svg(languageSvgKey(lang), `flags/${lang}.svg`, {
+        width: 200,
+        height: 150,
+      }),
+    );
   }
 
   create() {

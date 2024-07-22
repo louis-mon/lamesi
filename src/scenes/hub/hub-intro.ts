@@ -4,6 +4,11 @@ import { newEventAnimStartPosition } from "/src/scenes/menu/new-event-anim";
 import { createImageAt } from "/src/helpers/phaser";
 import { isEventSolved, solveEvent } from "/src/scenes/common/events-def";
 import { commonGoEvents } from "/src/helpers/component";
+import { gameHeight, gameWidth } from "/src/scenes/common/constants";
+import i18next from "i18next";
+import { languages, languageSvgKey } from "/src/i18n/i18n";
+import { getProp } from "/src/helpers/functional";
+import { otherGlobalData } from "/src/scenes/common/global-data";
 
 const lightKey = "light";
 
@@ -30,7 +35,7 @@ const finishIntro: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
-export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
+const clickOnOrb: Flow.PhaserNode = Flow.lazy((scene) => {
   scene.add
     .pointlight(
       newEventAnimStartPosition.x,
@@ -47,6 +52,7 @@ export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
     "central-orb",
   ).setName("orb");
   orb.setInteractive();
+
   if (isEventSolved("firstEvent")(scene)) {
     return finishIntro;
   } else {
@@ -58,4 +64,48 @@ export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
       },
     });
   }
+});
+
+export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
+  const nbLanguages = i18next.languages.length;
+  const flags = languages.map((lang, i) => {
+    return {
+      lang,
+      obj: scene.add
+        .image(
+          gameWidth / 2 + (-(nbLanguages - 1) / 2 + i) * 300,
+          (gameHeight / 3) * 2,
+          languageSvgKey(lang),
+        )
+        .setOrigin(0.5, 0.5)
+        .setInteractive(),
+    };
+  });
+  const title = scene.add
+    .text(gameWidth / 2, gameHeight / 3, "LAMESI", { fontSize: "150px" })
+    .setOrigin(0.5, 0.5);
+  return Flow.waitOnOfPointerdown({
+    items: flags,
+    getObj: getProp("obj"),
+    nextFlow: (flag) => {
+      otherGlobalData.language.setValue(flag.lang)(scene);
+      return Flow.sequence(
+        Flow.parallel(
+          Flow.tween({
+            targets: (
+              flags.filter((f) => f !== flag).map(getProp("obj")) as unknown[]
+            ).concat(title),
+            props: { alpha: 0 },
+            duration: 1500,
+          }),
+          Flow.tween({
+            targets: flag.obj,
+            props: { scale: 2, alpha: 0 },
+            duration: 1500,
+          }),
+        ),
+        clickOnOrb,
+      );
+    },
+  });
 });

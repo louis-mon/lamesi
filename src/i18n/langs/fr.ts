@@ -14,7 +14,7 @@ export const frTranslation: TranslationKeys = {
     title: "Options",
     eraseData: "Effacer les données de sauvegarde",
     confirmEraseData:
-      "Etes vous sur de vouloir effacer les données de sauvegarde ?",
+      "Etes vous sur de vouloir effacer les données de sauvegarde ? Toute progression sera perdue",
   },
   dungeon: {
     activateSwitch:

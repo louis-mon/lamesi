@@ -1,6 +1,6 @@
 import { openDialogMenu } from "/src/helpers/ui/dialog-menu";
 import { uiBuilder } from "/src/helpers/ui/ui-builder";
-import { tr } from "/src/i18n/init";
+import { tr } from "/src/i18n/i18n";
 import { Scene } from "phaser";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { resetGameData } from "/src/scenes/game/pre-boot";

@@ -10,6 +10,7 @@ import {
 import { fadeDuration } from "/src/scenes/menu/menu-scene-def";
 import { cheatCodeAction } from "/src/scenes/master/cheat-codes";
 import { soundControl } from "/src/scenes/master/sound-control";
+import { syncLanguage } from "/src/i18n/i18n";
 
 export class MasterScene extends Phaser.Scene {
   constructor() {
@@ -56,6 +57,7 @@ export class MasterScene extends Phaser.Scene {
         Flow.observe(globalEvents.goToHub.subject, () => goToHub),
         cheatCodeAction,
         soundControl,
+        syncLanguage,
       ),
     );
     startHub();

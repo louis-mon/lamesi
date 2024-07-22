@@ -15,6 +15,7 @@ const initialGlobalData: AllGlobalData = {
 
   /** end of modified */
 
+  language: "fr",
   dungeonActivateHint: false,
   dungeonSkillHint: false,
   dungeonTakeHint: false,

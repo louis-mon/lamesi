@@ -8,7 +8,6 @@ import {
   sourcesPlane,
   sceneClass,
 } from "./lights-def";
-import { eventsHelpers } from "../common/global-data";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import { createMaterial } from "/src/scenes/lights/materials";
 import { createGoal } from "/src/scenes/lights/goals";

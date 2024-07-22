@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import { tr } from "/src/i18n/init";
+import { tr } from "/src/i18n/i18n";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { uiBuilder } from "/src/helpers/ui/ui-builder";
 import { openDialogMenu } from "/src/helpers/ui/dialog-menu";

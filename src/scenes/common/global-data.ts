@@ -10,6 +10,7 @@ export const menuHintGlobalData = {
 // these data are still saved as global but do not truly belong to the player progress
 export const otherGlobalData = defineData(
   {
+    language: annotate<string>(),
     cheatCodes: annotate<boolean>(),
     globalAudioLevel: annotate<number>(),
     ...menuHintGlobalData,
@@ -54,11 +55,4 @@ export type GlobalDataKey = keyof typeof globalData;
 
 export type WithRequiredEvent = {
   eventRequired: GlobalDataKey;
-};
-
-export const eventsHelpers = {
-  getEventFilter:
-    (scene: Phaser.Scene) =>
-    (e: WithRequiredEvent): boolean =>
-      e.eventRequired ? globalData[e.eventRequired].value(scene) : true,
 };
