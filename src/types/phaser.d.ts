@@ -23,6 +23,7 @@ declare module "phaser" {
         groupName: string,
         index: number,
       ) => void;
+      destroy: () => void;
     };
 
     namespace GameObjects {

@@ -15,6 +15,7 @@ export const enTranslation: TranslationKeys = {
     eraseData: "Reset save data",
     confirmEraseData:
       "Are you sure you want to erase save data ? All progress will be lost",
+    reloadNeeded: "Reload the page is needed\nfor changes to take effect",
   },
   dungeon: {
     activateSwitch:

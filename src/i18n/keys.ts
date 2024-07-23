@@ -12,6 +12,7 @@ export type TranslationKeys = {
     title: string;
     eraseData: string;
     confirmEraseData: string;
+    reloadNeeded: string;
   };
   dungeon: {
     activateSwitch: string;
