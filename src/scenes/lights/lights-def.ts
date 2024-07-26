@@ -29,11 +29,11 @@ export const materialClass = defineGoImage({
 
 export type ObjectCreationDef = WithRequiredEvent & {
   key: string;
-  create: (scene: Phaser.Scene) => ManipulableObject;
   movable?: boolean;
 };
 
 export type LightSceneSourceDef = ObjectCreationDef & {
+  position: Vector2;
   movablePath?: { path: Phaser.Curves.Path; pos: number };
 };
 
@@ -43,11 +43,15 @@ export type LightSceneZoomDef = WithRequiredEvent & {
 };
 
 export type LightSceneMaterialDef = ObjectCreationDef & {
+  getShape: () => {
+    getPoints(a: number, b: number): Phaser.Geom.Point[];
+  };
+  create: (scene: Phaser.Scene) => ManipulableObject;
   depth: number;
   zoom?: LightSceneZoomDef;
 };
 
-export type LightSceneGoalDef = Omit<ObjectCreationDef, "create"> & {
+export type LightSceneGoalDef = ObjectCreationDef & {
   create: (scene: Phaser.Scene) => Image;
   requires: Array<{
     materialKey: string;
@@ -62,14 +66,13 @@ export type LightSceneDef = {
   goals: LightSceneGoalDef[];
 };
 
-const lightSourceSize = 30;
-
 export const vortexPlane = 0;
 export const goalHiddenObjectPlane = vortexPlane;
 export const goalPlane = vortexPlane + 1;
 export const shadowPlane = goalPlane + 1;
 export const materialsPlane = shadowPlane + 1;
-export const sourcesPathPlane = materialsPlane + 1;
+export const ambiancePlane = materialsPlane + 1;
+export const sourcesPathPlane = ambiancePlane + 1;
 export const sourcesPlane = sourcesPathPlane + 1;
 export const curtainsPlane = sourcesPlane + 1;
 
@@ -95,12 +98,12 @@ export const sceneDef: LightSceneDef = {
     {
       key: "l1",
       eventRequired: "lights1",
-      create: (scene) => scene.add.circle(125, 975, lightSourceSize, 0xfcba03),
+      position: new Vector2(125, 975),
     },
     {
       key: "l2",
       eventRequired: "lights4",
-      create: (scene) => scene.add.circle(1250, 975, lightSourceSize, 0xfcba03),
+      position: new Vector2(1250, 975),
       movablePath: {
         path: new Phaser.Curves.Path(1780, 975)
           .lineTo(240, 975)
@@ -118,6 +121,7 @@ export const sceneDef: LightSceneDef = {
       eventRequired: "lights1",
       depth: 0.5,
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
+      getShape: () => new Phaser.Geom.Circle(0, 0, 23),
       movable: true,
       zoom: {
         pos: new Vector2(gameWidth - 40, 50),
@@ -145,6 +149,7 @@ export const sceneDef: LightSceneDef = {
       },
       create: (scene) =>
         scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03),
+      getShape: () => new Phaser.Geom.Triangle(0, 71, 41, 0, 82, 71),
     },
     {
       key: "m-bar-1",
@@ -162,6 +167,8 @@ export const sceneDef: LightSceneDef = {
       },
       create: (scene) =>
         scene.add.rectangle(500, 500, barRefWidth, barRefWidth * 2, 0x4afc03),
+      getShape: () =>
+        new Phaser.Geom.Rectangle(0, 0, barRefWidth, barRefWidth * 2),
     },
   ],
   goals: [

@@ -10,13 +10,14 @@ import { languages, languageSvgKey } from "/src/i18n/i18n";
 import { getProp } from "/src/helpers/functional";
 import { otherGlobalData } from "/src/scenes/common/global-data";
 
-const lightKey = "light";
-
-const finishIntro: Flow.PhaserNode = Flow.lazy((scene) => {
-  const light = scene.children.getByName(
-    lightKey,
-  ) as Phaser.GameObjects.PointLight;
-  light.setVisible(true);
+const startHub: Flow.PhaserNode = Flow.lazy((scene) => {
+  const light = scene.add.pointlight(
+    newEventAnimStartPosition.x,
+    newEventAnimStartPosition.y,
+    0xffffff,
+    250,
+    0,
+  );
   return Flow.parallel(
     Flow.sequence(
       Flow.tween({
@@ -35,38 +36,31 @@ const finishIntro: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 });
 
-const clickOnOrb: Flow.PhaserNode = Flow.lazy((scene) => {
-  scene.add
-    .pointlight(
-      newEventAnimStartPosition.x,
-      newEventAnimStartPosition.y,
-      0xffffff,
-      250,
-      0,
-    )
-    .setName(lightKey)
-    .setVisible(false);
+const prepareHub = (scene: Phaser.Scene) => {
   const orb = createImageAt(
     scene,
     newEventAnimStartPosition,
     "central-orb",
   ).setName("orb");
   orb.setInteractive();
+};
 
-  if (isEventSolved("firstEvent")(scene)) {
-    return finishIntro;
-  } else {
-    return Flow.whenValueDo({
-      condition: commonGoEvents.pointerdown(orb.name).subject,
-      action() {
-        solveEvent("firstEvent")(scene);
-        return finishIntro;
-      },
-    });
-  }
+const clickOnOrb: Flow.PhaserNode = Flow.lazy((scene) => {
+  prepareHub(scene);
+  return Flow.whenValueDo({
+    condition: commonGoEvents.pointerdown("orb").subject,
+    action() {
+      solveEvent("firstEvent")(scene);
+      return startHub;
+    },
+  });
 });
 
 export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
+  if (isEventSolved("firstEvent")(scene)) {
+    prepareHub(scene);
+    return startHub;
+  }
   const nbLanguages = i18next.languages.length;
   const flags = languages.map((lang, i) => {
     return {
