@@ -16,6 +16,7 @@ import {
 } from "/src/helpers/phaser";
 import Vector2 = Phaser.Math.Vector2;
 import _ from "lodash";
+import { isEventReady } from "/src/scenes/common/events-def";
 
 function isLeftTurn(
   p: Phaser.Geom.Point,
@@ -62,7 +63,7 @@ function createRays(scene: Phaser.Scene) {
   _.range(nRay).forEach((i) => {
     const angle = ((2 * Math.PI) / nRay) * i;
     const iStep = i % (grad * 2 + 1);
-    graphics.fillStyle(0xffffcc, (Math.abs(iStep - grad) / grad) * 0.2);
+    graphics.fillStyle(0xffffcc, (Math.abs(iStep - grad) / grad) * 0.15 + 0.08);
     const p1 = new Vector2().setToPolar(angle + (2 * Math.PI) / nRay / 2, 2500);
     const p2 = new Vector2().setToPolar(angle - (2 * Math.PI) / nRay / 2, 2500);
     graphics.fillTriangle(0, 0, p1.x, p1.y, p2.x, p2.y);
@@ -118,7 +119,7 @@ function createOverShadow({
           const shadow = scene.children.getByName(
             shadowName(def.key, lightDef),
           ) as ManipulableObject;
-          if (!mat || !shadow) return;
+          if (!mat?.alpha || !shadow) return;
           const points = computeConvexHull(
             pointsOfShape(def.getShape(), mat).concat(
               pointsOfShape(def.getShape(), shadow),
@@ -136,6 +137,9 @@ export const createLightSource = (
 ): Flow.PhaserNode =>
   Flow.lazy((s) => {
     const scene = s as LightScene;
+    if (!isEventReady(lightDef.eventRequired)(scene)) {
+      return Flow.noop;
+    }
     const go = createImageAt(
       scene,
       lightDef.position,
@@ -154,6 +158,18 @@ export const createLightSource = (
     go.depth = sourcesPlane;
     scene.setCommonProps(go, lightDef);
     if (lightDef.movablePath) {
+      let arrow: Phaser.GameObjects.Image | null = createImageAt(
+        scene,
+        getObjectPosition(go),
+        "materials",
+        "move-arrow",
+      ).setDepth(sourcesPlane);
+      scene.add.tween({
+        targets: arrow,
+        props: { alpha: 0 },
+        yoyo: true,
+        repeat: -1,
+      });
       go.setInteractive();
       s.input.setDraggable(go);
       const path = lightDef.movablePath.path;
@@ -162,10 +178,16 @@ export const createLightSource = (
       );
       let pos = lightDef.movablePath.pos;
       const length = path.getLength();
+      const tutoDistSq = 200 ** 2;
       const setPathPos = () => {
         const np = path.getPoint(pos / length);
+        if (arrow && np.distanceSq(lightDef.position) > tutoDistSq) {
+          arrow.destroy();
+          arrow = null;
+        }
         go.setPosition(np.x, np.y);
         pLight.setPosition(np.x, np.y);
+        arrow?.setPosition(np.x, np.y);
       };
       setPathPos();
       go.on("drag", (p, x, y) => {

@@ -47,6 +47,30 @@
         "x": 0.5,
         "y": 0.5
       }
+    },
+    "move-arrow": {
+      "frame": {
+        "x": 38,
+        "y": 2,
+        "w": 80,
+        "h": 47
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 17,
+        "w": 80,
+        "h": 47
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 80
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {
@@ -55,7 +79,7 @@
     "image": "materials.png",
     "format": "RGBA8888",
     "size": {
-      "w": 64,
+      "w": 120,
       "h": 468
     },
     "scale": 1
