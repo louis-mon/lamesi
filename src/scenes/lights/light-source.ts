@@ -1,6 +1,7 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import {
   ambiancePlane,
+  LightSceneMaterialDef,
   LightSceneSourceDef,
   sceneDef,
   shadowName,
@@ -71,7 +72,7 @@ function createRays(scene: Phaser.Scene) {
   return graphics;
 }
 
-function createAmbianceAlt(scene: Phaser.Scene) {
+function createRaysAlt(scene: Phaser.Scene) {
   return scene.add.pointlight(0, 0, 0xd6f57b, 2000, 0.0005, 3);
 }
 
@@ -90,12 +91,10 @@ function createOverShadow({
   rays.setMask(graphics.createGeometryMask().setInvertAlpha(true));
 
   function pointsOfShape(
-    shape: {
-      getPoints(a: number, b: number): Phaser.Geom.Point[];
-    },
+    matDef: LightSceneMaterialDef,
     target: ManipulableObject,
   ) {
-    const points = shape.getPoints(0, 5);
+    const points = matDef.getShape().getPoints(matDef.nbVertices, 5);
     const rect = Phaser.Geom.Point.GetRectangleFromPoints(points);
     return points.map(
       (p) =>
@@ -121,9 +120,7 @@ function createOverShadow({
           ) as ManipulableObject;
           if (!mat?.alpha || !shadow) return;
           const points = computeConvexHull(
-            pointsOfShape(def.getShape(), mat).concat(
-              pointsOfShape(def.getShape(), shadow),
-            ),
+            pointsOfShape(def, mat).concat(pointsOfShape(def, shadow)),
           );
           graphics.fillPoints(points, true);
         });

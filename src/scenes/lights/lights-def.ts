@@ -46,6 +46,7 @@ export type LightSceneMaterialDef = ObjectCreationDef & {
   getShape: () => {
     getPoints(a: number, b: number): Phaser.Geom.Point[];
   };
+  nbVertices: number;
   create: (scene: Phaser.Scene) => ManipulableObject;
   depth: number;
   zoom?: LightSceneZoomDef;
@@ -122,6 +123,7 @@ export const sceneDef: LightSceneDef = {
       depth: 0.5,
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
       getShape: () => new Phaser.Geom.Circle(0, 0, 23),
+      nbVertices: 0,
       movable: true,
       zoom: {
         pos: new Vector2(gameWidth - 40, 50),
@@ -149,6 +151,7 @@ export const sceneDef: LightSceneDef = {
       },
       create: (scene) =>
         scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03),
+      nbVertices: 3,
       getShape: () => new Phaser.Geom.Triangle(0, 71, 41, 0, 82, 71),
     },
     {
@@ -167,6 +170,7 @@ export const sceneDef: LightSceneDef = {
       },
       create: (scene) =>
         scene.add.rectangle(500, 500, barRefWidth, barRefWidth * 2, 0x4afc03),
+      nbVertices: 4,
       getShape: () =>
         new Phaser.Geom.Rectangle(0, 0, barRefWidth, barRefWidth * 2),
     },
