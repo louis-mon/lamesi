@@ -58,11 +58,13 @@ export const zoomTrackFlow = (matDef: LightSceneMaterialDef): Flow.PhaserNode =>
       !isEventSolved(zoomDef.eventRequired)(scene) &&
       zoomDef.eventRequired === "lights3";
     const initialAlpha = startHidden ? 0 : 1;
+    const trackLayer = scene.add.layer().setDepth(shadowPlane);
     const track = scene.add
       .image(zoomDef.pos.x, zoomDef.pos.y, "materials", "zoom-track")
       .setOrigin(0.5, 0)
-      .setAlpha(initialAlpha)
-      .setDepth(shadowPlane);
+      .setDepth(1)
+      .setAlpha(initialAlpha);
+    trackLayer.add(track);
     const yposMin = track.getTopRight().y;
     const yAmpl = track.displayHeight;
     const dMin = min(zoomDef.depths)!;
@@ -75,18 +77,24 @@ export const zoomTrackFlow = (matDef: LightSceneMaterialDef): Flow.PhaserNode =>
     const allDepths = zoomDef.depths.concat(matDef.depth);
     const anchors = allDepths.map((depth) =>
       scene.add
-        .ellipse(zoomDef.pos.x, depthToY(depth), track.width, 20, 0xff0000)
-        .setDepth(shadowPlane)
+        .image(zoomDef.pos.x, depthToY(depth), "materials", "zoom-anchor")
         .setAlpha(initialAlpha),
     );
+    anchors.forEach((a) => trackLayer.add(a));
 
+    const hitShape = new Phaser.Geom.Circle(0, 0, 30);
     const matIcon = matDef
       .create(scene)
       .setAlpha(initialAlpha)
-      .setInteractive()
+      .setInteractive(hitShape, (area, x, y, obj: any) =>
+        area.contains(
+          (x - obj.displayOriginX) * obj.scale,
+          (y - obj.displayOriginY) * obj.scale,
+        ),
+      )
       .setDepth(materialsPlane)
       .setPosition(zoomDef.pos.x, depthToY(depth.value(scene)));
-    matIcon.scale = 25 / matIcon.width;
+    matIcon.scale = 35 / matIcon.width;
     scene.input.setDraggable(matIcon);
 
     const dragState = Flow.makeSceneStates();

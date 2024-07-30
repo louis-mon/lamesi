@@ -71,6 +71,30 @@
         "x": 0.5,
         "y": 0.5
       }
+    },
+    "zoom-anchor": {
+      "frame": {
+        "x": 38,
+        "y": 53,
+        "w": 50,
+        "h": 18
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 16,
+        "w": 50,
+        "h": 18
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
     }
   },
   "meta": {
