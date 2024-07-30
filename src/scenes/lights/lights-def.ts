@@ -43,11 +43,9 @@ export type LightSceneZoomDef = WithRequiredEvent & {
 };
 
 export type LightSceneMaterialDef = ObjectCreationDef & {
-  getShape: () => {
-    getPoints(a: number, b: number): Phaser.Geom.Point[];
-  };
-  nbVertices: number;
-  create: (scene: Phaser.Scene) => ManipulableObject;
+  getPoints: () => Phaser.Geom.Point[];
+  getContourPoints?: () => Phaser.Geom.Point[];
+  create: (scene: Phaser.Scene) => Phaser.GameObjects.Shape;
   depth: number;
   zoom?: LightSceneZoomDef;
 };
@@ -94,6 +92,11 @@ const g5TriangleWidth = 133;
 const g5BarWidth = 64;
 const barRefWidth = 46;
 
+const circle = new Phaser.Geom.Circle(0, 0, 23);
+
+const triangle = new Phaser.Geom.Triangle(0, 71, 41, 0, 82, 71);
+
+const rectangle = new Phaser.Geom.Rectangle(0, 0, barRefWidth, barRefWidth * 2);
 export const sceneDef: LightSceneDef = {
   lights: [
     {
@@ -121,9 +124,9 @@ export const sceneDef: LightSceneDef = {
       key: "m-ball-1",
       eventRequired: "lights1",
       depth: 0.5,
+      getPoints: () => circle.getPoints(12),
+      getContourPoints: () => circle.getPoints(0, 5),
       create: (scene) => scene.add.circle(150, 700, 23, 0x4afc03),
-      getShape: () => new Phaser.Geom.Circle(0, 0, 23),
-      nbVertices: 0,
       movable: true,
       zoom: {
         pos: new Vector2(gameWidth - 40, 50),
@@ -149,10 +152,13 @@ export const sceneDef: LightSceneDef = {
           82,
         ),
       },
+      getPoints: () => [
+        new Phaser.Geom.Point(triangle.x1, triangle.y1),
+        new Phaser.Geom.Point(triangle.x2, triangle.y2),
+        new Phaser.Geom.Point(triangle.x3, triangle.y3),
+      ],
       create: (scene) =>
-        scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x4afc03),
-      nbVertices: 3,
-      getShape: () => new Phaser.Geom.Triangle(0, 71, 41, 0, 82, 71),
+        scene.add.triangle(1237, 435, 0, 71, 41, 0, 82, 71, 0x0033ff),
     },
     {
       key: "m-bar-1",
@@ -169,10 +175,13 @@ export const sceneDef: LightSceneDef = {
         ),
       },
       create: (scene) =>
-        scene.add.rectangle(500, 500, barRefWidth, barRefWidth * 2, 0x4afc03),
-      nbVertices: 4,
-      getShape: () =>
-        new Phaser.Geom.Rectangle(0, 0, barRefWidth, barRefWidth * 2),
+        scene.add.rectangle(500, 500, barRefWidth, barRefWidth * 2, 0xff0000),
+      getPoints: () => [
+        new Phaser.Geom.Point(rectangle.left, rectangle.top),
+        new Phaser.Geom.Point(rectangle.right, rectangle.top),
+        new Phaser.Geom.Point(rectangle.right, rectangle.bottom),
+        new Phaser.Geom.Point(rectangle.left, rectangle.bottom),
+      ],
     },
   ],
   goals: [

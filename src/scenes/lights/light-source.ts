@@ -94,7 +94,7 @@ function createOverShadow({
     matDef: LightSceneMaterialDef,
     target: ManipulableObject,
   ) {
-    const points = matDef.getShape().getPoints(matDef.nbVertices, 5);
+    const points = (matDef.getContourPoints ?? matDef.getPoints)();
     const rect = Phaser.Geom.Point.GetRectangleFromPoints(points);
     return points.map(
       (p) =>
