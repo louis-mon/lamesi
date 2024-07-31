@@ -258,11 +258,17 @@ export const createDoors = (scene: Phaser.Scene) => {
       ...doorDef,
       kind: "wall",
     })(scene);
-    doorPositions(doorKey, false).forEach((point, i) =>
-      createSpriteAt(scene, point, "npc", "door-vertical")
+    doorPositions(doorKey, false).forEach((point, i) => {
+      const door = createSpriteAt(scene, point, "npc", "door-vertical")
         .setName(doorObjectKey(doorKey, i))
-        .setDepth(Def.depths.npc),
-    );
+        .setDepth(Def.depths.npc);
+      if (i === 0) {
+        door.setFlipY(true);
+      }
+      if (isDoorHorizontal(doorKey)) {
+        door.setAngle(90);
+      }
+    });
   });
 };
 
