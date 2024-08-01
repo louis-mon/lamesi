@@ -15,7 +15,7 @@ export const enTranslation: TranslationKeys = {
     eraseData: "Reset save data",
     confirmEraseData:
       "Are you sure you want to erase save data ? All progress will be lost",
-    reloadNeeded: "Reload the page is needed\nfor changes to take effect",
+    reloadNeeded: "Reloading the page is needed\nfor changes to take effect",
   },
   dungeon: {
     activateSwitch:
@@ -24,5 +24,14 @@ export const enTranslation: TranslationKeys = {
       "Click on the highlighted icon or on the key {{key}}\nto take the item",
     useItem:
       "Click on the highlighted icon or on the key {{key}}\nto use the item",
+  },
+  credits: {
+    graphics: "Art",
+    music: "Audio",
+    programming: "Programming",
+    realisation: "Design & Direction",
+    thanks: "Special thanks",
+    thankyou: "Thanks for playing!",
+    software: "Software",
   },
 };

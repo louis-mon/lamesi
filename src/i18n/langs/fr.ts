@@ -26,4 +26,13 @@ export const frTranslation: TranslationKeys = {
     useItem:
       "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour utiliser l'objet",
   },
+  credits: {
+    graphics: "Art",
+    music: "Audio",
+    programming: "Programmation",
+    realisation: "Conception & Realisation",
+    thanks: "Remerciements speciaux",
+    thankyou: "Merci d'avoir joué!",
+    software: "Logiciels",
+  },
 };

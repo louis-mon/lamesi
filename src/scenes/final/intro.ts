@@ -6,6 +6,7 @@ import { gameHeight } from "/src/scenes/common/constants";
 import { createSpriteAt } from "/src/helpers/phaser";
 import { createGlurp } from "/src/scenes/creatures/glurp";
 import { glurpInitPos } from "/src/scenes/final/defs";
+import { creditsFlow } from "/src/scenes/final/credits-flow";
 
 const createWoman: Flow.PhaserNode = Flow.lazy((scene: Phaser.Scene) => {
   scene.anims.createFromAseprite("dungeon-player");
@@ -46,6 +47,8 @@ export const intro: Flow.PhaserNode = Flow.sequence(
           speed: 200,
         });
       }),
+      Flow.waitTimer(2000),
+      creditsFlow,
     ),
   ),
 );

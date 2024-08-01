@@ -19,6 +19,15 @@ export type TranslationKeys = {
     takeItem: string;
     useItem: string;
   };
+  credits: {
+    realisation: string;
+    programming: string;
+    music: string;
+    graphics: string;
+    thanks: string;
+    thankyou: string;
+    software: string;
+  };
 };
 
 type ToDotted<
