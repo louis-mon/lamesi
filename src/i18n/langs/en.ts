@@ -19,7 +19,7 @@ export const enTranslation: TranslationKeys = {
   },
   dungeon: {
     activateSwitch:
-      "Click on the highlighted icon or on the key {{key}}\nto activate the switch",
+      "Click on the highlighted icon or on the key {{key}}\nto hit the switch with the sword",
     takeItem:
       "Click on the highlighted icon or on the key {{key}}\nto take the item",
     useItem:

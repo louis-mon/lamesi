@@ -20,7 +20,7 @@ export const frTranslation: TranslationKeys = {
   },
   dungeon: {
     activateSwitch:
-      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour activer l'interrupteur",
+      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour frapper avec l'épée sur l'interrupteur",
     takeItem:
       "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour prendre l'objet",
     useItem:

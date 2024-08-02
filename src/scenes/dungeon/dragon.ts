@@ -54,10 +54,10 @@ const toggleForbiddenPos = (disabled: boolean) =>
     disabled,
   });
 
-const angryEffect = ({
+const weakPointEffect = ({
   target,
 }: {
-  target: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  target: Phaser.GameObjects.Components.Tint;
 }) =>
   Flow.withCleanup({
     flow: Flow.tween({
@@ -397,16 +397,22 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
     ...footInsts.map((footInst) =>
       Flow.parallel(
         Flow.call(footInst.data.hit.setValue(false)),
-        Flow.whenTrueDo({
-          condition: footInst.data.hit.subject,
-          action: Flow.tween(() => ({
+        Flow.sequence(
+          Flow.withBackground({
+            main: Flow.wait(footInst.data.hit.subject),
+            back: Flow.sequence(
+              Flow.waitTimer(30000),
+              weakPointEffect({ target: footInst.getObj(scene) }),
+            ),
+          }),
+          Flow.tween(() => ({
             targets: footInst.getObj(scene),
             props: { angle: -footInst.config.flip * 20 },
             yoyo: true,
             repeat: -1,
             duration: 280,
           })),
-        }),
+        ),
         bindAttackButton({
           pos: Wp.getWpId(footInst.config.pos),
           disabled: footInst.data.hit.dataSubject,
@@ -434,7 +440,7 @@ export const dragon: Flow.PhaserNode = Flow.lazy((scene) => {
                 target: headObj,
                 infinite: false,
               }),
-              angryEffect({ target: headObj }),
+              weakPointEffect({ target: headObj }),
             )
           : emitNewState(stunnedState),
       ),
