@@ -1,7 +1,6 @@
 -- graphics
 
 "Small flame pack" by serenajeanne licensed CC BY-SA 3.0: https://opengameart.org/content/small-flame-pack-0
-"Pointers: part 5" by yd liscensed CC0: https://opengameart.org/content/pointers-part-5
 
 -- sound effects
 

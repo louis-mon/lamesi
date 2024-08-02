@@ -34,10 +34,6 @@ export const credits: CreditCategory[] = [
         label: '"Small flame pack" by serenajeanne licensed CC BY-SA 3.0',
         link: "https://opengameart.org/content/small-flame-pack-0",
       },
-      {
-        label: '"Pointers: part 5" by yd liscensed CC0',
-        link: "https://opengameart.org/content/pointers-part-5",
-      },
     ],
   },
   {
@@ -80,8 +76,8 @@ export const credits: CreditCategory[] = [
   {
     category: "credits.thanks",
     entries: [
+      label("Younès"),
       label("Matthieu"),
-      label("Younes"),
       label("Jerôme"),
       label("Alex"),
     ],
