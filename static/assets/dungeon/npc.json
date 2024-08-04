@@ -264,44 +264,20 @@
         "y": 0.5
       }
     },
-    "flame-0": {
+    "flame-1": {
       "frame": {
         "x": 266,
         "y": 230,
-        "w": 14,
-        "h": 24
+        "w": 15,
+        "h": 25
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
         "x": 9,
-        "y": 1,
-        "w": 14,
-        "h": 24
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "flame-1": {
-      "frame": {
-        "x": 284,
-        "y": 230,
-        "w": 14,
-        "h": 23
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 9,
-        "y": 2,
-        "w": 14,
-        "h": 23
+        "y": 0,
+        "w": 15,
+        "h": 25
       },
       "sourceSize": {
         "w": 32,
@@ -676,16 +652,40 @@
       "frame": {
         "x": 191,
         "y": 760,
-        "w": 14,
-        "h": 22
+        "w": 15,
+        "h": 25
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
         "x": 9,
-        "y": 3,
-        "w": 14,
-        "h": 22
+        "y": 0,
+        "w": 15,
+        "h": 25
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "flame-3": {
+      "frame": {
+        "x": 210,
+        "y": 760,
+        "w": 15,
+        "h": 25
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 9,
+        "y": 0,
+        "w": 15,
+        "h": 25
       },
       "sourceSize": {
         "w": 32,
@@ -714,6 +714,30 @@
       "sourceSize": {
         "w": 35,
         "h": 45
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "flame-0": {
+      "frame": {
+        "x": 229,
+        "y": 760,
+        "w": 15,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 9,
+        "y": 1,
+        "w": 15,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
       },
       "pivot": {
         "x": 0.5,
@@ -902,30 +926,6 @@
         "y": 1,
         "w": 28,
         "h": 30
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "flame-3": {
-      "frame": {
-        "x": 284,
-        "y": 230,
-        "w": 14,
-        "h": 23
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 9,
-        "y": 2,
-        "w": 14,
-        "h": 23
       },
       "sourceSize": {
         "w": 32,

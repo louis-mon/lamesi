@@ -27,14 +27,7 @@ export const credits: CreditCategory[] = [
   },
   {
     category: "credits.graphics",
-    entries: [
-      label("Louis Monestier"),
-      label("Pierre Monestier"),
-      {
-        label: '"Small flame pack" by serenajeanne licensed CC BY-SA 3.0',
-        link: "https://opengameart.org/content/small-flame-pack-0",
-      },
-    ],
+    entries: [label("Louis Monestier"), label("Pierre Monestier")],
   },
   {
     category: "credits.music",
@@ -71,7 +64,14 @@ export const credits: CreditCategory[] = [
   },
   {
     category: "credits.software",
-    entries: [label("Phaser 3"), label("asesprite"), label("krita")],
+    entries: [
+      label("Phaser 3"),
+      label("Asesprite"),
+      label("Krita"),
+      label("Sketchbook"),
+      label("Audacity"),
+      label("Webstorm"),
+    ],
   },
   {
     category: "credits.thanks",

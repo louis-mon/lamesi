@@ -72,30 +72,6 @@
         "y": 0.5
       }
     },
-    "light-4-solve": {
-      "frame": {
-        "x": 61,
-        "y": 24,
-        "w": 14,
-        "h": 24
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 9,
-        "y": 1,
-        "w": 14,
-        "h": 24
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "menu-fullscreen": {
       "frame": {
         "x": 143,
@@ -384,10 +360,34 @@
         "y": 0.5
       }
     },
+    "light-4-solve": {
+      "frame": {
+        "x": 85,
+        "y": 108,
+        "w": 15,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 9,
+        "y": 1,
+        "w": 15,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
     "memorial": {
       "frame": {
-        "x": 2,
-        "y": 118,
+        "x": 104,
+        "y": 124,
         "w": 34,
         "h": 49
       },
@@ -410,8 +410,8 @@
     },
     "drop": {
       "frame": {
-        "x": 85,
-        "y": 124,
+        "x": 2,
+        "y": 118,
         "w": 33,
         "h": 50
       },
@@ -434,7 +434,7 @@
     },
     "enemy": {
       "frame": {
-        "x": 40,
+        "x": 39,
         "y": 160,
         "w": 30,
         "h": 50
@@ -459,7 +459,7 @@
     "book": {
       "frame": {
         "x": 2,
-        "y": 171,
+        "y": 172,
         "w": 30,
         "h": 36
       },
