@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { background } from "/src/scenes/final/background";
 import { finalSceneKey } from "/src/scenes/common/constants";
-import { intro } from "/src/scenes/final/intro";
+import { finalIntro } from "/src/scenes/final/final-intro";
 
 export class FinalScene extends Phaser.Scene {
   constructor() {
@@ -19,9 +19,18 @@ export class FinalScene extends Phaser.Scene {
       key: "tombstones",
       extension: "jpg",
     });
+    this.load.image("kidra-arm1");
+    this.load.image("kidra-arm2");
+    this.load.image("kidra-body");
+    this.load.image("kidra-head");
+    this.load.image("kidra-left-leg");
+    this.load.image("kidra-left-leg2");
+    this.load.image("kidra-right-leg");
+    this.load.image("kidra-right-leg2");
+    this.load.image("kidra-weapon");
   }
 
   create() {
-    Flow.runScene(this, Flow.parallel(background, intro));
+    Flow.runScene(this, Flow.parallel(background, finalIntro));
   }
 }

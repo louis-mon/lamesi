@@ -16,7 +16,7 @@
     "duration": 200
    },
    "2": {
-    "frame": { "x": 46, "y": 125, "w": 57, "h": 34 },
+    "frame": { "x": 87, "y": 132, "w": 57, "h": 34 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 12, "y": 37, "w": 55, "h": 32 },
@@ -86,6 +86,14 @@
     "spriteSourceSize": { "x": 9, "y": 16, "w": 42, "h": 54 },
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 250
+   },
+   "11": {
+    "frame": { "x": 46, "y": 119, "w": 40, "h": 51 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 21, "w": 38, "h": 49 },
+    "sourceSize": { "w": 70, "h": 70 },
+    "duration": 200
    }
  },
  "meta": {
@@ -99,7 +107,8 @@
    { "name": "death", "from": 0, "to": 2, "direction": "forward" },
    { "name": "idle", "from": 0, "to": 0, "direction": "forward" },
    { "name": "slash", "from": 4, "to": 8, "direction": "forward" },
-   { "name": "walk", "from": 9, "to": 10, "direction": "pingpong" }
+   { "name": "walk", "from": 9, "to": 10, "direction": "pingpong" },
+   { "name": "kneel", "from": 11, "to": 11, "direction": "forward" }
   ],
   "layers": [
    { "name": "legs", "opacity": 255, "blendMode": "normal" },
