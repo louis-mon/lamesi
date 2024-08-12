@@ -28,6 +28,7 @@ export class FinalScene extends Phaser.Scene {
     this.load.image("kidra-right-leg");
     this.load.image("kidra-right-leg2");
     this.load.image("kidra-weapon");
+    this.load.atlas("fight");
   }
 
   create() {

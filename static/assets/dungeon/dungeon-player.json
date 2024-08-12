@@ -24,14 +24,6 @@
     "duration": 200
    },
    "3": {
-    "frame": { "x": 48, "y": 60, "w": 44, "h": 58 },
-    "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 9, "y": 14, "w": 42, "h": 56 },
-    "sourceSize": { "w": 70, "h": 70 },
-    "duration": 100
-   },
-   "4": {
     "frame": { "x": 1, "y": 60, "w": 46, "h": 58 },
     "rotated": false,
     "trimmed": true,
@@ -39,7 +31,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 300
    },
-   "5": {
+   "4": {
     "frame": { "x": 138, "y": 68, "w": 38, "h": 63 },
     "rotated": false,
     "trimmed": true,
@@ -47,7 +39,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 50
    },
-   "6": {
+   "5": {
     "frame": { "x": 126, "y": 1, "w": 49, "h": 66 },
     "rotated": false,
     "trimmed": true,
@@ -55,7 +47,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 50
    },
-   "7": {
+   "6": {
     "frame": { "x": 65, "y": 1, "w": 60, "h": 58 },
     "rotated": false,
     "trimmed": true,
@@ -63,7 +55,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 50
    },
-   "8": {
+   "7": {
     "frame": { "x": 1, "y": 1, "w": 63, "h": 58 },
     "rotated": false,
     "trimmed": true,
@@ -71,7 +63,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 300
    },
-   "9": {
+   "8": {
     "frame": { "x": 48, "y": 60, "w": 44, "h": 58 },
     "rotated": false,
     "trimmed": true,
@@ -79,7 +71,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 250
    },
-   "10": {
+   "9": {
     "frame": { "x": 93, "y": 68, "w": 44, "h": 56 },
     "rotated": false,
     "trimmed": true,
@@ -87,7 +79,7 @@
     "sourceSize": { "w": 70, "h": 70 },
     "duration": 250
    },
-   "11": {
+   "10": {
     "frame": { "x": 46, "y": 119, "w": 40, "h": 51 },
     "rotated": false,
     "trimmed": true,
@@ -106,9 +98,11 @@
   "frameTags": [
    { "name": "death", "from": 0, "to": 2, "direction": "forward" },
    { "name": "idle", "from": 0, "to": 0, "direction": "forward" },
-   { "name": "slash", "from": 4, "to": 8, "direction": "forward" },
-   { "name": "walk", "from": 9, "to": 10, "direction": "pingpong" },
-   { "name": "kneel", "from": 11, "to": 11, "direction": "forward" }
+   { "name": "slash", "from": 3, "to": 7, "direction": "forward" },
+   { "name": "slash-ready", "from": 3, "to": 4, "direction": "forward" },
+   { "name": "slash-end", "from": 5, "to": 7, "direction": "forward" },
+   { "name": "walk", "from": 8, "to": 9, "direction": "pingpong" },
+   { "name": "kneel", "from": 10, "to": 10, "direction": "forward" }
   ],
   "layers": [
    { "name": "legs", "opacity": 255, "blendMode": "normal" },

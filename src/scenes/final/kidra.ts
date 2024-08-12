@@ -4,6 +4,7 @@ import * as _ from "lodash";
 import Vector2 = Phaser.Math.Vector2;
 import { placeAt } from "/src/helpers/phaser";
 import DegToRad = Phaser.Math.DegToRad;
+import { finalSceneClass } from "/src/scenes/final/final-defs";
 
 interface LegAngleState {
   thighAngle: number;
@@ -379,7 +380,11 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   );
 
   return Flow.parallel(
-    Flow.sequence(walk, Flow.parallel(breathing, shakeWeapon)),
+    Flow.sequence(
+      walk,
+      Flow.call(finalSceneClass.events.enterKidraDone.emit({})),
+      Flow.parallel(breathing, shakeWeapon),
+    ),
     updateBodyPos(kidra),
   );
 });

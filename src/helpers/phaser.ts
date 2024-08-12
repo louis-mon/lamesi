@@ -17,6 +17,9 @@ export const placeAt = <T extends Phaser.GameObjects.Components.Transform>(
 export const getObjectPosition = ({ x, y }: { x: number; y: number }) =>
   new Phaser.Math.Vector2(x, y);
 
+// Same as getObjectPosition but vanilla object, to be used in tweens
+export const getCoordProps = ({ x, y }: { x: number; y: number }) => ({ x, y });
+
 export const createSpriteAt = (
   scene: Phaser.Scene,
   pos: Vector2,

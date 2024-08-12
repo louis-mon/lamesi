@@ -44,7 +44,7 @@ const fastCode: Flow.PhaserNode = Flow.lazy((scene) => {
   const activateKey = scene.input.keyboard.addKey(
     Phaser.Input.Keyboard.KeyCodes.ALT,
   );
-  const timeScale = 5;
+  const timeScale = 50;
   return Flow.parallel(
     Flow.observe(fromEvent(activateKey, "up"), () =>
       Flow.call(() => {

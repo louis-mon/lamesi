@@ -16,10 +16,18 @@ export const womanClass = defineGoSprite({
 
 export const woman = declareGoInstance(womanClass, "woman");
 
+export interface FinalAttackState {
+  particles: Phaser.GameObjects.Particles.ParticleEmitterManager;
+}
+
 export const finalSceneClass = defineSceneClass({
-  data: {},
+  data: {
+    attack: annotate<FinalAttackState>(),
+    nbLightReady: annotate<number>(),
+  },
   events: {
     enterKidra: annotate(),
     enterKidraDone: annotate(),
+    prepareGlurpAttack: annotate(),
   },
 });

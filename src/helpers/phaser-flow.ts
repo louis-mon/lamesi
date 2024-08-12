@@ -213,6 +213,13 @@ export const handlePostUpdate = (makeParams: {
     event: Phaser.Scenes.Events.POST_UPDATE,
   });
 
+export const onPostUpdate = (handler: SceneContext<() => void>): PhaserNode =>
+  handleEvent({
+    handler,
+    emitter: (scene) => scene.events,
+    event: Phaser.Scenes.Events.POST_UPDATE,
+  });
+
 export const waitOnOfPointerdown = <T>({
   items,
   getObj,
