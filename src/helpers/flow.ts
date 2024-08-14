@@ -183,6 +183,53 @@ export function observe<C, T>(
   };
 }
 
+/** Run an action whenever an event is observed like {@link observe},
+ * but terminates the previous action
+ * when a new one is run
+ */
+export function observeSentinel<C, T>(
+  factory: ObservableFactory<C, T | ActionNode<C>>,
+  actionMapper?: (t: T) => ActionNode<C>,
+): ActionNode<C> {
+  return (context) => (p) => {
+    const source = funcOrConstValue(context, factory);
+    const observable = actionMapper
+      ? (source as Observable<T>).pipe(map(actionMapper))
+      : (source as Observable<ActionNode<C>>);
+    let nbRunning = 0;
+    let completed = false;
+    const unsubscribe = () => subscription.unsubscribe();
+    const completeAction = () => {
+      p.unregisterAbort(unsubscribe);
+      p.onComplete();
+    };
+    const aborter = makeAborter(p);
+    const subscription = observable.subscribe({
+      next: (action) => {
+        ++nbRunning;
+        aborter.abort();
+        action(context)({
+          ...aborter.childParams,
+          onComplete: () => {
+            aborter.childParams.onComplete();
+            --nbRunning;
+            if (completed) {
+              completeAction();
+            }
+          },
+        });
+      },
+      complete: () => {
+        completed = true;
+        if (nbRunning === 0) {
+          completeAction();
+        }
+      },
+    });
+    p.registerAbort(unsubscribe);
+  };
+}
+
 /**
  * Run the action when the condition is true and completes after
  */
@@ -288,21 +335,6 @@ export const taskWithSentinel = <C>({
       }),
     ),
   });
-
-/** Run an action whenever an event is observed like {@link observe},
- * but terminates the previous action
- * when a new one is run
- */
-export const observeSentinel = <C, T>(
-  condition: ObservableFactory<C, T>,
-  action: (t: T) => ActionNode<C>,
-) =>
-  observe(condition, (t) =>
-    withBackground({
-      main: wait(condition),
-      back: action(t),
-    }),
-  );
 
 /**
  * Generate a flow dynamically depending on the context

@@ -65,21 +65,23 @@ export const credits: CreditCategory[] = [
   {
     category: "credits.software",
     entries: [
-      label("Phaser 3"),
+      label("Audacity"),
       label("Asesprite"),
       label("Krita"),
+      label("Phaser 3"),
       label("Sketchbook"),
-      label("Audacity"),
       label("Webstorm"),
     ],
   },
   {
     category: "credits.thanks",
     entries: [
-      label("Younès"),
-      label("Matthieu"),
-      label("Jerôme"),
+      label("Adrien"),
       label("Alex"),
+      label("Jerôme"),
+      label("Matthieu"),
+      label("Nancie"),
+      label("Younès"),
     ],
   },
 ];

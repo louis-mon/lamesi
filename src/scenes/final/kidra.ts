@@ -4,36 +4,12 @@ import * as _ from "lodash";
 import Vector2 = Phaser.Math.Vector2;
 import { placeAt } from "/src/helpers/phaser";
 import DegToRad = Phaser.Math.DegToRad;
-import { finalSceneClass } from "/src/scenes/final/final-defs";
-
-interface LegAngleState {
-  thighAngle: number;
-  calfAngle: number;
-}
-
-interface LegState extends LegAngleState {
-  thighObj: Phaser.Physics.Arcade.Image;
-  calfObj: Phaser.Physics.Arcade.Image;
-}
-
-interface ArmAngleState {
-  armBodyAngle: number;
-  arm1Arm2Angle: number;
-}
-
-interface Kidra extends ArmAngleState {
-  head: Phaser.Physics.Arcade.Image;
-  body: Phaser.Physics.Arcade.Image;
-  arm1: Phaser.Physics.Arcade.Image;
-  arm2: Phaser.Physics.Arcade.Image;
-  weapon: Phaser.Physics.Arcade.Image;
-  leftLeg: LegState;
-  rightLeg: LegState;
-  pos: Vector2;
-  headBodyAngle: number;
-  standingFoot: "right" | "left";
-  downFoot: boolean;
-}
+import {
+  finalSceneClass,
+  Kidra,
+  LegAngleState,
+  LegState,
+} from "/src/scenes/final/final-defs";
 
 const armBodyPos = new Vector2(76, 50);
 const headBodyPos = new Vector2(63, 12);
@@ -197,6 +173,7 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     standingFoot: "right",
     downFoot: false,
   };
+  finalSceneClass.data.kidra.setValue(kidra)(scene);
 
   const walkSpeed = 400;
 

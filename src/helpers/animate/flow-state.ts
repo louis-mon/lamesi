@@ -5,6 +5,8 @@ export type StatesFlow<C> = {
   next: (flow: Flow.ActionNode<C>) => void;
   nextFlow: (flow: Flow.ActionNode<C>) => Flow.ActionNode<C>;
   start: (flow?: Flow.ActionNode<C>) => Flow.ActionNode<C>;
+  complete: () => void;
+  completeFlow: Flow.ActionNode<C>;
 };
 
 export const makeStatesFlow = <C>(): StatesFlow<C> => {
@@ -12,7 +14,10 @@ export const makeStatesFlow = <C>(): StatesFlow<C> => {
   const next = (flow: Flow.ActionNode<C>): void => currentState.next(flow);
   const nextFlow = (flow: Flow.ActionNode<C>): Flow.ActionNode<C> =>
     Flow.call(() => currentState.next(flow));
+  const complete = () => currentState.complete();
   return {
+    complete,
+    completeFlow: Flow.call(complete),
     next,
     nextFlow,
     start: (flow: Flow.ActionNode<C> = Flow.noop): Flow.ActionNode<C> =>

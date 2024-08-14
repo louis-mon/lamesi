@@ -34,9 +34,9 @@ export const finalIntro: Flow.PhaserNode = Flow.sequence(
     createGlurp({ pos: glurpInitPos, rotation: Math.PI / 2 }),
     finalWomanFlow,
     enterGlurp,
-    Flow.sequence(
-      Flow.waitTimer(5000),
-      //creditsFlow,
-    ),
+    Flow.whenValueDo({
+      condition: finalSceneClass.events.runCredits.subject,
+      action: () => creditsFlow,
+    }),
   ),
 );

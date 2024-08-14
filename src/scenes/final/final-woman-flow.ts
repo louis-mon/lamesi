@@ -56,9 +56,6 @@ const prepareGlurpAttack: Flow.PhaserNode = Flow.sequence(
   Flow.call((scene) => {
     const womanObj = woman.getObj(scene);
     womanObj.play("slash-ready");
-    finalSceneClass.data.attack
-      .value(scene)
-      .particles.emitters.each((e) => e.remove());
   }),
   Flow.call(finalSceneClass.events.prepareGlurpAttack.emit({})),
   Flow.call(finalSceneClass.data.nbLightReady.setValue(0)),
@@ -109,63 +106,96 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
     const sparkControl = {
       t: 0,
     };
-    return Flow.sequence(
-      Flow.withBackground({
-        main: Flow.sequence(
-          Flow.whenValueDo({
-            condition: commonInputEvents.pointerdown.subject,
-            action: (e) =>
-              Flow.call(() => {
-                ballSpeed = getObjectPosition(e.pointer)
-                  .subtract(getObjectPosition(lightBall))
-                  .normalize()
-                  .scale(500);
-              }),
-          }),
-          Flow.parallel(
-            Flow.onPostUpdate(
-              () => () =>
-                (sparks.followOffset = new Vector2(
-                  (lightBall.width / 2) * scale,
-                  0,
-                ).rotate(sparkControl.t * Math.PI * 2)),
-            ),
-            Flow.tween({
-              targets: sparkControl,
-              props: { t: 1 },
-              repeat: -1,
-              duration: 300,
-            }),
-            Flow.sequence(
-              Flow.call(() => {
-                lightBall.setVelocity(ballSpeed.x, ballSpeed.y);
-                womanObj.play("slash-end");
-              }),
-              Flow.waitTimer(3000),
-              Flow.call(() => {
-                lightBall.destroy();
-                particles.destroy();
-              }),
-              prepareGlurpAttack,
-            ),
-          ),
-        ),
-        back: Flow.sequence(
-          Flow.tween({
-            targets: lightBall,
-            props: { scale },
-          }),
-          Flow.tween({
-            targets: lightBall,
-            props: { scale: scale * 0.8 },
-            duration: 200,
-            ease: Phaser.Math.Easing.Cubic.Out,
-            yoyo: true,
-            repeat: -1,
-          }),
-        ),
+
+    const globalState = Flow.makeSceneStates();
+    const lifeState = Flow.makeSceneStates();
+
+    const living: Flow.PhaserNode = Flow.sequence(
+      Flow.tween({
+        targets: lightBall,
+        props: { scale },
+      }),
+      Flow.tween({
+        targets: lightBall,
+        props: { scale: scale * 0.8 },
+        duration: 200,
+        ease: Phaser.Math.Easing.Cubic.Out,
+        yoyo: true,
+        repeat: -1,
       }),
     );
+
+    const destroy: Flow.PhaserNode = Flow.sequence(
+      Flow.call(() => {
+        lightBall.destroy();
+        particles.emitters.each((e) => e.remove());
+        particles.destroy();
+        attack.particles.emitters.each((e) => {
+          e.remove();
+        });
+      }),
+    );
+
+    const dyingAndRestart: Flow.PhaserNode = Flow.sequence(
+      destroy,
+      prepareGlurpAttack,
+      globalState.completeFlow,
+    );
+
+    const dying: Flow.PhaserNode = Flow.sequence(
+      destroy,
+      globalState.completeFlow,
+    );
+
+    const hit: Flow.PhaserNode = Flow.sequence(
+      Flow.call(finalSceneClass.events.runCredits.emit({})),
+      globalState.nextFlow(dying),
+    );
+
+    const launching: Flow.PhaserNode = Flow.parallel(
+      Flow.whenValueDo({
+        condition: Flow.arcadeColliderSubject({
+          object1: lightBall,
+          object2: finalSceneClass.data.kidra.value(scene).head,
+        }),
+        action: ({}) => Flow.parallel(globalState.nextFlow(hit)),
+      }),
+      Flow.onPostUpdate(
+        () => () =>
+          (sparks.followOffset = new Vector2(
+            (lightBall.width / 2) * scale,
+            0,
+          ).rotate(sparkControl.t * Math.PI * 2)),
+      ),
+      Flow.tween({
+        targets: sparkControl,
+        props: { t: 1 },
+        repeat: -1,
+        duration: 300,
+      }),
+      Flow.sequence(
+        Flow.call(() => {
+          lightBall.setVelocity(ballSpeed.x, ballSpeed.y);
+          womanObj.play("slash-end");
+        }),
+        Flow.waitTimer(3000),
+        globalState.nextFlow(dyingAndRestart),
+      ),
+    );
+
+    const preparing: Flow.PhaserNode = Flow.whenValueDo({
+      condition: commonInputEvents.pointerdown.subject,
+      action: (e) =>
+        Flow.call(() => {
+          ballSpeed = getObjectPosition(e.pointer)
+            .subtract(getObjectPosition(lightBall))
+            .normalize()
+            .scale(500);
+          lifeState.next(launching);
+        }),
+    });
+
+    return globalState.start(Flow.parallel(living, lifeState.start(preparing)));
   }),
 );
 
