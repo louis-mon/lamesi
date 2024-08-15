@@ -1,5 +1,6 @@
 import { gameHeight } from "/src/scenes/common/constants";
 import {
+  customEvent,
   declareGoInstance,
   defineGoSprite,
   defineSceneClass,
@@ -7,6 +8,7 @@ import {
 import { annotate } from "/src/helpers/typing";
 import Phaser from "phaser";
 import Vector2 = Phaser.Math.Vector2;
+import * as Flow from "/src/helpers/phaser-flow";
 
 export interface LegAngleState {
   thighAngle: number;
@@ -35,6 +37,10 @@ export interface Kidra extends ArmAngleState {
   headBodyAngle: number;
   standingFoot: "right" | "left";
   downFoot: boolean;
+  battleState: Flow.SceneStatesFlow;
+  headState: Flow.SceneStatesFlow;
+  legsState: Flow.SceneStatesFlow;
+  hitCount: number;
 }
 
 export const glurpInitPos = new Vector2(-400, gameHeight / 2);
@@ -55,11 +61,13 @@ export const finalSceneClass = defineSceneClass({
     attack: annotate<FinalAttackState>(),
     kidra: annotate<Kidra>(),
     nbLightReady: annotate<number>(),
+    lightBalls: annotate<Phaser.Physics.Arcade.Group>(),
   },
   events: {
-    enterKidra: annotate(),
-    enterKidraDone: annotate(),
-    prepareGlurpAttack: annotate(),
-    runCredits: annotate(),
+    enterKidra: customEvent(),
+    enterKidraDone: customEvent(),
+    prepareGlurpAttack: customEvent(),
+    destroyBall: customEvent<{ respawn: boolean }>(),
+    runCredits: customEvent(),
   },
 });

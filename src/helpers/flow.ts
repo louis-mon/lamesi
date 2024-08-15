@@ -183,6 +183,16 @@ export function observe<C, T>(
   };
 }
 
+export function observeO<C, T>({
+  condition,
+  action,
+}: {
+  condition: ObservableFactory<C, T>;
+  action: (t: T) => ActionNode<C>;
+}): ActionNode<C> {
+  return observe(condition, action);
+}
+
 /** Run an action whenever an event is observed like {@link observe},
  * but terminates the previous action
  * when a new one is run

@@ -2,7 +2,7 @@ import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import * as _ from "lodash";
 import Vector2 = Phaser.Math.Vector2;
-import { placeAt } from "/src/helpers/phaser";
+import { getObjectPosition, placeAt } from "/src/helpers/phaser";
 import DegToRad = Phaser.Math.DegToRad;
 import {
   finalSceneClass,
@@ -10,6 +10,10 @@ import {
   LegAngleState,
   LegState,
 } from "/src/scenes/final/final-defs";
+import {
+  colorTweenParams,
+  weakPointEffect,
+} from "/src/helpers/animate/tween/tween-color";
 
 const armBodyPos = new Vector2(76, 50);
 const headBodyPos = new Vector2(63, 12);
@@ -116,6 +120,22 @@ const updateBodyPos = (kidra: Kidra): Flow.PhaserNode =>
     },
   });
 
+const initialHeadBodyAngle = 0;
+
+const standingLeftAngle: LegAngleState = {
+  thighAngle: DegToRad(15),
+  calfAngle: DegToRad(-10),
+};
+const standingRightAngle: LegAngleState = {
+  thighAngle: DegToRad(0),
+  calfAngle: DegToRad(-20),
+};
+
+const armStartAngle = {
+  arm1Arm2Angle: DegToRad(55),
+  armBodyAngle: DegToRad(-45),
+};
+
 export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const leftThigh = scene.physics.add
     .image(0, 0, "kidra-left-leg")
@@ -138,19 +158,6 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const arm1 = scene.physics.add
     .image(0, 0, "kidra-arm1")
     .setDisplayOrigin(129, 33);
-  const standingLeftAngle: LegAngleState = {
-    thighAngle: DegToRad(15),
-    calfAngle: DegToRad(-10),
-  };
-  const standingRightAngle: LegAngleState = {
-    thighAngle: DegToRad(0),
-    calfAngle: DegToRad(-20),
-  };
-
-  const armStartAngle = {
-    arm1Arm2Angle: DegToRad(55),
-    armBodyAngle: DegToRad(-45),
-  };
   const kidra: Kidra = {
     leftLeg: {
       calfObj: leftCalf,
@@ -168,13 +175,39 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     weapon,
     head,
     body,
-    headBodyAngle: 0,
+    headBodyAngle: initialHeadBodyAngle,
     pos: new Vector2(2250, 500),
     standingFoot: "right",
     downFoot: false,
+    battleState: Flow.makeSceneStates(),
+    headState: Flow.makeSceneStates(),
+    legsState: Flow.makeSceneStates(),
+    hitCount: 0,
   };
   finalSceneClass.data.kidra.setValue(kidra)(scene);
+  finalSceneClass.data.lightBalls.setValue(scene.physics.add.group())(scene);
 
+  const { stepForward } = makeAnims(kidra);
+
+  const walk: Flow.PhaserNode = Flow.sequence(
+    ..._.range(4).map(() => stepForward),
+  );
+
+  return Flow.parallel(
+    Flow.sequence(
+      walk,
+      Flow.call(finalSceneClass.events.enterKidraDone.emit({})),
+      Flow.parallel(
+        kidra.headState.start(),
+        kidra.legsState.start(),
+        kidra.battleState.start(kidraWaitingState),
+      ),
+    ),
+    updateBodyPos(kidra),
+  );
+});
+
+function makeAnims(kidra: Kidra) {
   const walkSpeed = 400;
 
   const tweenRightLeg = ({
@@ -222,15 +255,16 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     thighAngle: DegToRad(-20),
     calfAngle: DegToRad(-40),
   };
+  const resetLegs = tweenLegs({
+    right: standingRightAngle,
+    left: standingLeftAngle,
+    duration: 100,
+  });
   const stepForward = Flow.sequence(
     Flow.call(() => {
       kidra.standingFoot = "right";
     }),
-    tweenLegs({
-      right: standingRightAngle,
-      left: standingLeftAngle,
-      duration: 100,
-    }),
+    resetLegs,
     tweenLegs({
       right: {
         thighAngle: DegToRad(0),
@@ -253,7 +287,7 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
       }),
       Flow.sequence(
         Flow.waitTimer(walkSpeed / 2),
-        Flow.call(() => scene.cameras.main.shake(400, 0.02)),
+        Flow.call((scene) => scene.cameras.main.shake(400, 0.02)),
       ),
     ),
     Flow.call(() => {
@@ -271,36 +305,35 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
       },
       duration: walkSpeed,
     }),
-    tweenLegs({
-      right: standingRightAngle,
-      left: standingLeftAngle,
-      duration: 100,
-    }),
+    resetLegs,
     Flow.call(() => {
       kidra.standingFoot = "right";
       kidra.downFoot = false;
       kidra.pos.x = kidra.body.x;
     }),
   );
-  const walk: Flow.PhaserNode = Flow.sequence(
-    ..._.range(4).map(() => stepForward),
-  );
 
-  const breathing: Flow.PhaserNode = Flow.parallel(
-    tweenLegs({
-      left: {
-        thighAngle: DegToRad(20),
-        calfAngle: DegToRad(-20),
-      },
-      right: {
-        thighAngle: DegToRad(5),
-        calfAngle: DegToRad(-30),
-      },
-      duration: 1000,
-      yoyo: true,
-      repeat: -1,
-      repeatDelay: 1000,
-    }),
+  const breathing: Flow.PhaserNode = Flow.sequence(
+    resetLegs,
+    Flow.repeat(
+      Flow.lazy(() =>
+        Flow.sequence(
+          tweenLegs({
+            left: {
+              thighAngle: DegToRad(20),
+              calfAngle: DegToRad(-20),
+            },
+            right: {
+              thighAngle: DegToRad(5),
+              calfAngle: DegToRad(-30),
+            },
+            duration: 1000 - kidra.hitCount * 300,
+            yoyo: true,
+          }),
+          Flow.waitTimer(1000 - kidra.hitCount * 300),
+        ),
+      ),
+    ),
   );
 
   const tweenKidra = ({
@@ -356,12 +389,105 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     }),
   );
 
-  return Flow.parallel(
-    Flow.sequence(
-      walk,
-      Flow.call(finalSceneClass.events.enterKidraDone.emit({})),
-      Flow.parallel(breathing, shakeWeapon),
-    ),
-    updateBodyPos(kidra),
+  const slashWeapon: Flow.PhaserNode = Flow.sequence(
+    tweenKidra({
+      props: armStartAngle,
+      duration: 2,
+    }),
+    tweenKidra({
+      props: { armBodyAngle: DegToRad(80), arm1Arm2Angle: DegToRad(60) },
+      duration: 300,
+    }),
+    tweenKidra({
+      props: armStartAngle,
+      duration: 300,
+    }),
   );
+
+  return {
+    shakeWeapon,
+    stepForward,
+    slashWeapon,
+    breathing,
+    startBreath: kidra.legsState.nextFlow(breathing),
+    stopBreath: kidra.legsState.nextFlow(Flow.noop),
+  };
+}
+
+function getKidra(scene: Phaser.Scene) {
+  return finalSceneClass.data.kidra.value(scene);
+}
+
+const kidraWaitingState: Flow.PhaserNode = Flow.lazy((scene) => {
+  const kidra = getKidra(scene);
+
+  const anims = makeAnims(kidra);
+  return Flow.parallel(
+    anims.startBreath,
+    anims.shakeWeapon,
+    Flow.whenValueDo({
+      condition: Flow.arcadeColliderSubject({
+        object1: finalSceneClass.data.lightBalls.value(scene),
+        object2: kidra.head,
+      }),
+      action: () =>
+        Flow.sequence(
+          Flow.call(finalSceneClass.events.destroyBall.emit({ respawn: true })),
+          kidra.headState.nextFlow(
+            weakPointEffect({
+              target: kidra.head,
+              duration: 1500 - kidra.hitCount * 400,
+            }),
+          ),
+          Flow.tween({
+            targets: kidra,
+            props: { headBodyAngle: Math.PI / 6 },
+            ease: Phaser.Math.Easing.Elastic.Out,
+          }),
+          Flow.tween({
+            targets: kidra,
+            props: { headBodyAngle: initialHeadBodyAngle },
+            ease: Phaser.Math.Easing.Cubic.Out,
+          }),
+          Flow.call(() => {
+            ++kidra.hitCount;
+          }),
+          anims.stopBreath,
+          anims.stepForward,
+          kidra.battleState.nextFlow(kidraDefendState),
+        ),
+    }),
+  );
+});
+
+const kidraDefendState: Flow.PhaserNode = Flow.lazy((scene) => {
+  const kidra = getKidra(scene);
+  const anims = makeAnims(kidra);
+  const zone = scene.add.zone(0, 0, 600, 600);
+  const collideZone = scene.physics.add.existing(
+    zone,
+  ) as unknown as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody;
+  collideZone.body.setImmovable(true);
+  return Flow.withCleanup({
+    flow: Flow.parallel(
+      Flow.onPostUpdate(
+        () => () => placeAt(zone, getObjectPosition(kidra.head)),
+      ),
+      anims.startBreath,
+      Flow.observeO({
+        condition: Flow.arcadeColliderSubject({
+          object1: finalSceneClass.data.lightBalls.value(scene),
+          object2: collideZone,
+        }),
+        action: () =>
+          Flow.sequence(
+            Flow.call(
+              finalSceneClass.events.destroyBall.emit({ respawn: true }),
+            ),
+            anims.slashWeapon,
+          ),
+      }),
+    ),
+    cleanup: () => collideZone.destroy(),
+  });
 });

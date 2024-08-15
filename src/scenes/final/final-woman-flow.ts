@@ -74,11 +74,12 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
     const attack = finalSceneClass.data.attack.value(scene);
     const scale = 0.58;
 
-    attack.particles.emitters.each((e) => {
-      e.stop();
-    });
-    const particles = scene.add.particles("fight", "light-hex");
-    const sparks = attack.particles.createEmitter({
+    attack.particles.emitters.removeAll();
+    const particles = scene.add.particles("fight", "light-hex").setDepth(1000);
+    const sparkManager = scene.add
+      .particles("fight", "light-particle")
+      .setDepth(1000);
+    const sparks = sparkManager.createEmitter({
       follow: lightBall,
       tint: 0xfff642,
       scale: { start: 1, end: 0 },
@@ -130,14 +131,13 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
         lightBall.destroy();
         particles.emitters.each((e) => e.remove());
         particles.destroy();
-        attack.particles.emitters.each((e) => {
-          e.remove();
-        });
+        sparkManager.destroy();
       }),
     );
 
     const dyingAndRestart: Flow.PhaserNode = Flow.sequence(
       destroy,
+      Flow.waitTimer(2000),
       prepareGlurpAttack,
       globalState.completeFlow,
     );
@@ -147,18 +147,11 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
       globalState.completeFlow,
     );
 
-    const hit: Flow.PhaserNode = Flow.sequence(
-      Flow.call(finalSceneClass.events.runCredits.emit({})),
-      globalState.nextFlow(dying),
-    );
-
     const launching: Flow.PhaserNode = Flow.parallel(
       Flow.whenValueDo({
-        condition: Flow.arcadeColliderSubject({
-          object1: lightBall,
-          object2: finalSceneClass.data.kidra.value(scene).head,
-        }),
-        action: ({}) => Flow.parallel(globalState.nextFlow(hit)),
+        condition: finalSceneClass.events.destroyBall.subject,
+        action: ({ respawn }) =>
+          globalState.nextFlow(respawn ? dyingAndRestart : dying),
       }),
       Flow.onPostUpdate(
         () => () =>
@@ -175,8 +168,9 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
       }),
       Flow.sequence(
         Flow.call(() => {
-          lightBall.setVelocity(ballSpeed.x, ballSpeed.y);
           womanObj.play("slash-end");
+          finalSceneClass.data.lightBalls.value(scene).add(lightBall);
+          lightBall.setVelocity(ballSpeed.x, ballSpeed.y);
         }),
         Flow.waitTimer(3000),
         globalState.nextFlow(dyingAndRestart),

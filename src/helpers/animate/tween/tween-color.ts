@@ -1,6 +1,28 @@
 import Phaser from "phaser";
 import Color = Phaser.Display.Color;
 import { omit } from "lodash";
+import * as Flow from "/src/helpers/phaser-flow";
+
+export const weakPointEffect = ({
+  target,
+  ...rest
+}: {
+  target: Phaser.GameObjects.Components.Tint;
+} & Partial<Phaser.Types.Tweens.TweenBuilderConfig>) =>
+  Flow.withCleanup({
+    flow: Flow.tween({
+      ...colorTweenParams({
+        targets: target,
+        value: 0xffffaaaa,
+        propName: "tint",
+      }),
+      repeat: -1,
+      yoyo: true,
+      duration: 500,
+      ...rest,
+    }),
+    cleanup: () => target.clearTint(),
+  });
 
 export const colorTweenParams = <T extends object, Props extends keyof T>({
   targets,

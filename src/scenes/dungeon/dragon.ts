@@ -33,7 +33,10 @@ import { globalEvents } from "/src/scenes/common/global-events";
 import { cutscene } from "/src/scenes/common/cutscene";
 import { createKeyItem } from "/src/scenes/common/key-item";
 import { wpPos } from "./wp";
-import { colorTweenParams } from "/src/helpers/animate/tween/tween-color";
+import {
+  colorTweenParams,
+  weakPointEffect,
+} from "/src/helpers/animate/tween/tween-color";
 import { playerCanActSubject } from "./definitions";
 
 const dragonHeadClass = defineGoClass({
@@ -52,25 +55,6 @@ const toggleForbiddenPos = (disabled: boolean) =>
   Wp.setGraphWpDisabled({
     wpId: Wp.getWpId(goalPos),
     disabled,
-  });
-
-const weakPointEffect = ({
-  target,
-}: {
-  target: Phaser.GameObjects.Components.Tint;
-}) =>
-  Flow.withCleanup({
-    flow: Flow.tween({
-      ...colorTweenParams({
-        targets: target,
-        value: 0xffffaaaa,
-        propName: "tint",
-      }),
-      repeat: -1,
-      yoyo: true,
-      duration: 500,
-    }),
-    cleanup: () => target.clearTint(),
   });
 
 const stunEffect = ({
