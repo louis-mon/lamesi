@@ -34,13 +34,15 @@ export interface Kidra extends ArmAngleState {
   leftLeg: LegState;
   rightLeg: LegState;
   pos: Vector2;
+  bodyAngle: number;
   headBodyAngle: number;
-  standingFoot: "right" | "left";
+  standingFoot?: "right" | "left";
   downFoot: boolean;
   battleState: Flow.SceneStatesFlow;
   headState: Flow.SceneStatesFlow;
   legsState: Flow.SceneStatesFlow;
   hitCount: number;
+  weaponAttached: boolean;
 }
 
 export const glurpInitPos = new Vector2(-400, gameHeight / 2);

@@ -20,11 +20,11 @@ export const frTranslation: TranslationKeys = {
   },
   dungeon: {
     activateSwitch:
-      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour frapper avec l'épée sur l'interrupteur",
+      "Cliquer sur l'icône en surbrillance ou sur la touche {{key}}\npour frapper avec l'épée sur l'interrupteur",
     takeItem:
-      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour prendre l'objet",
+      "Cliquer sur l'icône en surbrillance ou sur la touche {{key}}\npour prendre l'objet",
     useItem:
-      "Clicker sur l'icône en surbrillance ou sur la touche {{key}}\npour utiliser l'objet",
+      "Cliquer sur l'icône en surbrillance ou sur la touche {{key}}\npour utiliser l'objet",
   },
   credits: {
     graphics: "Art",

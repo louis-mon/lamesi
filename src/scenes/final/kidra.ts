@@ -10,13 +10,11 @@ import {
   LegAngleState,
   LegState,
 } from "/src/scenes/final/final-defs";
-import {
-  colorTweenParams,
-  weakPointEffect,
-} from "/src/helpers/animate/tween/tween-color";
+import { weakPointEffect } from "/src/helpers/animate/tween/tween-color";
+import { BehaviorSubject } from "rxjs";
 
-const armBodyPos = new Vector2(76, 50);
-const headBodyPos = new Vector2(63, 12);
+const armBodyPos = new Vector2(10, -110);
+const headBodyPos = new Vector2(-3, -148);
 
 interface LegDef {
   thighLen: number;
@@ -27,12 +25,12 @@ interface LegDef {
 const rightLegDef: LegDef = {
   thighLen: 92,
   calfLen: 93,
-  thighPosInBody: new Vector2(79, 312),
+  thighPosInBody: new Vector2(13, 152),
 };
 const leftLegDef: LegDef = {
   thighLen: 99,
   calfLen: 98,
-  thighPosInBody: new Vector2(32, 300),
+  thighPosInBody: new Vector2(-34, 140),
 };
 
 function computeLegYDiff(def: LegDef, legs: LegAngleState) {
@@ -62,6 +60,43 @@ const computeLeftLegAngle = (rightAngles: LegAngleState): LegAngleState => {
   };
 };
 
+function placeRelativeToJoint({
+  target,
+  parent,
+  pos,
+  angle,
+}: {
+  target: Phaser.GameObjects.Components.Transform;
+  parent: Phaser.GameObjects.Components.Transform;
+  angle: number;
+  pos: Vector2;
+}) {
+  const parentPos = parent
+    .getWorldTransformMatrix()
+    .transformPoint(pos.x, pos.y, new Vector2());
+
+  placeAt(target, parentPos);
+  target.rotation = angle + parent.rotation;
+}
+
+/** relative to top left, not display origin */
+function wordPositionInObjectFromTL({
+  target,
+  localPos,
+}: {
+  target: Phaser.GameObjects.Components.Transform &
+    Phaser.GameObjects.Components.Origin;
+  localPos: Vector2;
+}): Vector2 {
+  return target
+    .getWorldTransformMatrix()
+    .transformPoint(
+      localPos.x - target.displayOriginX,
+      localPos.y - target.displayOriginY,
+      new Vector2(),
+    ) as Vector2;
+}
+
 const updateBodyPos = (kidra: Kidra): Flow.PhaserNode =>
   Flow.handlePostUpdate({
     handler: () => () => {
@@ -70,49 +105,65 @@ const updateBodyPos = (kidra: Kidra): Flow.PhaserNode =>
       const xDiffRight = computeLegXDist(rightLegDef, kidra.rightLeg);
       const xDiffLeft = computeLegXDist(leftLegDef, kidra.leftLeg);
 
+      const xDiff = { right: xDiffRight, left: xDiffLeft };
+      const yDiff = { right: yDiffRight, left: yDiffLeft };
+
       placeAt(
         kidra.body,
         kidra.pos
           .clone()
           .add(
             new Vector2(
-              kidra.downFoot
-                ? kidra.standingFoot === "left"
-                  ? xDiffLeft
-                  : xDiffRight
-                : 0,
-              kidra.standingFoot === "left" ? yDiffLeft : yDiffRight,
+              kidra.downFoot ? xDiff[kidra.standingFoot!] ?? 0 : 0,
+              yDiff[kidra.standingFoot!] ?? 0,
             ),
           ),
       );
+      kidra.body.rotation = kidra.bodyAngle;
 
-      const bodyPos = kidra.body.getTopLeft();
+      placeRelativeToJoint({
+        target: kidra.head,
+        parent: kidra.body,
+        pos: headBodyPos,
+        angle: kidra.headBodyAngle,
+      });
 
-      placeAt(kidra.head, bodyPos.clone().add(headBodyPos));
-      kidra.head.rotation = kidra.headBodyAngle;
+      placeRelativeToJoint({
+        target: kidra.arm2,
+        parent: kidra.body,
+        pos: armBodyPos,
+        angle: kidra.armBodyAngle,
+      });
 
-      placeAt(kidra.arm2, bodyPos.clone().add(armBodyPos));
-      kidra.arm2.rotation = kidra.armBodyAngle;
-      const arm2Pos = kidra.arm2
-        .getWorldTransformMatrix()
-        .transformPoint(-149, 0, new Vector2());
-      placeAt(kidra.arm1, arm2Pos);
-      kidra.arm1.rotation = kidra.arm1Arm2Angle + kidra.arm2.rotation;
-      const arm1Pos = kidra.arm1
-        .getWorldTransformMatrix()
-        .transformPoint(-123, 0, new Vector2());
+      placeRelativeToJoint({
+        target: kidra.arm1,
+        parent: kidra.arm2,
+        pos: new Vector2(-149, 0),
+        angle: kidra.arm1Arm2Angle,
+      });
 
-      placeAt(kidra.weapon, arm1Pos);
-      kidra.weapon.rotation = kidra.arm1.rotation - Math.PI / 2;
+      if (kidra.weaponAttached) {
+        placeRelativeToJoint({
+          target: kidra.weapon,
+          parent: kidra.arm1,
+          pos: new Vector2(-123, 0),
+          angle: -Math.PI / 2,
+        });
+      }
 
       function placeLeg(def: LegDef, state: LegState) {
-        placeAt(state.thighObj, bodyPos.clone().add(def.thighPosInBody));
-        state.thighObj.rotation = state.thighAngle;
-        const leftLegEndPos = state.thighObj
-          .getWorldTransformMatrix()
-          .transformPoint(0, def.thighLen, new Vector2());
-        placeAt(state.calfObj, leftLegEndPos);
-        state.calfObj.rotation = state.thighObj.rotation + state.calfAngle;
+        placeRelativeToJoint({
+          target: state.thighObj,
+          parent: kidra.body,
+          pos: def.thighPosInBody,
+          angle: state.thighAngle,
+        });
+        placeRelativeToJoint({
+          target: state.calfObj,
+          parent: state.thighObj,
+          pos: new Vector2(0, def.thighLen),
+          angle: state.calfAngle,
+        });
       }
 
       placeLeg(leftLegDef, kidra.leftLeg);
@@ -175,14 +226,17 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     weapon,
     head,
     body,
+    bodyAngle: 0,
     headBodyAngle: initialHeadBodyAngle,
     pos: new Vector2(2250, 500),
+    //pos: new Vector2(1600, 500),
     standingFoot: "right",
     downFoot: false,
     battleState: Flow.makeSceneStates(),
     headState: Flow.makeSceneStates(),
     legsState: Flow.makeSceneStates(),
     hitCount: 0,
+    weaponAttached: true,
   };
   finalSceneClass.data.kidra.setValue(kidra)(scene);
   finalSceneClass.data.lightBalls.setValue(scene.physics.add.group())(scene);
@@ -191,6 +245,7 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
 
   const walk: Flow.PhaserNode = Flow.sequence(
     ..._.range(4).map(() => stepForward),
+    //..._.range(1).map(() => stepForward),
   );
 
   return Flow.parallel(
@@ -213,7 +268,7 @@ function makeAnims(kidra: Kidra) {
   const tweenRightLeg = ({
     angles,
     ...rest
-  }: { angles: LegAngleState } & Omit<
+  }: { angles: Partial<LegAngleState> } & Omit<
     Phaser.Types.Tweens.TweenBuilderConfig,
     "targets"
   >) =>
@@ -227,7 +282,7 @@ function makeAnims(kidra: Kidra) {
   const tweenLeftLeg = ({
     angles,
     ...rest
-  }: { angles: LegAngleState } & Omit<
+  }: { angles: Partial<LegAngleState> } & Omit<
     Phaser.Types.Tweens.TweenBuilderConfig,
     "targets"
   >) =>
@@ -242,7 +297,7 @@ function makeAnims(kidra: Kidra) {
     right,
     left,
     ...rest
-  }: { left: LegAngleState; right: LegAngleState } & Omit<
+  }: { left: Partial<LegAngleState>; right: Partial<LegAngleState> } & Omit<
     Phaser.Types.Tweens.TweenBuilderConfig,
     "targets"
   >) =>
@@ -411,6 +466,10 @@ function makeAnims(kidra: Kidra) {
     breathing,
     startBreath: kidra.legsState.nextFlow(breathing),
     stopBreath: kidra.legsState.nextFlow(Flow.noop),
+    tweenKidra,
+    tweenLegs,
+    tweenLeftLeg,
+    tweenRightLeg,
   };
 }
 
@@ -470,10 +529,10 @@ const kidraDefendState: Flow.PhaserNode = Flow.lazy((scene) => {
   collideZone.body.setImmovable(true);
   return Flow.withCleanup({
     flow: Flow.parallel(
+      anims.startBreath,
       Flow.onPostUpdate(
         () => () => placeAt(zone, getObjectPosition(kidra.head)),
       ),
-      anims.startBreath,
       Flow.observeO({
         condition: Flow.arcadeColliderSubject({
           object1: finalSceneClass.data.lightBalls.value(scene),
@@ -490,4 +549,136 @@ const kidraDefendState: Flow.PhaserNode = Flow.lazy((scene) => {
     ),
     cleanup: () => collideZone.destroy(),
   });
+});
+
+const kidraKillingState: Flow.PhaserNode = Flow.lazy((scene) => {
+  const kidra = getKidra(scene);
+  const anims = makeAnims(kidra);
+  kidra.weaponAttached = false;
+  const floor = 924;
+  const fallen = new BehaviorSubject(false);
+  const headCenter = () =>
+    wordPositionInObjectFromTL({
+      target: kidra.head,
+      localPos: new Vector2(135, 73),
+    });
+
+  const weaponFall = Flow.sequence(
+    Flow.withBackground({
+      main: Flow.tween({
+        targets: kidra.weapon,
+        props: { y: -500 },
+        duration: 1000,
+      }),
+      back: Flow.tween({
+        targets: kidra.weapon,
+        props: { rotation: Math.PI * 30 },
+      }),
+    }),
+    Flow.waitTrue(fallen),
+    Flow.call(() => {
+      kidra.weapon.x = headCenter().x;
+      kidra.weapon.angle = -90;
+    }),
+    Flow.tween(() => ({
+      targets: kidra.weapon,
+      props: {
+        y: headCenter().y - kidra.weapon.displayWidth / 2,
+      },
+      duration: 800,
+      ease: Phaser.Math.Easing.Quadratic.In,
+    })),
+    Flow.parallel(
+      Flow.sequence(
+        anims.tweenKidra({
+          props: { armBodyAngle: DegToRad(-90) },
+          duration: 700,
+        }),
+        anims.tweenKidra({
+          props: { arm1Arm2Angle: DegToRad(0) },
+          duration: 700,
+        }),
+      ),
+      Flow.sequence(
+        anims.tweenLegs({
+          right: { thighAngle: 0, calfAngle: 0 },
+          left: { thighAngle: 0, calfAngle: 0 },
+          duration: 700,
+        }),
+      ),
+    ),
+  );
+  const bodyFall = Flow.sequence(
+    Flow.parallel(
+      Flow.tween({
+        targets: kidra.pos,
+        props: { y: 342 },
+        ease: Phaser.Math.Easing.Quadratic.Out,
+        duration: 800,
+      }),
+      anims.tweenLegs({
+        right: { thighAngle: DegToRad(standingRightAngle.thighAngle + 15) },
+        left: { thighAngle: DegToRad(standingLeftAngle.thighAngle + 15) },
+        duration: 500,
+      }),
+    ),
+    Flow.withBackground({
+      main: Flow.tween({
+        targets: kidra.pos,
+        props: { y: floor },
+        ease: Phaser.Math.Easing.Quadratic.In,
+      }),
+      back: Flow.parallel(
+        Flow.repeatSequence(
+          anims.tweenRightLeg({
+            angles: {
+              thighAngle: DegToRad(standingRightAngle.thighAngle + 70),
+              calfAngle: -DegToRad(120),
+            },
+            duration: 100,
+          }),
+          anims.tweenRightLeg({
+            angles: {
+              thighAngle: DegToRad(standingRightAngle.thighAngle + 15),
+              calfAngle: -DegToRad(45),
+            },
+            duration: 100,
+          }),
+        ),
+        Flow.sequence(
+          Flow.waitTimer(100),
+          Flow.repeatSequence(
+            anims.tweenLeftLeg({
+              angles: {
+                thighAngle: DegToRad(standingLeftAngle.thighAngle + 70),
+                calfAngle: -DegToRad(110),
+              },
+              duration: 100,
+            }),
+            anims.tweenLeftLeg({
+              angles: {
+                thighAngle: DegToRad(standingLeftAngle.thighAngle + 15),
+                calfAngle: -DegToRad(45),
+              },
+              duration: 100,
+            }),
+          ),
+        ),
+      ),
+    }),
+    Flow.call(() => fallen.next(true)),
+  );
+  kidra.standingFoot = undefined;
+  return Flow.sequence(
+    kidra.headState.nextFlow(Flow.noop),
+    anims.stopBreath,
+    Flow.parallel(
+      weaponFall,
+      anims.tweenKidra({
+        props: { bodyAngle: DegToRad(90) },
+        duration: 800,
+      }),
+      bodyFall,
+    ),
+  );
 });

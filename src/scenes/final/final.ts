@@ -17,7 +17,7 @@ export class FinalScene extends Phaser.Scene {
   preload() {
     this.load.image({
       key: "tombstones",
-      extension: "jpg",
+      extension: "png",
     });
     this.load.image("kidra-arm1");
     this.load.image("kidra-arm2");
