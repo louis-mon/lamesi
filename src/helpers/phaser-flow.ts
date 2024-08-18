@@ -189,8 +189,8 @@ export const arcadeOverlapSubject = arcadeGenericCollideSubject("overlap");
 export const arcadeColliderSubject = arcadeGenericCollideSubject("collider");
 
 export const handleEvent =
-  (makeParams: {
-    handler: SceneContext<() => void>;
+  <T extends any[]>(makeParams: {
+    handler: SceneContext<(...t: T) => void>;
     emitter: SceneContext<Phaser.Events.EventEmitter>;
     event: any;
   }): PhaserNode =>
@@ -205,7 +205,7 @@ export const handleEvent =
   };
 
 export const handlePostUpdate = (makeParams: {
-  handler: SceneContext<() => void>;
+  handler: SceneContext<(time: number, delta: number) => void>;
 }): PhaserNode =>
   handleEvent({
     ...makeParams,
@@ -213,7 +213,9 @@ export const handlePostUpdate = (makeParams: {
     event: Phaser.Scenes.Events.POST_UPDATE,
   });
 
-export const onPostUpdate = (handler: SceneContext<() => void>): PhaserNode =>
+export const onPostUpdate = (
+  handler: SceneContext<(time: number, delta: number) => void>,
+): PhaserNode =>
   handleEvent({
     handler,
     emitter: (scene) => scene.events,

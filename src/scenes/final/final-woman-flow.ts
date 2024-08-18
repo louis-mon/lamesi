@@ -1,3 +1,4 @@
+import * as Phaser from "phaser";
 import * as Flow from "/src/helpers/phaser-flow";
 import { createSpriteAt, getObjectPosition } from "/src/helpers/phaser";
 import { finalSceneClass, woman } from "/src/scenes/final/final-defs";
@@ -5,6 +6,8 @@ import Vector2 = Phaser.Math.Vector2;
 import { creatureSceneClass } from "/src/scenes/creatures/def";
 import { setUpAnimDurations } from "/src/helpers/animate/play-anim";
 import { commonInputEvents } from "/src/helpers/component";
+import { ghostFlow } from "/src/scenes/final/ghost-flow";
+import Color = Phaser.Display.Color;
 
 export const jumpOntoGlurp: Flow.PhaserNode = Flow.lazy((scene) => {
   const glurpObj = creatureSceneClass.data.glurpObj.value(scene);
@@ -70,12 +73,19 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
     const pos = womanObj.getTopLeft().add(new Vector2(9, 9));
     const lightBall = scene.physics.add
       .image(pos.x, pos.y, "fight", "light-ball")
-      .setScale(0);
+      .setScale(0)
+      .setImmovable(true);
     const attack = finalSceneClass.data.attack.value(scene);
+    finalSceneClass.data.lightBallCharge.setValue(0)(scene);
+    finalSceneClass.data.lightBallReady.setValue({ lightBall })(scene);
     const scale = 0.58;
 
+    const getCharge = () => finalSceneClass.data.lightBallCharge.value(scene);
+    const getZoomModifier = () => getCharge() * 1.6 + 1;
+    const getResolvedScale = () => scale * getZoomModifier();
+
     attack.particles.emitters.removeAll();
-    const particles = scene.add.particles("fight", "light-hex").setDepth(1000);
+    const hexManager = scene.add.particles("fight", "light-hex").setDepth(1000);
     const sparkManager = scene.add
       .particles("fight", "light-particle")
       .setDepth(1000);
@@ -85,19 +95,30 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
       scale: { start: 1, end: 0 },
       rotate: { min: 0, max: 360 },
       radial: true,
-      speed: 200,
+      speed: { onEmit: () => 200 * getZoomModifier() },
       lifespan: 500,
     });
-    particles.createEmitter({
+    const getHexColor = () =>
+      Color.ObjectToColor(
+        Color.Interpolate.ColorWithColor(
+          Color.IntegerToColor(0xffe51c),
+          Color.IntegerToColor(0x31ff1f),
+          1,
+          getCharge(),
+        ),
+      ).color;
+    const hexes = hexManager.createEmitter({
       follow: lightBall,
-      scale: { start: 0.75, end: 0 },
+      scale: { end: 0, onEmit: () => 0.75 * getZoomModifier() },
       lifespan: 500,
       frequency: 50,
       rotate: {
         onEmit: () => Phaser.Math.Angle.RandomDegrees(),
         onUpdate: (p, k, t, v) => v + 10,
       },
-      tint: 0xffe51c,
+      tint: {
+        onEmit: getHexColor,
+      },
       alpha: {
         start: 0.5,
         end: 0,
@@ -116,21 +137,66 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
         targets: lightBall,
         props: { scale },
       }),
-      Flow.tween({
-        targets: lightBall,
-        props: { scale: scale * 0.8 },
-        duration: 200,
-        ease: Phaser.Math.Easing.Cubic.Out,
-        yoyo: true,
-        repeat: -1,
-      }),
+      Flow.repeatSequence(
+        Flow.tween(() => ({
+          targets: lightBall,
+          props: { scale: 0.8 * getResolvedScale() },
+          duration: 200,
+          ease: Phaser.Math.Easing.Cubic.Out,
+        })),
+        Flow.tween(() => ({
+          targets: lightBall,
+          props: { scale: getResolvedScale() },
+          duration: 200,
+          ease: Phaser.Math.Easing.Cubic.Out,
+        })),
+      ),
     );
 
     const destroy: Flow.PhaserNode = Flow.sequence(
       Flow.call(() => {
+        lightBall.setVelocity(0, 0);
+        lightBall.disableBody();
+        hexes.stop();
+        sparks.stop();
+        hexManager
+          .createEmitter({
+            scale: { start: 0.1, end: 0.5 },
+            alpha: { start: 1, end: 0 },
+            lifespan: 700,
+            frequency: -1,
+            tint: { onEmit: getHexColor },
+            emitZone: {
+              type: "random",
+              source: {
+                getRandomPoint: (point) => {
+                  const r = ((lightBall.width * getResolvedScale()) / 2) * 3;
+                  Phaser.Math.RotateAroundDistance(
+                    point,
+                    0,
+                    0,
+                    Phaser.Math.RND.angle(),
+                    Math.sqrt(Phaser.Math.RND.between(0, r ** 2)),
+                  );
+                },
+              },
+            },
+          })
+          .explode(20, lightBall.x, lightBall.y);
+      }),
+      Flow.parallel(
+        Flow.tween({
+          targets: lightBall,
+          props: {
+            scale: scale * 3,
+            alpha: 0,
+          },
+          duration: 700,
+        }),
+      ),
+      Flow.call(() => {
         lightBall.destroy();
-        particles.emitters.each((e) => e.remove());
-        particles.destroy();
+        hexManager.destroy();
         sparkManager.destroy();
       }),
     );
@@ -185,6 +251,7 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
             .subtract(getObjectPosition(lightBall))
             .normalize()
             .scale(500);
+          finalSceneClass.data.lightBallReady.setValue(null)(scene);
           lifeState.next(launching);
         }),
     });
@@ -206,9 +273,14 @@ export const finalWomanFlow: Flow.PhaserNode = Flow.lazy(
     setUpAnimDurations(scene, "slash-end", [50, 50, 300]);
     woman.create(player);
     player.setScale(2);
+    finalSceneClass.data.lightBallReady.setValue(null)(scene);
 
     player.anims.play({ key: "walk", repeat: -1 });
     return Flow.parallel(
+      Flow.whenValueDo({
+        condition: finalSceneClass.events.ghostAppear.subject,
+        action: () => ghostFlow,
+      }),
       Flow.sequence(
         Flow.moveTo({
           target: player,
@@ -238,6 +310,10 @@ export const finalWomanFlow: Flow.PhaserNode = Flow.lazy(
       Flow.whenValueDo({
         condition: finalSceneClass.events.enterKidraDone.subject,
         action: () => jumpOntoGlurp,
+      }),
+      Flow.whenValueDo({
+        condition: finalSceneClass.events.kidraDead.subject,
+        action: () => Flow.call(() => player.play("idle")),
       }),
       lightBallReady,
     );

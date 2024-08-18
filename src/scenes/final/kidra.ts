@@ -188,27 +188,26 @@ const armStartAngle = {
 };
 
 export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
-  const leftThigh = scene.physics.add
+  const leftThigh = scene.add
     .image(0, 0, "kidra-left-leg")
     .setDisplayOrigin(34, 11);
-  const leftCalf = scene.physics.add
+  const leftCalf = scene.add
     .image(0, 0, "kidra-left-leg2")
     .setDisplayOrigin(61, 11);
-  const rightThigh = scene.physics.add
+  const rightThigh = scene.add
     .image(0, 0, "kidra-right-leg")
     .setDisplayOrigin(42, 10);
-  const rightCalf = scene.physics.add
+  const rightCalf = scene.add
     .image(0, 0, "kidra-right-leg2")
     .setDisplayOrigin(54, 11);
-  const body = scene.physics.add.image(0, 0, "kidra-body");
+  const body = scene.add.image(0, 0, "kidra-body");
   const head = scene.physics.add
     .image(0, 0, "kidra-head")
-    .setDisplayOrigin(114, 144);
-  const weapon = scene.physics.add.image(0, 0, "kidra-weapon");
-  const arm2 = scene.physics.add.image(0, 0, "kidra-arm2").setOrigin(1, 0.5);
-  const arm1 = scene.physics.add
-    .image(0, 0, "kidra-arm1")
-    .setDisplayOrigin(129, 33);
+    .setDisplayOrigin(114, 144)
+    .setImmovable();
+  const weapon = scene.add.image(0, 0, "kidra-weapon");
+  const arm2 = scene.add.image(0, 0, "kidra-arm2").setOrigin(1, 0.5);
+  const arm1 = scene.add.image(0, 0, "kidra-arm1").setDisplayOrigin(129, 33);
   const kidra: Kidra = {
     leftLeg: {
       calfObj: leftCalf,
@@ -527,6 +526,7 @@ const kidraDefendState: Flow.PhaserNode = Flow.lazy((scene) => {
     zone,
   ) as unknown as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody;
   collideZone.body.setImmovable(true);
+  let tries = 0;
   return Flow.withCleanup({
     flow: Flow.parallel(
       anims.startBreath,
@@ -539,12 +539,22 @@ const kidraDefendState: Flow.PhaserNode = Flow.lazy((scene) => {
           object2: collideZone,
         }),
         action: () =>
-          Flow.sequence(
-            Flow.call(
-              finalSceneClass.events.destroyBall.emit({ respawn: true }),
-            ),
-            anims.slashWeapon,
-          ),
+          Flow.lazy(() => {
+            ++tries;
+            const charged =
+              finalSceneClass.data.lightBallCharge.value(scene) >= 1;
+            return Flow.sequence(
+              Flow.call(
+                finalSceneClass.events.destroyBall.emit({ respawn: !charged }),
+              ),
+              charged
+                ? kidra.battleState.nextFlow(kidraKillingState)
+                : Flow.sequence(
+                    anims.slashWeapon,
+                    Flow.call(finalSceneClass.events.ghostAppear.emit({})),
+                  ),
+            );
+          }),
       }),
     ),
     cleanup: () => collideZone.destroy(),
@@ -607,6 +617,7 @@ const kidraKillingState: Flow.PhaserNode = Flow.lazy((scene) => {
         }),
       ),
     ),
+    Flow.call(finalSceneClass.events.kidraDead.emit({})),
   );
   const bodyFall = Flow.sequence(
     Flow.parallel(

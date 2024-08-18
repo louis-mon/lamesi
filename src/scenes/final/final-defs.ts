@@ -16,8 +16,8 @@ export interface LegAngleState {
 }
 
 export interface LegState extends LegAngleState {
-  thighObj: Phaser.Physics.Arcade.Image;
-  calfObj: Phaser.Physics.Arcade.Image;
+  thighObj: Phaser.GameObjects.Image;
+  calfObj: Phaser.GameObjects.Image;
 }
 
 export interface ArmAngleState {
@@ -27,10 +27,10 @@ export interface ArmAngleState {
 
 export interface Kidra extends ArmAngleState {
   head: Phaser.Physics.Arcade.Image;
-  body: Phaser.Physics.Arcade.Image;
-  arm1: Phaser.Physics.Arcade.Image;
-  arm2: Phaser.Physics.Arcade.Image;
-  weapon: Phaser.Physics.Arcade.Image;
+  body: Phaser.GameObjects.Image;
+  arm1: Phaser.GameObjects.Image;
+  arm2: Phaser.GameObjects.Image;
+  weapon: Phaser.GameObjects.Image;
   leftLeg: LegState;
   rightLeg: LegState;
   pos: Vector2;
@@ -58,18 +58,26 @@ export interface FinalAttackState {
   particles: Phaser.GameObjects.Particles.ParticleEmitterManager;
 }
 
+export interface LightBallReady {
+  lightBall: Phaser.Physics.Arcade.Image;
+}
+
 export const finalSceneClass = defineSceneClass({
   data: {
     attack: annotate<FinalAttackState>(),
     kidra: annotate<Kidra>(),
     nbLightReady: annotate<number>(),
     lightBalls: annotate<Phaser.Physics.Arcade.Group>(),
+    lightBallReady: annotate<LightBallReady | null>(),
+    lightBallCharge: annotate<number>(),
   },
   events: {
     enterKidra: customEvent(),
     enterKidraDone: customEvent(),
     prepareGlurpAttack: customEvent(),
     destroyBall: customEvent<{ respawn: boolean }>(),
+    kidraDead: customEvent(),
     runCredits: customEvent(),
+    ghostAppear: customEvent(),
   },
 });
