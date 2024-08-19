@@ -360,33 +360,9 @@
         "y": 0.5
       }
     },
-    "bell-hint-particle": {
-      "frame": {
-        "x": 317,
-        "y": 154,
-        "w": 26,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 3,
-        "y": 0,
-        "w": 26,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "light-particle": {
       "frame": {
-        "x": 347,
+        "x": 317,
         "y": 154,
         "w": 31,
         "h": 31
@@ -402,6 +378,30 @@
       "sourceSize": {
         "w": 32,
         "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "wall-h": {
+      "frame": {
+        "x": 352,
+        "y": 154,
+        "w": 106,
+        "h": 30
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 106,
+        "h": 30
+      },
+      "sourceSize": {
+        "w": 106,
+        "h": 30
       },
       "pivot": {
         "x": 0.5,
@@ -864,24 +864,24 @@
         "y": 0.5
       }
     },
-    "wall-h": {
+    "bell-hint-particle": {
       "frame": {
         "x": 34,
         "y": 1409,
-        "w": 106,
-        "h": 30
+        "w": 30,
+        "h": 36
       },
       "rotated": false,
-      "trimmed": false,
+      "trimmed": true,
       "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 106,
-        "h": 30
+        "x": 5,
+        "y": 2,
+        "w": 30,
+        "h": 36
       },
       "sourceSize": {
-        "w": 106,
-        "h": 30
+        "w": 40,
+        "h": 40
       },
       "pivot": {
         "x": 0.5,
@@ -891,7 +891,7 @@
     "spikes-h": {
       "frame": {
         "x": 34,
-        "y": 1443,
+        "y": 1449,
         "w": 105,
         "h": 30
       },
@@ -914,8 +914,8 @@
     },
     "snowflake": {
       "frame": {
-        "x": 36,
-        "y": 1325,
+        "x": 68,
+        "y": 1409,
         "w": 28,
         "h": 30
       },
