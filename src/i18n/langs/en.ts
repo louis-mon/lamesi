@@ -26,6 +26,7 @@ export const enTranslation: TranslationKeys = {
       "Click on the highlighted icon or on the key {{key}}\nto use the item",
   },
   credits: {
+    title: "Credits",
     graphics: "Art",
     music: "Audio",
     programming: "Programming",

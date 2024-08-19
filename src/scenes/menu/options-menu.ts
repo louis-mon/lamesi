@@ -9,6 +9,7 @@ import { otherGlobalData } from "/src/scenes/common/global-data";
 import * as Flow from "/src/helpers/phaser-flow";
 import UIPlugins from "phaser3-rex-plugins/templates/ui/ui-plugin";
 import Label = UIPlugins.Label;
+import { creditsFlow } from "/src/scenes/final/credits-flow";
 
 const confirmEraseData = (fromScene: Scene) =>
   openDialogMenu({
@@ -91,6 +92,11 @@ export const openOptionsMenu = (fromScene: Scene) =>
                 .content({ text: tr("options.reloadNeeded") })
                 .setVisible(false)
                 .setName(reloadNeededKey),
+            )
+            .add(
+              ui
+                .button({ text: tr("credits.title") })
+                .onClick(() => Flow.run(scene, creditsFlow({ canSkip: true }))),
             )
             .layout(),
           actions: [ui.button({ text: tr("general.close") })],

@@ -18,6 +18,18 @@ declare module "phaser" {
         localY: number,
         event: P.Types.Input.EventData,
       ) => void;
+      pointerup: (
+        pointer: Pointer,
+        localX: number,
+        localY: number,
+        event: P.Types.Input.EventData,
+      ) => void;
+      pointerout: (
+        pointer: Pointer,
+        localX: number,
+        localY: number,
+        event: P.Types.Input.EventData,
+      ) => void;
       "button.click": (
         button: Phaser.GameObjects.GameObject,
         groupName: string,

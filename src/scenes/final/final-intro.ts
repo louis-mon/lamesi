@@ -36,7 +36,7 @@ export const finalIntro: Flow.PhaserNode = Flow.sequence(
     enterGlurp,
     Flow.whenValueDo({
       condition: finalSceneClass.events.runCredits.subject,
-      action: () => creditsFlow,
+      action: () => creditsFlow({ canSkip: false }),
     }),
   ),
 );

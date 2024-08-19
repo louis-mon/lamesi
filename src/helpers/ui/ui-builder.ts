@@ -1,11 +1,11 @@
 import { Scene } from "phaser";
 import Dialog from "phaser3-rex-plugins/templates/ui/dialog/Dialog";
+import TextStyle = Phaser.Types.GameObjects.Text.TextStyle;
 
 export const uiBuilder = (scene: Scene) => {
   const colors = {
     primary: 0x2e762a,
     primaryDark: 0x194c28,
-    buttonPrimary: 0x4abe44,
   };
   const containerBack = () =>
     scene.rexUI.add.roundRectangleCanvas(
@@ -25,8 +25,8 @@ export const uiBuilder = (scene: Scene) => {
     right: n * spaceBase,
     bottom: n * spaceBase,
   });
-  const bodyText = (text: string) =>
-    scene.add.text(0, 0, text, { fontSize: "28px" });
+  const bodyText = (text: string, style: TextStyle = {}) =>
+    scene.add.text(0, 0, text, { fontSize: "28px", ...style });
   return {
     containerBack,
     bodyText,
@@ -34,6 +34,7 @@ export const uiBuilder = (scene: Scene) => {
     title: ({ text }: { text: string }) =>
       scene.rexUI.add.label({
         text: scene.add.text(0, 0, text, { fontSize: "35px" }),
+        align: "center",
       }),
     content: ({ text }: { text: string }) =>
       scene.rexUI.add.label({
@@ -47,7 +48,7 @@ export const uiBuilder = (scene: Scene) => {
           0,
           0,
           10,
-          colors.buttonPrimary,
+          colors.primaryDark,
         ),
         text: bodyText(text),
         space: borderSpacing(3),

@@ -27,6 +27,7 @@ export const frTranslation: TranslationKeys = {
       "Cliquer sur l'icône en surbrillance ou sur la touche {{key}}\npour utiliser l'objet",
   },
   credits: {
+    title: "Crédits",
     graphics: "Art",
     music: "Audio",
     programming: "Programmation",

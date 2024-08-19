@@ -20,6 +20,7 @@ export type TranslationKeys = {
     useItem: string;
   };
   credits: {
+    title: string;
     realisation: string;
     programming: string;
     music: string;
