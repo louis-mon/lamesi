@@ -14,10 +14,14 @@ import {
   altarAppearCutscene,
   dungeonCutscene,
 } from "/src/scenes/dungeon/dungeon-cutscene";
+import { isEventSolved } from "/src/scenes/common/events-def";
 
 const allFlames = [puzzleRoom2Config, goal4PuzzleRoom5Config, goal4Puzzle0];
 
 const greenFlames: Flow.PhaserNode = Flow.lazy((scene) => {
+  if (isEventSolved("dungeonPhase4")(scene)) {
+    return Flow.noop;
+  }
   createFlameAnim(scene);
   const particles = scene.add.particles("npc").setDepth(Def.depths.npc);
   return Flow.parallel(
