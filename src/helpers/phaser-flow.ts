@@ -58,12 +58,11 @@ export const playAmbianceMusic = (params: { key: string }): PhaserNode =>
   Flow.lazy((scene) => {
     const sound = scene.sound.add(params.key, {
       loop: true,
-    }) as Phaser.Sound.HTML5AudioSound;
-    sound.volume = 0.01;
+    });
     return withGlobalCleanup({
       flow: Flow.sequence(
         Flow.wait(globalEvents.subSceneEntered.subject),
-        Flow.call(() => sound.play()),
+        Flow.call(() => sound.play({ volume: 0 })),
         waitTimer(100),
         tween(() => ({
           targets: sound,
