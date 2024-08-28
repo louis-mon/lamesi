@@ -74,13 +74,6 @@ const skillAltar =
         combineContext(
           Def.scene.data.currentSkillInUse.setValue(false),
           Def.scene.data.currentSkill.setValue(skillDef.key),
-          (scene) => {
-            const menuScene = menuHelpers.getMenuScene(scene);
-            const item = skillDef.createItem({ pos: Wp.wpPos(wp) })(menuScene);
-            menuSceneClass.events.goToButton.emit({ item, key: skillDef.key })(
-              menuScene,
-            );
-          },
         ),
       ),
     });

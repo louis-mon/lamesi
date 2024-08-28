@@ -27,6 +27,9 @@ import {
 import { uiBuilder } from "/src/helpers/ui/ui-builder";
 import { tr } from "/src/i18n/i18n";
 import { DottedKey } from "/src/i18n/keys";
+import * as Wp from "/src/scenes/dungeon/wp";
+import * as sceneDef from "./definitions";
+import Vector2 = Phaser.Math.Vector2;
 
 const actionEmptyFrame = "action-empty";
 
@@ -70,7 +73,7 @@ const buttons = declareGoInstances(menuButtonClass, "buttons", {
 export const menuSceneClass = defineSceneClass({
   events: {
     removeShadow: customEvent<{ activated: boolean }>(),
-    goToButton: customEvent<{ item: Phaser.GameObjects.Sprite; key: string }>(),
+    goToButton: customEvent<{ item: ManipulableObject; key: string }>(),
   },
   data: {},
 });
@@ -215,6 +218,17 @@ export const makeMenu = (scene: Phaser.Scene) => {
                 button.data.action.setValue({ action, key, disabled }),
               ),
             ),
+            Flow.call(() => {
+              const item = create({
+                pos: Wp.wpPos(
+                  Wp.getWpDef(sceneDef.player.data.currentPos.value(scene)),
+                ).add(new Vector2(0, -30)),
+              })(menuScene);
+              menuSceneClass.events.goToButton.emit({
+                item,
+                key,
+              })(menuScene);
+            }),
             Flow.parallel(
               Flow.tween(() => ({
                 targets: getButtonActionObj(key),
@@ -259,6 +273,16 @@ export const makeMenu = (scene: Phaser.Scene) => {
     menuSceneClass.events.goToButton.subject,
     ({ item, key }) =>
       Flow.sequence(
+        Flow.tween({
+          targets: item,
+          props: { scale: 1.3 },
+          duration: 100,
+        }),
+        Flow.tween({
+          targets: item,
+          props: { scale: 1 },
+          duration: 500,
+        }),
         Flow.moveTo({
           dest: getObjectPosition(getButtonActionObj(key)),
           target: item,
