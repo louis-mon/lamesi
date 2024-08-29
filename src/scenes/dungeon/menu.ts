@@ -12,7 +12,7 @@ import {
 import { annotate, ValueOf } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
 import { fromEvent, Observable } from "rxjs";
-import { pairwise, startWith } from "rxjs/operators";
+import { map, pairwise, startWith } from "rxjs/operators";
 import {
   getObjectPosition,
   ManipulableObject,
@@ -212,9 +212,9 @@ export const makeMenu = (scene: Phaser.Scene) => {
             Flow.call(
               combineContext(
                 () =>
-                  create({ pos: getObjectPosition(buttonObj) })(menuScene)
-                    .setScale(1.3)
-                    .setName(buttonKey(key)),
+                  create({ pos: getObjectPosition(buttonObj) })(
+                    menuScene,
+                  ).setName(buttonKey(key)),
                 button.data.action.setValue({ action, key, disabled }),
               ),
             ),
@@ -230,11 +230,31 @@ export const makeMenu = (scene: Phaser.Scene) => {
               })(menuScene);
             }),
             Flow.parallel(
-              Flow.tween(() => ({
-                targets: getButtonActionObj(key),
-                props: { scale: 1 },
-                duration: 500,
-              })),
+              Flow.lazy(() => {
+                if (hintKey === "dungeonSkillHint") {
+                  return Flow.noop;
+                }
+                const item = create({
+                  pos: getObjectPosition(buttonObj),
+                })(menuScene);
+                return Flow.withCleanup({
+                  flow: Flow.withBackground({
+                    main: Flow.waitTrue((s) =>
+                      button.events.unbindAction
+                        .subject(s)
+                        .pipe(map((unbind) => unbind.key === key)),
+                    ),
+                    back: Flow.tween(() => ({
+                      targets: item,
+                      props: { scale: 2.3, alpha: 0 },
+                      duration: 1200,
+                      repeatDelay: 500,
+                      repeat: -1,
+                    })),
+                  }),
+                  cleanup: () => item.destroy(),
+                });
+              }),
               showShadowRect({
                 hintKey,
                 targetPos: getObjectPosition(buttonObj),

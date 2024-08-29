@@ -60,7 +60,7 @@ export const createGlurp = (params: {
     const spasms: Array<Spasm> = [];
     const bodyDiameter = 225;
     const circle = new Phaser.Curves.Ellipse(0, 0, bodyDiameter);
-    const points = circle.getPoints(0, 5).concat([circle.getStartPoint()]);
+    const points = circle.getPoints(0, 30).concat([circle.getStartPoint()]);
     let tensionForce: number[] = [];
     const getBodyPointPos = (i: number) => i / points.length;
     const getPointTensionMove = (point: Vector2, i: number) =>
@@ -323,7 +323,7 @@ export const createGlurp = (params: {
 
     return Flow.parallel(
       Flow.repeatSequence(
-        Flow.waitTimer(650),
+        Flow.waitTimer(1650),
         Flow.call(() => {
           spasms.push({
             pos: Phaser.Math.Wrap(
@@ -335,7 +335,7 @@ export const createGlurp = (params: {
             ),
             t: scene.time.now,
           });
-          if (spasms.length > 4) {
+          if (spasms.length > 2) {
             spasms.shift();
           }
         }),

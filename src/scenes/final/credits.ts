@@ -81,6 +81,7 @@ export const credits: CreditCategory[] = [
       label("Jerôme"),
       label("Matthieu"),
       label("Nancie"),
+      label("Virgil"),
       label("Younès"),
     ],
   },
