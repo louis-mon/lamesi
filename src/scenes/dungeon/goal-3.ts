@@ -47,24 +47,18 @@ const puzzleRoom2Amulet: PhaserNode = Flow.lazy((scene) => {
   const altarPos = { room: 2, x: 1, y: 0 };
   const flameThrowerMovement = memoryCyclicTween({
     getObj: () => flameInst.getObj(scene),
-    attr1: { y: Wp.wpPos({ room: 2, x: 0, y: 4 }).y },
+    attr1: { y: Wp.wpPos({ room: 2, x: 0, y: 3.5 }).y },
     attr2: { y: Wp.wpPos({ room: 2, x: 0, y: 1 }).y },
     speed: Wp.wpSize.y / 1000,
   });
   return Flow.parallel(
     Flow.call(flameInst.data.continuous.setValue(true)),
     amuletSkillAltar({ wp: altarPos }),
-    Flow.whenTrueDo({
-      condition: playerIsOnPos({ room: 2, x: 0, y: 2 }),
-      action: Flow.parallel(
-        Npc.closeDoor("door1to2"),
-        Flow.call(
-          Def.scene.data.playerCheckpoint.setValue(
-            Wp.getWpId({ room: 2, x: 0, y: 0 }),
-          ),
-        ),
-      ),
-    }),
+    Flow.sequence(
+      placeCheckpoint({ room: 2, x: 0, y: 2 }),
+      Flow.parallel(Npc.closeDoor("door1to2"), Npc.closeDoor("door4To1")),
+      placeCheckpoint({ room: 1, x: 3, y: 4 }),
+    ),
     Flow.whenTrueDo({
       condition: switchDef.data.state.subject,
       action: openDoor("door1to2"),

@@ -50,7 +50,7 @@ export const altarAppearCutscene = (params: {
     action: Flow.sequence(
       params.beforeAltar ?? Flow.noop,
       Flow.call((scene) => scene.sound.play("item-appear")),
-      params.altarAppear({ wp: params.wp }),
+      Flow.spawn(params.altarAppear({ wp: params.wp })),
     ),
   });
 };
