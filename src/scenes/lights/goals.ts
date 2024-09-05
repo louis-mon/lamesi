@@ -1,5 +1,6 @@
 import * as Flow from "/src/helpers/phaser-flow";
 import {
+  coverPlane,
   curtainsPlane,
   goalPlane,
   LightSceneGoalDef,
@@ -26,6 +27,18 @@ import { presentZoomTrack } from "/src/scenes/lights/zoom-tracks";
 export const createGoal = (goalDef: LightSceneGoalDef): Flow.PhaserNode =>
   Flow.lazy((s) => {
     const scene = s as LightScene;
+
+    if (isEventSolved(goalDef.eventRequired)(s)) return Flow.noop;
+
+    const covers: Array<Phaser.GameObjects.Polygon> = [];
+    if (goalDef.cover) {
+      covers.push(
+        ...goalDef.cover.map((coverDef) =>
+          s.add.polygon(0, 0, coverDef, 0).setOrigin(0, 0).setDepth(coverPlane),
+        ),
+      );
+    }
+
     if (!isEventReady(goalDef.eventRequired)(s)) return Flow.noop;
 
     const initialTint = 0x4a4a4a;
@@ -123,7 +136,7 @@ export const createGoal = (goalDef: LightSceneGoalDef): Flow.PhaserNode =>
         Flow.parallel(
           Flow.sequence(
             Flow.waitTimer(2400),
-            goalState.nextFlow(solveLight({ goalDef, target: go })),
+            goalState.nextFlow(solveLight({ goalDef, target: go, covers })),
           ),
           Flow.handlePostUpdate({
             handler: () => () => {

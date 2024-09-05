@@ -7,6 +7,7 @@ import {
   ObjectCreationDef,
   sourcesPlane,
   sceneClass,
+  muralsPlane,
 } from "./lights-def";
 import { menuHelpers } from "/src/scenes/menu/menu-scene-def";
 import { createMaterial } from "/src/scenes/lights/materials";
@@ -30,6 +31,7 @@ export class LightScene extends Phaser.Scene {
     this.load.image("goal-4");
     this.load.image("goal-5");
     this.load.atlas("materials");
+    this.load.image("murals");
   }
 
   public shadows: Array<{
@@ -52,7 +54,7 @@ export class LightScene extends Phaser.Scene {
   };
 
   create() {
-    this.cameras.main.setBackgroundColor(0x0);
+    this.add.image(0, 0, "murals").setOrigin(0, 0).setDepth(muralsPlane);
     sceneClass.data.hiddenZoomTracks.setValue(0)(this);
     Flow.runScene(
       this,

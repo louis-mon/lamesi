@@ -152,7 +152,7 @@ export const createLightSource = (
       0.1,
     );
 
-    go.depth = sourcesPlane;
+    go.depth = pLight.depth = sourcesPlane;
     scene.setCommonProps(go, lightDef);
     if (lightDef.movablePath) {
       let arrow: Phaser.GameObjects.Image | null = createImageAt(

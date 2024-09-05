@@ -12,8 +12,10 @@ import { createKeyItem } from "/src/scenes/common/key-item";
 export const solveLight = ({
   target,
   goalDef,
+  covers,
 }: {
   target: GameObject & Transform;
+  covers: Array<GameObject & Transform>;
   goalDef: LightSceneGoalDef;
 }): Flow.PhaserNode =>
   Flow.lazy((scene) => {
@@ -26,6 +28,12 @@ export const solveLight = ({
         props: { scale: 2, alpha: 0 },
         duration: 1400,
       }),
+      Flow.tween({
+        targets: covers,
+        props: { alpha: 0 },
+        duration: 1100,
+      }),
+      Flow.waitTimer(6000),
       Flow.call(
         globalEvents.endEventAnim.emit({
           dataSolved: goalDef.eventRequired,

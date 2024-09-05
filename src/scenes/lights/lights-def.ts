@@ -52,6 +52,7 @@ export type LightSceneMaterialDef = ObjectCreationDef & {
 
 export type LightSceneGoalDef = ObjectCreationDef & {
   create: (scene: Phaser.Scene) => Image;
+  cover: Array<Array<Vector2>>;
   requires: Array<{
     materialKey: string;
     position: Phaser.Math.Vector2;
@@ -65,7 +66,9 @@ export type LightSceneDef = {
   goals: LightSceneGoalDef[];
 };
 
-export const vortexPlane = 0;
+export const muralsPlane = 0;
+export const coverPlane = muralsPlane + 1;
+export const vortexPlane = coverPlane + 1;
 export const goalHiddenObjectPlane = vortexPlane;
 export const goalPlane = vortexPlane + 1;
 export const shadowPlane = goalPlane + 1;
@@ -196,6 +199,18 @@ export const sceneDef: LightSceneDef = {
           width: 184,
         },
       ],
+      cover: [
+        [
+          new Vector2(1228.22, -1.21),
+          new Vector2(1126.17, 323.15),
+          new Vector2(941.51, 553.97),
+          new Vector2(976.74, 659.66),
+          new Vector2(1440.82, 724.05),
+          new Vector2(1573.24, 618.36),
+          new Vector2(1574.45, 274.56),
+          new Vector2(1438.39, -1.21),
+        ],
+      ],
     },
     {
       key: "g2",
@@ -213,6 +228,18 @@ export const sceneDef: LightSceneDef = {
           width: 167,
         },
       ],
+      cover: [
+        [
+          new Vector2(666.95, 174.94),
+          new Vector2(544.25, 251.47),
+          new Vector2(366.89, 524.81),
+          new Vector2(324.37, 637.8),
+          new Vector2(581.91, 744.7),
+          new Vector2(886.84, 630.51),
+          new Vector2(922.07, 397.26),
+          new Vector2(788.44, 198.02),
+        ],
+      ],
     },
     {
       key: "g3",
@@ -229,6 +256,27 @@ export const sceneDef: LightSceneDef = {
           position: new Phaser.Math.Vector2(975, 278),
           width: g3TriangleWidth,
         },
+      ],
+      cover: [
+        [
+          new Vector2(574.63, 1.21),
+          new Vector2(607.43, 181.01),
+          new Vector2(782.37, 216.24),
+          new Vector2(885.63, 382.68),
+          new Vector2(878.34, 628.08),
+          new Vector2(555.19, 739.84),
+          new Vector2(671.81, 820.02),
+          new Vector2(967.02, 662.09),
+          new Vector2(1132.24, 334.08),
+          new Vector2(1240.37, 0.0),
+        ],
+        [
+          new Vector2(0.0, 654.8),
+          new Vector2(0, 1080),
+          new Vector2(750.78, 1080),
+          new Vector2(722.84, 794.51),
+          new Vector2(276.99, 592.85),
+        ],
       ],
     },
     {
@@ -256,6 +304,23 @@ export const sceneDef: LightSceneDef = {
           position: new Phaser.Math.Vector2(418, 214),
           width: g4TriangleWidth,
         },
+      ],
+      cover: [
+        [
+          new Vector2(0, 0),
+          new Vector2(0, 675.46),
+          new Vector2(338.94, 654.8),
+          new Vector2(572.2, 245.4),
+          new Vector2(652.66, 206.52),
+          new Vector2(646.58, 0.0),
+        ],
+        [
+          new Vector2(974.31, 630.51),
+          new Vector2(674.24, 795.73),
+          new Vector2(683.96, 1082.99),
+          new Vector2(1503.99, 1088.13),
+          new Vector2(1505.2, 716.76),
+        ],
       ],
     },
     {
@@ -293,6 +358,18 @@ export const sceneDef: LightSceneDef = {
           position: new Phaser.Math.Vector2(1695, 360),
           width: g5BallWidth,
         },
+      ],
+      cover: [
+        [
+          new Vector2(1420.16, 0),
+          new Vector2(1561.09, 289.13),
+          new Vector2(1548.94, 614.71),
+          new Vector2(1408.02, 722.83),
+          new Vector2(1483.34, 833.39),
+          new Vector2(1494.27, 1084.49),
+          new Vector2(1920, 1084.49),
+          new Vector2(1920, 0),
+        ],
       ],
     },
   ],
