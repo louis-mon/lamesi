@@ -436,16 +436,16 @@
       "frame": {
         "x": 39,
         "y": 160,
-        "w": 30,
-        "h": 50
+        "w": 32,
+        "h": 48
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 30,
-        "h": 50
+        "x": 1,
+        "y": 2,
+        "w": 32,
+        "h": 48
       },
       "sourceSize": {
         "w": 50,
@@ -488,7 +488,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 361,
-      "h": 212
+      "h": 210
     },
     "scale": 1
   }
