@@ -45,6 +45,7 @@ export const ghostFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     .image(initialPos.x, initialPos.y, "crea-npc", "man1")
     .setAlpha(0)
     .setScale(2);
+  (scene.renderer as WebGLRenderer).pipelines.remove("WaveShader");
   (scene.renderer as WebGLRenderer).pipelines.addPostPipeline(
     "WaveShader",
     WavePipeline,
@@ -133,9 +134,9 @@ export const ghostFlow: Flow.PhaserNode = Flow.lazy((scene) => {
             targets: { x: 0 },
             props: { x: 1 },
             onUpdate: (tween) =>
-              finalSceneClass.data.lightBallCharge.setValue(tween.progress)(
-                scene,
-              ),
+              finalSceneClass.data.lightBallCharge.setValue(
+                tween.progress > 0.5 ? (tween.progress - 0.5) / 0.5 : 0,
+              )(scene),
             duration: 7000,
           }),
           state.nextFlow(stopCharge()),
@@ -200,13 +201,13 @@ export const ghostFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     Flow.sequence(
       Flow.tween({
         targets: man,
-        props: { alpha: 0.7 },
+        props: { alpha: 0.8 },
       }),
       state.nextFlow(ascend()),
       blinkState.start(
         Flow.tween({
           targets: man,
-          props: { alpha: 0.5 },
+          props: { alpha: 0.65 },
           yoyo: true,
           repeat: -1,
           ease: Phaser.Math.Easing.Sine.InOut,
