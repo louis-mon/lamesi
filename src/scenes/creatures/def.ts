@@ -111,5 +111,6 @@ export const creatureSceneClass = defineSceneClass({
   data: {
     manObj: annotate<Image>(),
     glurpObj: annotate<Transform>(),
+    glurpControl: annotate<Record<string, (p: Vector2) => Vector2>>(),
   },
 });

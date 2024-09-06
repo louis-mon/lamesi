@@ -2,6 +2,7 @@ import { gameHeight } from "/src/scenes/common/constants";
 import {
   customEvent,
   declareGoInstance,
+  defineGoObject,
   defineGoSprite,
   defineSceneClass,
 } from "/src/helpers/component";
@@ -47,6 +48,11 @@ export interface Kidra extends ArmAngleState {
 
 export const glurpInitPos = new Vector2(-400, gameHeight / 2);
 
+export const finalDepths = {
+  kidraUpperBody: 10,
+  ghost: 10,
+};
+
 export const womanClass = defineGoSprite({
   data: {},
   events: {},
@@ -62,6 +68,13 @@ export interface LightBallReady {
   lightBall: Phaser.Physics.Arcade.Image;
 }
 
+export const finalMinionClass = defineGoObject({
+  data: {},
+  events: {
+    eat: customEvent(),
+  },
+});
+
 export const finalSceneClass = defineSceneClass({
   data: {
     attack: annotate<FinalAttackState>(),
@@ -70,10 +83,12 @@ export const finalSceneClass = defineSceneClass({
     lightBalls: annotate<Phaser.Physics.Arcade.Group>(),
     lightBallReady: annotate<LightBallReady | null>(),
     lightBallCharge: annotate<number>(),
+    glurpTargets: annotate<Array<Phaser.Physics.Arcade.Sprite>>(),
   },
   events: {
     enterKidra: customEvent(),
     enterKidraDone: customEvent(),
+    kidraCallMinions: customEvent(),
     prepareGlurpAttack: customEvent(),
     destroyBall: customEvent<{ respawn: boolean }>(),
     kidraDead: customEvent(),

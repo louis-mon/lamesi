@@ -66,7 +66,7 @@ export const credits: CreditCategory[] = [
     category: "credits.software",
     entries: [
       label("Audacity"),
-      label("Asesprite"),
+      label("Aseprite"),
       label("Krita"),
       label("Phaser 3"),
       label("Sketchbook"),

@@ -74,7 +74,7 @@ export const lightBallReady: Flow.PhaserNode = Flow.lazy((scene) =>
     const lightBall = scene.physics.add
       .image(pos.x, pos.y, "fight", "light-ball")
       .setScale(0)
-      .setImmovable(true);
+      .setPushable(false);
     const attack = finalSceneClass.data.attack.value(scene);
     finalSceneClass.data.lightBallCharge.setValue(0)(scene);
     finalSceneClass.data.lightBallReady.setValue({ lightBall })(scene);

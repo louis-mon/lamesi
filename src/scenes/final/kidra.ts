@@ -5,6 +5,7 @@ import Vector2 = Phaser.Math.Vector2;
 import { getObjectPosition, placeAt } from "/src/helpers/phaser";
 import DegToRad = Phaser.Math.DegToRad;
 import {
+  finalDepths,
   finalSceneClass,
   Kidra,
   LegAngleState,
@@ -200,14 +201,25 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const rightCalf = scene.add
     .image(0, 0, "kidra-right-leg2")
     .setDisplayOrigin(54, 11);
-  const body = scene.add.image(0, 0, "kidra-body");
+  const body = scene.add
+    .image(0, 0, "kidra-body")
+    .setDepth(finalDepths.kidraUpperBody);
   const head = scene.physics.add
     .image(0, 0, "kidra-head")
     .setDisplayOrigin(114, 144)
+    .setDepth(finalDepths.kidraUpperBody)
     .setImmovable();
-  const weapon = scene.add.image(0, 0, "kidra-weapon");
-  const arm2 = scene.add.image(0, 0, "kidra-arm2").setOrigin(1, 0.5);
-  const arm1 = scene.add.image(0, 0, "kidra-arm1").setDisplayOrigin(129, 33);
+  const weapon = scene.add
+    .image(0, 0, "kidra-weapon")
+    .setDepth(finalDepths.kidraUpperBody);
+  const arm2 = scene.add
+    .image(0, 0, "kidra-arm2")
+    .setOrigin(1, 0.5)
+    .setDepth(finalDepths.kidraUpperBody);
+  const arm1 = scene.add
+    .image(0, 0, "kidra-arm1")
+    .setDisplayOrigin(129, 33)
+    .setDepth(finalDepths.kidraUpperBody);
   const kidra: Kidra = {
     leftLeg: {
       calfObj: leftCalf,
@@ -238,7 +250,6 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     weaponAttached: true,
   };
   finalSceneClass.data.kidra.setValue(kidra)(scene);
-  finalSceneClass.data.lightBalls.setValue(scene.physics.add.group())(scene);
 
   const { stepForward } = makeAnims(kidra);
 
@@ -482,7 +493,10 @@ const kidraWaitingState: Flow.PhaserNode = Flow.lazy((scene) => {
   const anims = makeAnims(kidra);
   return Flow.parallel(
     anims.startBreath,
-    anims.shakeWeapon,
+    Flow.sequence(
+      anims.shakeWeapon,
+      Flow.call(finalSceneClass.events.kidraCallMinions.emit({})),
+    ),
     Flow.whenValueDo({
       condition: Flow.arcadeColliderSubject({
         object1: finalSceneClass.data.lightBalls.value(scene),

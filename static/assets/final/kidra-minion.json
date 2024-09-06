@@ -1,0 +1,35 @@
+{ "frames": {
+   "0": {
+    "frame": { "x": 67, "y": 1, "w": 61, "h": 95 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 3, "y": 3, "w": 59, "h": 93 },
+    "sourceSize": { "w": 80, "h": 100 },
+    "duration": 400
+   },
+   "1": {
+    "frame": { "x": 1, "y": 1, "w": 65, "h": 97 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 0, "y": 3, "w": 63, "h": 95 },
+    "sourceSize": { "w": 80, "h": 100 },
+    "duration": 400
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.2.30",
+  "image": "kidra-minion.png",
+  "format": "RGBA8888",
+  "size": { "w": 128, "h": 98 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "kidra-minion-walk", "from": 0, "to": 1, "direction": "forward" }
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

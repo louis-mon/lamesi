@@ -2,10 +2,9 @@ import * as Flow from "/src/helpers/phaser-flow";
 import * as Phaser from "phaser";
 import { gameHeight, gameWidth } from "/src/scenes/common/constants";
 import WebGLRenderer = Phaser.Renderer.WebGL.WebGLRenderer;
-import { Subject } from "rxjs";
 import Vector2 = Phaser.Math.Vector2;
 import { makeSceneStates } from "/src/helpers/phaser-flow";
-import { finalSceneClass } from "/src/scenes/final/final-defs";
+import { finalDepths, finalSceneClass } from "/src/scenes/final/final-defs";
 import { map } from "rxjs/operators";
 import { getObjectPosition } from "/src/helpers/phaser";
 import RadToDeg = Phaser.Math.RadToDeg;
@@ -44,6 +43,7 @@ export const ghostFlow: Flow.PhaserNode = Flow.lazy((scene) => {
   const man = scene.add
     .image(initialPos.x, initialPos.y, "crea-npc", "man1")
     .setAlpha(0)
+    .setDepth(finalDepths.ghost)
     .setScale(2);
   (scene.renderer as WebGLRenderer).pipelines.remove("WaveShader");
   (scene.renderer as WebGLRenderer).pipelines.addPostPipeline(

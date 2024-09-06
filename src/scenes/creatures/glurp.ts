@@ -55,6 +55,7 @@ export const createGlurp = (params: {
     const body = scene.add.rope(0, 0, "central", "central");
     container.add(body);
     creatureSceneClass.data.glurpObj.setValue(container)(scene);
+    creatureSceneClass.data.glurpControl.setValue({})(scene);
 
     type Spasm = { pos: number; t: number };
     const spasms: Array<Spasm> = [];
@@ -301,9 +302,14 @@ export const createGlurp = (params: {
       return Flow.parallel(
         ...slots.map((rootPos, index) => {
           const bodyPartMoves = getBodyPartMoves(rootPos, part);
+          const control = creatureSceneClass.data.glurpControl.value(scene);
           return bodyPartsToFlow[part]({
             container,
-            pos: bodyPartMoves.getMove,
+            pos: () => {
+              const controlPos = control[`${part}-${index}`];
+              const computedMove = bodyPartMoves.getMove();
+              return controlPos ? controlPos(computedMove) : computedMove;
+            },
             rotation: () => bodyPartMoves.getRotation().orDefault(0),
             slot: index,
           });

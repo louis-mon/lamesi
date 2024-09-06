@@ -3,6 +3,7 @@ import * as Flow from "/src/helpers/phaser-flow";
 import { background } from "/src/scenes/final/background";
 import { finalSceneKey } from "/src/scenes/common/constants";
 import { finalIntro } from "/src/scenes/final/final-intro";
+import { finalSceneClass } from "/src/scenes/final/final-defs";
 
 export class FinalScene extends Phaser.Scene {
   constructor() {
@@ -29,9 +30,13 @@ export class FinalScene extends Phaser.Scene {
     this.load.image("kidra-right-leg2");
     this.load.image("kidra-weapon");
     this.load.atlas("fight");
+    this.load.aseprite("kidra-minion");
   }
 
   create() {
+    this.anims.createFromAseprite("kidra-minion");
+    finalSceneClass.data.lightBalls.setValue(this.physics.add.group())(this);
+    finalSceneClass.data.glurpTargets.setValue([])(this);
     Flow.runScene(this, Flow.parallel(background, finalIntro));
   }
 }
