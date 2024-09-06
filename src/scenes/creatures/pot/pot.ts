@@ -252,6 +252,12 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
         );
 
       return Flow.sequence(
+        Flow.tween({
+          targets: fromBud.sprite,
+          props: { scale: 1 },
+          duration: 200,
+          ease: Phaser.Math.Easing.Sine.InOut,
+        }),
         Flow.parallel(moveAllEnergy, retractBulbs),
         Flow.call(makeReadyToBloom),
         ...retractVines,
@@ -305,6 +311,14 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
 
       const developBulbs = Flow.lazy(() =>
         Flow.parallel(
+          Flow.tween({
+            targets: fromBud.sprite,
+            props: { scale: 1.5 },
+            duration: 610,
+            yoyo: true,
+            repeat: -1,
+            ease: Phaser.Math.Easing.Sine.InOut,
+          }),
           ..._.last(rootPaths)!.map((rootStep) => {
             const bulbPos = getPositionOfRootState(rootStep);
             const bulb = scene.add
@@ -438,7 +452,7 @@ export const potFlow: Flow.PhaserNode = Flow.lazy((scene) => {
     const targetScale = 1;
     if (isEventSolved(eventKey)(scene)) {
       budStates.forEach((bud) => bud.sprite.setScale(targetScale));
-      return Flow.noop;
+      return potState.nextFlow(waitForBulbClicked());
     }
     const budsOrder = sortBy(budStates, (b) => b.sprite.x).reverse();
     const seeds = budsOrder.map(() =>
