@@ -53,13 +53,15 @@ export const credits: CreditCategory[] = [
         link: "https://freesound.org/s/472506/",
       },
       {
-        label: '"Rise of fire" by Maksym Dudchyk',
-        link: "https://pixabay.com/users/white_records-32584949/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=217682",
+        label:
+          '"Rise of fire" by <a href="https://pixabay.com/users/white_records-32584949/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=217682">Maksym Dudchyk</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=217682">Pixabay</a>',
       },
-      {
-        label: '"Laboratory" by Leonid Timachev',
-        link: "https://pixabay.com/users/amarantamusic-7819462/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=112141",
-      },
+      label(
+        'Laboratory" by <a href="https://pixabay.com/users/amarantamusic-7819462/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=112141">Leonid Timachev</a> from <a href="https://pixabay.com/music//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=112141">Pixabay</a>',
+      ),
+      label(
+        '"Epic Battle - Francisco Samuel" by <a href="https://pixabay.com/users/francis_samuel-28842777/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=123469">Francisco Samuel</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=123469">Pixabay</a>',
+      ),
     ],
   },
   {

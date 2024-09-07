@@ -31,6 +31,7 @@ export class FinalScene extends Phaser.Scene {
     this.load.image("kidra-weapon");
     this.load.atlas("fight");
     this.load.aseprite("kidra-minion");
+    this.load.audio("final-fight", ["final-fight.mp3"]);
   }
 
   create() {

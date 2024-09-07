@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "parcel index.html --open",
-    "build": "parcel build index.html",
+    "build": "parcel build index.html --public-url .",
     "check": "tsc --noEmit && prettier --write src",
     "test": "jest",
     "tex-pack": "cd raw-assets && ts-node pack.ts"

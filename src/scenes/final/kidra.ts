@@ -13,6 +13,8 @@ import {
 } from "/src/scenes/final/final-defs";
 import { weakPointEffect } from "/src/helpers/animate/tween/tween-color";
 import { BehaviorSubject } from "rxjs";
+import { globalEvents } from "/src/scenes/common/global-events";
+import { tween, waitTimer, withGlobalCleanup } from "/src/helpers/phaser-flow";
 
 const armBodyPos = new Vector2(10, -110);
 const headBodyPos = new Vector2(-3, -148);
@@ -269,8 +271,37 @@ export const kidraFlow: Flow.PhaserNode = Flow.lazy((scene) => {
       ),
     ),
     updateBodyPos(kidra),
+    battleMusic(),
   );
 });
+
+function battleMusic(): Flow.PhaserNode {
+  return Flow.lazy((scene) => {
+    const sound = scene.sound.add("final-fight", { loop: true });
+    sound.play({ volume: 0 });
+    return withGlobalCleanup({
+      flow: Flow.sequence(
+        Flow.withBackground({
+          main: Flow.wait(finalSceneClass.events.kidraDead.subject),
+          back: Flow.sequence(
+            tween(() => ({
+              targets: sound,
+              props: { volume: 0.1 },
+              duration: 5000,
+            })),
+            Flow.infinite,
+          ),
+        }),
+        tween(() => ({
+          targets: sound,
+          props: { volume: 0 },
+          duration: 5000,
+        })),
+      ),
+      cleanup: () => sound.stop(),
+    });
+  });
+}
 
 function makeAnims(kidra: Kidra) {
   const walkSpeed = 400;
