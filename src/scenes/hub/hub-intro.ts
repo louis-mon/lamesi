@@ -76,7 +76,16 @@ export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
     };
   });
   const title = scene.add
-    .text(gameWidth / 2, gameHeight / 3, "LAMESI", { fontSize: "150px" })
+    .text(gameWidth / 2, 320, "LAMESI", {
+      fontSize: "140px",
+      align: "center",
+    })
+    .setOrigin(0.5, 0.5);
+  const subTitle = scene.add
+    .text(gameWidth / 2, 420, "Requiem of the dragon", {
+      fontSize: "80px",
+      align: "center",
+    })
     .setOrigin(0.5, 0.5);
   return Flow.waitOnOfPointerdown({
     items: flags,
@@ -88,7 +97,7 @@ export const hubIntro: Flow.PhaserNode = Flow.lazy((scene) => {
           Flow.tween({
             targets: (
               flags.filter((f) => f !== flag).map(getProp("obj")) as unknown[]
-            ).concat(title),
+            ).concat(title, subTitle),
             props: { alpha: 0 },
             duration: 1500,
           }),
