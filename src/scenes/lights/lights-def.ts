@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import { ManipulableObject } from "/src/helpers/phaser";
 import { WithRequiredEvent } from "../common/global-data";
 import Image = Phaser.GameObjects.Image;
 import Vector2 = Phaser.Math.Vector2;
@@ -14,6 +13,7 @@ import { annotate } from "/src/helpers/typing";
 export const sceneClass = defineSceneClass({
   events: {
     showZoomTracks: customEvent(),
+    hideMaterials: customEvent(),
   },
   data: {
     hiddenZoomTracks: annotate<number>(),
@@ -208,7 +208,6 @@ export const sceneDef: LightSceneDef = {
           new Vector2(1440.82, 724.05),
           new Vector2(1573.24, 618.36),
           new Vector2(1574.45, 274.56),
-          new Vector2(1438.39, -1.21),
         ],
       ],
     },
@@ -266,9 +265,11 @@ export const sceneDef: LightSceneDef = {
           new Vector2(878.34, 628.08),
           new Vector2(555.19, 739.84),
           new Vector2(671.81, 820.02),
-          new Vector2(967.02, 662.09),
-          new Vector2(1132.24, 334.08),
-          new Vector2(1240.37, 0.0),
+          new Vector2(1037.48, 641.44),
+          new Vector2(1027.77, 529.67),
+          new Vector2(1151.68, 399.69),
+          new Vector2(1596.32, 402.11),
+          new Vector2(1451.75, 0.0),
         ],
         [
           new Vector2(0.0, 654.8),
@@ -310,14 +311,16 @@ export const sceneDef: LightSceneDef = {
           new Vector2(0, 0),
           new Vector2(0, 675.46),
           new Vector2(338.94, 654.8),
-          new Vector2(572.2, 245.4),
+          new Vector2(612.29, 252.69),
           new Vector2(652.66, 206.52),
-          new Vector2(646.58, 0.0),
+          new Vector2(783.58, 217.46),
+          new Vector2(817.6, 161.57),
+          new Vector2(806.66, 0),
         ],
         [
           new Vector2(974.31, 630.51),
-          new Vector2(674.24, 795.73),
-          new Vector2(683.96, 1082.99),
+          new Vector2(600.14, 872.26),
+          new Vector2(584.34, 1080),
           new Vector2(1503.99, 1088.13),
           new Vector2(1505.2, 716.76),
         ],
@@ -364,9 +367,8 @@ export const sceneDef: LightSceneDef = {
           new Vector2(1420.16, 0),
           new Vector2(1561.09, 289.13),
           new Vector2(1548.94, 614.71),
-          new Vector2(1408.02, 722.83),
-          new Vector2(1483.34, 833.39),
-          new Vector2(1494.27, 1084.49),
+          new Vector2(1428.67, 782.36),
+          new Vector2(1446.89, 1080),
           new Vector2(1920, 1084.49),
           new Vector2(1920, 0),
         ],

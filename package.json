@@ -11,6 +11,7 @@
     "start": "parcel index.html --open",
     "build": "parcel build index.html --public-url .",
     "check": "tsc --noEmit && prettier --write src",
+    "publish": "build && butler push dist louis-mon/lamesi:build",
     "test": "jest",
     "tex-pack": "cd raw-assets && ts-node pack.ts"
   },

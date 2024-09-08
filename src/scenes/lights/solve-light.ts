@@ -2,6 +2,7 @@ import * as Flow from "/src/helpers/phaser-flow";
 import {
   goalHiddenObjectPlane,
   LightSceneGoalDef,
+  sceneClass,
 } from "/src/scenes/lights/lights-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 import { getObjectPosition, placeAt } from "/src/helpers/phaser";
@@ -23,6 +24,7 @@ export const solveLight = ({
     const { obj } = createKeyItem(goalDef.eventRequired, scene);
     placeAt(obj.setDepth(goalHiddenObjectPlane), getObjectPosition(target));
     return Flow.sequence(
+      Flow.call(sceneClass.events.hideMaterials.emit({})),
       Flow.tween({
         targets: target,
         props: { scale: 2, alpha: 0 },

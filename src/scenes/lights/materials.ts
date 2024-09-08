@@ -3,6 +3,7 @@ import {
   LightSceneMaterialDef,
   materialClass,
   materialsPlane,
+  sceneClass,
   sceneDef,
   shadowName,
   shadowPlane,
@@ -129,13 +130,13 @@ export const createMaterial = (
     const eventRequired = matDef.eventRequired;
     if (!isEventReady(eventRequired)(s)) return Flow.noop;
     const scene = s as LightScene;
-    const go = createGem(scene, matDef)
+    const gemObj = createGem(scene, matDef)
       .setScale(1 / matDef.depth)
       .setAlpha(0)
       .setDepth(materialsPlane);
-    scene.setCommonProps(go, matDef);
+    scene.setCommonProps(gemObj, matDef);
     const goInst = declareGoInstance(materialClass, matDef.key);
-    goInst.create(go as any);
+    goInst.create(gemObj as any);
     goInst.data.depth.setValue(matDef.depth)(scene);
 
     const shadowTargetAlpha = 0.5;
@@ -149,7 +150,7 @@ export const createMaterial = (
         shadow.depth = shadowPlane;
         scene.shadows.push({
           source: lightObj as ManipulableObject,
-          material: go,
+          material: gemObj,
           shadow,
           def: matDef,
         });
@@ -166,7 +167,7 @@ export const createMaterial = (
         Flow.wait(globalEvents.subSceneEntered.subject),
         Flow.parallel(
           Flow.tween({
-            targets: go,
+            targets: gemObj,
             props: { alpha: 1 },
             ...tweenParams,
           }),
@@ -181,12 +182,25 @@ export const createMaterial = (
       );
     };
     const showMaterial = Flow.call(() => {
-      go.alpha = 1;
+      gemObj.alpha = 1;
       shadows.forEach((shadow) => shadow.setAlpha(shadowTargetAlpha));
+    });
+
+    const hideAll: Flow.PhaserNode = Flow.whenValueDo({
+      condition: sceneClass.events.hideMaterials.subject,
+      action: () =>
+        Flow.sequence(
+          Flow.tween({
+            targets: [gemObj, ...shadows],
+            props: { alpha: 0 },
+            duration: 800,
+          }),
+        ),
     });
 
     return Flow.parallel(
       zoomTrackFlow(matDef),
+      hideAll,
       Flow.sequence(
         isEventSolved(eventRequired)(scene) ? Flow.noop : appearCinematic(),
         showMaterial,

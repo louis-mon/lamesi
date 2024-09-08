@@ -192,34 +192,10 @@
         "y": 0.5
       }
     },
-    "tree": {
+    "amulet": {
       "frame": {
         "x": 201,
         "y": 55,
-        "w": 42,
-        "h": 49
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 4,
-        "y": 1,
-        "w": 42,
-        "h": 49
-      },
-      "sourceSize": {
-        "w": 50,
-        "h": 50
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "amulet": {
-      "frame": {
-        "x": 143,
-        "y": 60,
         "w": 41,
         "h": 34
       },
@@ -242,8 +218,8 @@
     },
     "circle-gem": {
       "frame": {
-        "x": 61,
-        "y": 64,
+        "x": 143,
+        "y": 60,
         "w": 40,
         "h": 40
       },
@@ -264,9 +240,81 @@
         "y": 0.5
       }
     },
+    "wedding": {
+      "frame": {
+        "x": 187,
+        "y": 93,
+        "w": 40,
+        "h": 38
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 4,
+        "y": 12,
+        "w": 40,
+        "h": 38
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "light-4-solve": {
+      "frame": {
+        "x": 231,
+        "y": 93,
+        "w": 15,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 9,
+        "y": 1,
+        "w": 15,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "leaf-bud": {
+      "frame": {
+        "x": 61,
+        "y": 64,
+        "w": 39,
+        "h": 39
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 5,
+        "y": 6,
+        "w": 39,
+        "h": 39
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 50
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
     "wait-cutscene": {
       "frame": {
-        "x": 105,
+        "x": 104,
         "y": 64,
         "w": 34,
         "h": 56
@@ -288,44 +336,20 @@
         "y": 0.5
       }
     },
-    "wedding": {
+    "tree": {
       "frame": {
-        "x": 143,
-        "y": 98,
-        "w": 40,
-        "h": 38
+        "x": 61,
+        "y": 107,
+        "w": 38,
+        "h": 47
       },
       "rotated": false,
       "trimmed": true,
       "spriteSourceSize": {
-        "x": 4,
-        "y": 12,
-        "w": 40,
-        "h": 38
-      },
-      "sourceSize": {
-        "w": 50,
-        "h": 50
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
-    "leaf-bud": {
-      "frame": {
-        "x": 2,
-        "y": 75,
-        "w": 39,
-        "h": 39
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 5,
-        "y": 6,
-        "w": 39,
-        "h": 39
+        "x": 8,
+        "y": 1,
+        "w": 38,
+        "h": 47
       },
       "sourceSize": {
         "w": 50,
@@ -338,8 +362,8 @@
     },
     "woman": {
       "frame": {
-        "x": 45,
-        "y": 108,
+        "x": 142,
+        "y": 104,
         "w": 36,
         "h": 48
       },
@@ -360,33 +384,9 @@
         "y": 0.5
       }
     },
-    "light-4-solve": {
-      "frame": {
-        "x": 85,
-        "y": 108,
-        "w": 15,
-        "h": 24
-      },
-      "rotated": false,
-      "trimmed": true,
-      "spriteSourceSize": {
-        "x": 9,
-        "y": 1,
-        "w": 15,
-        "h": 24
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.5
-      }
-    },
     "memorial": {
       "frame": {
-        "x": 104,
+        "x": 103,
         "y": 124,
         "w": 34,
         "h": 49
@@ -411,7 +411,7 @@
     "drop": {
       "frame": {
         "x": 2,
-        "y": 118,
+        "y": 75,
         "w": 33,
         "h": 50
       },
@@ -434,8 +434,8 @@
     },
     "enemy": {
       "frame": {
-        "x": 39,
-        "y": 160,
+        "x": 2,
+        "y": 129,
         "w": 32,
         "h": 48
       },
@@ -458,8 +458,8 @@
     },
     "book": {
       "frame": {
-        "x": 2,
-        "y": 172,
+        "x": 38,
+        "y": 158,
         "w": 30,
         "h": 36
       },
@@ -488,7 +488,7 @@
     "format": "RGBA8888",
     "size": {
       "w": 361,
-      "h": 210
+      "h": 196
     },
     "scale": 1
   }
