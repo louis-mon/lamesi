@@ -65,16 +65,26 @@ type SkillDef = {
 
 const skillAltar =
   (skillDef: SkillDef) =>
-  ({ wp }: { wp: Wp.WpDef }): Flow.PhaserNode =>
+  ({
+    wp,
+    customAction = Flow.noop,
+  }: {
+    wp: Wp.WpDef;
+    customAction?: Flow.PhaserNode;
+  }): Flow.PhaserNode =>
     Npc.altarComponent({
       ...skillDef,
       infinite: true,
       wp,
-      action: Flow.call(
-        combineContext(
-          Def.scene.data.currentSkillInUse.setValue(false),
-          Def.scene.data.currentSkill.setValue(skillDef.key),
+      action: Flow.sequence(
+        Flow.call(
+          combineContext(
+            Def.scene.data.currentSkillInUse.setValue(false),
+            Def.scene.data.currentSkill.setValue(skillDef.key),
+          ),
         ),
+        Flow.call(() => console.log(skillDef.key)),
+        customAction,
       ),
     });
 

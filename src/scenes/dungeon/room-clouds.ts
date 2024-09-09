@@ -7,36 +7,44 @@ import * as Flow from "/src/helpers/phaser-flow";
 import _ from "lodash";
 
 export const roomClouds: Flow.PhaserNode = Flow.lazy((scene) => {
-  let cloudsByWp: Record<string, Phaser.GameObjects.Image> = _.mapValues(
-    Wp.allWpById,
-    (wp, id) => {
-      const pos = Wp.wpPos(wp);
-      return scene.add
-        .image(pos.x, pos.y - 20, "npc", "clouds")
-        .setDepth(Def.depths.clouds)
-        .setScale(2.5, 3.4);
-    },
-  );
+  const cloudsByRoom: Record<string, Phaser.GameObjects.Rectangle> =
+    _.fromPairs(
+      _.range(Wp.nbRooms).map((roomId) => {
+        const { x, y } = Wp.wpPos({ room: roomId, x: 2, y: 2 });
+        return [
+          roomId,
+          scene.add
+            .rectangle(
+              x,
+              y - Wp.roomMargin.y,
+              Wp.roomSize.x + Wp.roomMargin.x + 2,
+              Wp.roomSize.y + Wp.roomMargin.y * 2 + 2,
+              Def.dungeonBackground,
+            )
+            .setDepth(Def.depths.clouds),
+        ];
+      }),
+    );
   return Flow.observe(
     Def.scene.events.removeCloudsOnActiveWps.subject,
     ({ activeWpIds }) => {
       const roomsToRemove = _.uniq(
         activeWpIds.map((wpId) => Wp.getWpDef(wpId).room),
       );
-      const wpsToRemove = Wp.allWp.filter((wp) =>
-        _.includes(roomsToRemove, wp.room),
-      );
-      const cloudsToRemove = _.compact(
-        wpsToRemove.map((wp) => cloudsByWp[Wp.getWpId(wp)]),
-      );
-      cloudsByWp = _.omit(cloudsByWp, activeWpIds);
       return Flow.parallel(
-        ...cloudsToRemove.map((cloud) =>
-          Flow.sequence(
-            Flow.tween({ targets: cloud, props: { alpha: 0 } }),
-            Flow.call(() => cloud.destroy()),
-          ),
-        ),
+        ...roomsToRemove
+          .filter((roomId) => roomId in cloudsByRoom)
+          .map((roomId) => {
+            const cloud = cloudsByRoom[roomId];
+            delete cloudsByRoom[roomId];
+            return Flow.sequence(
+              Flow.tween({
+                targets: cloud,
+                props: { alpha: 0 },
+              }),
+              Flow.call(() => cloud.destroy()),
+            );
+          }),
       );
     },
   );

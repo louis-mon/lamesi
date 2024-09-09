@@ -106,12 +106,16 @@ const puzzleForBellAltar: Flow.PhaserNode = Flow.lazy((scene) => {
       bellAlignSwitches.map((def) => def.data.state.dataSubject(scene)),
     ).pipe(map((states) => states.every(_.identity))),
     action: Flow.parallel(
-      isEventSolved("dungeonPhase2")(scene)
-        ? Flow.noop
-        : Npc.closeDoor("door4To3"),
+      Flow.noop,
       altarAppearCutscene({
         wp: { room: 3, x: 0, y: 0 },
-        altarAppear: bellSkillAltar,
+        altarAppear: (p) =>
+          bellSkillAltar({
+            ...p,
+            customAction: isEventSolved("dungeonPhase2")(scene)
+              ? Flow.noop
+              : Npc.closeDoor("door4To3"),
+          }),
       }),
     ),
   });

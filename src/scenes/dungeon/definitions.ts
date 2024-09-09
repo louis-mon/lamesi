@@ -23,6 +23,8 @@ export type WpId = string & { __wpIdTag: null };
 export type WpDef = { room: number; x: number; y: number };
 export type WpGraph = { [key: string]: { links: WpId[]; disabled: boolean } };
 
+export const dungeonBackground = 0x1d2921;
+
 export const scene = defineSceneClass({
   data: {
     wpGraph: annotate<WpGraph>(),

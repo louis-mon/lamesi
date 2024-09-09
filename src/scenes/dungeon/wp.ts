@@ -25,15 +25,15 @@ export const declareWpId = (id: string) => id as WpId;
 export const getWpId = ({ room, x, y }: WpDef): WpId =>
   declareWpId(`wp-${room}-${x}-${y}`);
 
-const roomSize = new Vector2(530, 400);
-const roomMargin = new Vector2(60, 55);
+export const roomSize = new Vector2(530, 400);
+export const roomMargin = new Vector2(60, 55);
 const wpPerSide = 5;
 export const wpSize = roomSize.clone().scale(1 / wpPerSide);
 export const wpHalfSize = wpSize.clone().scale(0.5);
 const scenePos = new Vector2(menuZoneSize + 30, 100);
 const nbRoomsW = 3;
 const nbRoomsH = 2;
-const nbRooms = nbRoomsW * nbRoomsH;
+export const nbRooms = nbRoomsW * nbRoomsH;
 
 const getRoomPos = (room: number) => Phaser.Math.ToXY(room, nbRoomsW, nbRoomsH);
 
