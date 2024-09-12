@@ -83,7 +83,6 @@ const skillAltar =
             Def.scene.data.currentSkill.setValue(skillDef.key),
           ),
         ),
-        Flow.call(() => console.log(skillDef.key)),
         customAction,
       ),
     });

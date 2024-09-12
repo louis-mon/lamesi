@@ -29,7 +29,6 @@ import { tr } from "/src/i18n/i18n";
 import { DottedKey } from "/src/i18n/keys";
 import * as Wp from "/src/scenes/dungeon/wp";
 import * as sceneDef from "./definitions";
-import Vector2 = Phaser.Math.Vector2;
 
 const actionEmptyFrame = "action-empty";
 
@@ -73,7 +72,6 @@ const buttons = declareGoInstances(menuButtonClass, "buttons", {
 export const menuSceneClass = defineSceneClass({
   events: {
     removeShadow: customEvent<{ activated: boolean }>(),
-    goToButton: customEvent<{ item: ManipulableObject; key: string }>(),
   },
   data: {},
 });
@@ -202,67 +200,56 @@ export const makeMenu = (scene: Phaser.Scene) => {
             )
           : Flow.noop,
       ),
-      Flow.observe(
-        button.events.bindAction.subject,
-        ({ params: { action, create, key, disabled, hintKey }, config }) =>
-          Flow.sequence(
-            Flow.call(() => {
-              buttonDisabled = false;
-            }),
-            Flow.call(
-              combineContext(
-                () =>
-                  create({ pos: getObjectPosition(buttonObj) })(
-                    menuScene,
-                  ).setName(buttonKey(key)),
-                button.data.action.setValue({ action, key, disabled }),
-              ),
-            ),
-            Flow.call(() => {
-              const item = create({
-                pos: Wp.wpPos(
-                  Wp.getWpDef(sceneDef.player.data.currentPos.value(scene)),
-                ).add(new Vector2(0, -30)),
-              })(menuScene);
-              menuSceneClass.events.goToButton.emit({
-                item,
-                key,
-              })(menuScene);
-            }),
-            Flow.parallel(
-              Flow.lazy(() => {
-                if (hintKey === "dungeonSkillHint") {
-                  return Flow.noop;
-                }
-                const item = create({
-                  pos: getObjectPosition(buttonObj),
-                })(menuScene);
-                return Flow.withCleanup({
-                  flow: Flow.withBackground({
-                    main: Flow.waitTrue((s) =>
-                      button.events.unbindAction
-                        .subject(s)
-                        .pipe(map((unbind) => unbind.key === key)),
-                    ),
-                    back: Flow.tween(() => ({
-                      targets: item,
-                      props: { scale: 2.3, alpha: 0 },
-                      duration: 1200,
-                      repeatDelay: 500,
-                      repeat: -1,
-                    })),
-                  }),
-                  cleanup: () => item.destroy(),
-                });
-              }),
-              showShadowRect({
-                hintKey,
-                targetPos: getObjectPosition(buttonObj),
-                config,
-              }),
+      Flow.observe(button.events.bindAction.subject, ({ params, config }) => {
+        const { action, create, key, disabled, hintKey } = params;
+        return Flow.sequence(
+          Flow.call(() => {
+            buttonDisabled = false;
+          }),
+          Flow.call(
+            combineContext(
+              () =>
+                create({ pos: getObjectPosition(buttonObj) })(
+                  menuScene,
+                ).setName(buttonKey(key)),
+              button.data.action.setValue({ action, key, disabled }),
             ),
           ),
-      ),
+          Flow.spawn(Flow.lazy(() => goToItemFlow(params))),
+          Flow.parallel(
+            Flow.lazy(() => {
+              if (hintKey === "dungeonSkillHint") {
+                return Flow.noop;
+              }
+              const item = create({
+                pos: getObjectPosition(buttonObj),
+              })(menuScene);
+              return Flow.withCleanup({
+                flow: Flow.withBackground({
+                  main: Flow.waitTrue((s) =>
+                    button.events.unbindAction
+                      .subject(s)
+                      .pipe(map((unbind) => unbind.key === key)),
+                  ),
+                  back: Flow.tween(() => ({
+                    targets: item,
+                    props: { scale: 2.3, alpha: 0 },
+                    duration: 1200,
+                    repeatDelay: 500,
+                    repeat: -1,
+                  })),
+                }),
+                cleanup: () => item.destroy(),
+              });
+            }),
+            showShadowRect({
+              hintKey,
+              targetPos: getObjectPosition(buttonObj),
+              config,
+            }),
+          ),
+        );
+      }),
       Flow.observe(button.events.unbindAction.subject, ({ key }) =>
         Flow.sequence(
           Flow.call(
@@ -289,30 +276,32 @@ export const makeMenu = (scene: Phaser.Scene) => {
     );
   });
 
-  const goToItemFlow: Flow.PhaserNode = Flow.observe(
-    menuSceneClass.events.goToButton.subject,
-    ({ item, key }) =>
-      Flow.sequence(
-        Flow.tween({
-          targets: item,
-          props: { scale: 1.3 },
-          duration: 100,
-        }),
-        Flow.tween({
-          targets: item,
-          props: { scale: 1 },
-          duration: 500,
-        }),
-        Flow.moveTo({
-          dest: getObjectPosition(getButtonActionObj(key)),
-          target: item,
-          speed: 2000,
-        }),
-        Flow.call(() => item.destroy()),
-      ),
-  );
+  const goToItemFlow = ({ create, key }: BindActionParams): Flow.PhaserNode => {
+    const playerPosId = sceneDef.player.data.currentPos.value(scene);
+    const item = create({
+      pos: Wp.wpPos(Wp.getWpDef(playerPosId)),
+    })(menuScene).setScale(0);
+    return Flow.sequence(
+      Flow.tween({
+        targets: item,
+        props: { scale: 1.2, y: (target, key1, value) => value - 55 },
+        duration: 100,
+      }),
+      Flow.tween({
+        targets: item,
+        props: { scale: 0.8 },
+        duration: 500,
+      }),
+      Flow.moveTo({
+        dest: getObjectPosition(getButtonActionObj(key)),
+        target: item,
+        speed: 1300,
+      }),
+      Flow.call(() => item.destroy()),
+    );
+  };
 
-  Flow.run(menuScene, Flow.parallel(...buttonsFlow, goToItemFlow));
+  Flow.run(menuScene, Flow.parallel(...buttonsFlow));
 };
 
 const bindMenuButton =
