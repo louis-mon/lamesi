@@ -13,7 +13,7 @@ import {
   getObjectPosition,
 } from "/src/helpers/phaser";
 import { bindActionButton } from "./menu";
-import { combineLatest, Observable, of } from "rxjs";
+import { BehaviorSubject, combineLatest, Observable, of } from "rxjs";
 import {
   commonGoEvents,
   defineGoClass,
@@ -23,7 +23,7 @@ import _ from "lodash";
 import { annotate } from "/src/helpers/typing";
 import { combineContext } from "/src/helpers/functional";
 import { GlobalDataKey } from "/src/scenes/common/global-data";
-import { getEventDef } from "/src/scenes/common/events-def";
+import { getEventDef, isEventSolved } from "/src/scenes/common/events-def";
 import { globalEvents } from "/src/scenes/common/global-events";
 
 const createNpcAnimations = (scene: Phaser.Scene) => {
@@ -278,12 +278,13 @@ type AltarComponentParams = {
     pos: Vector2;
   }) => (scene: Phaser.Scene) => Phaser.GameObjects.Image;
   key: string;
+  isEmpty?: SceneContext<Observable<boolean>>;
   action: Flow.PhaserNode;
   infinite?: boolean;
 };
 
 const altarClass = defineGoClass({
-  data: { isEmpty: annotate<boolean>() },
+  data: {},
   events: {},
   kind: annotate<Phaser.GameObjects.Image>(),
 });
@@ -295,8 +296,13 @@ export const altarComponent = (
   const itemKey = `altar-${params.key}-${Wp.getWpId(params.wp)}-item`;
   const itemDef = declareGoInstance(altarClass, itemKey);
   const basePos = Wp.wpPos(params.wp);
-  return Flow.lazy((scene) =>
-    Flow.sequence(
+  return Flow.lazy((scene) => {
+    const objectTaken = new BehaviorSubject(false);
+    const isAltarEmpty: SceneContext<Observable<boolean>> = (scene) =>
+      combineLatest([objectTaken, params.isEmpty?.(scene) ?? of(false)]).pipe(
+        map((arr) => arr.some((x) => x)),
+      );
+    return Flow.sequence(
       Flow.call(() => {
         createSpriteAt(
           scene,
@@ -323,7 +329,6 @@ export const altarComponent = (
             .setScale(0),
         ),
       ),
-      Flow.call(itemDef.data.isEmpty.setValue(false)),
       Flow.lazy(() =>
         Flow.parallel(
           Flow.sequence(
@@ -346,7 +351,7 @@ export const altarComponent = (
               yoyo: true,
             }),
           ),
-          Flow.observe(itemDef.data.isEmpty.dataSubject, (isEmpty) =>
+          Flow.observe(isAltarEmpty, (isEmpty) =>
             Flow.call((scene) =>
               altarClass.getObj(itemKey)(scene).setVisible(!isEmpty),
             ),
@@ -354,7 +359,7 @@ export const altarComponent = (
           bindActionButton(
             canPlayerDoAction({
               pos: Wp.getWpId(params.wp),
-              disabled: itemDef.data.isEmpty.dataSubject,
+              disabled: isAltarEmpty,
             })(scene),
             {
               hintKey: "dungeonTakeHint",
@@ -366,22 +371,23 @@ export const altarComponent = (
               action: Flow.sequence(
                 params.infinite
                   ? Flow.noop
-                  : Flow.call(itemDef.data.isEmpty.setValue(true)),
+                  : Flow.call(() => objectTaken.next(true)),
                 params.action,
               ),
             },
           ),
         ),
       ),
-    ),
-  );
+    );
+  });
 };
 
 export const endGoalAltarPlaceholder = (params: {
   eventToSolve: GlobalDataKey;
   wp: Wp.WpDef;
-}) =>
+}): Flow.PhaserNode =>
   altarComponent({
+    isEmpty: (scene) => of(isEventSolved(params.eventToSolve)(scene)),
     createItem:
       ({ pos }) =>
       (scene) =>

@@ -74,6 +74,10 @@ const skillAltar =
   }): Flow.PhaserNode =>
     Npc.altarComponent({
       ...skillDef,
+      isEmpty: (scene) =>
+        Def.scene.data.currentSkill
+          .dataSubject(scene)
+          .pipe(map((currentSkill) => currentSkill === skillDef.key)),
       infinite: true,
       wp,
       action: Flow.sequence(

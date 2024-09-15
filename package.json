@@ -12,7 +12,7 @@
     "build": "parcel build index.html --public-url .",
     "rebuild": "rm -rf dist && npm run build",
     "check": "tsc --noEmit && prettier --write src",
-    "publish": "npm run build && butler push dist louis-mon/lamesi:build",
+    "publish": "npm run rebuild && butler push dist louis-mon/lamesi:build",
     "archive": "npm run rebuild && cd dist; zip -r ../dist.zip .",
     "test": "jest",
     "tex-pack": "cd raw-assets && ts-node pack.ts"

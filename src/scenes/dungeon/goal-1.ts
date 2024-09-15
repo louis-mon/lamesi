@@ -17,7 +17,6 @@ import { combineContext } from "/src/helpers/functional";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 import { arrowSkillAltar } from "./skills";
-import { Maybe } from "purify-ts";
 import { hintFlameRoom5 } from "./goal-4/goal-4-defs";
 import { globalData } from "../common/global-data";
 import {
